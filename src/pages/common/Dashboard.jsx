@@ -10,13 +10,13 @@ export default function DashBoard() {
   if (isUserLoading) return <LoaderDotted />;
   return (
     <>
-      <HeadTag title="Mentora | Dashboard" />
-      <div className="min-h-screen flex">
+      <HeadTag title="Creators Hub Academy | Dashboard" />
+      <div className="min-h-screen flex bg-black">
         {/* Sidebar */}
         <DashboardSidebar />
 
         {/* Main Content */}
-        <div className="flex-1 bg-gray-50">
+        <div className="flex-1 bg-black text-white">
           <Outlet />
         </div>
       </div>

@@ -23,7 +23,6 @@ const PendingTeachers = () => {
     const { data } = await axiosSecure.get(
       `/teachers?page=${page}&limit=${limit}`
     );
-    // console.log(data);
     return data;
   };
 
@@ -48,6 +47,10 @@ const PendingTeachers = () => {
       icon: "warning",
       showCancelButton: true,
       confirmButtonText: `Yes, ${status}`,
+      background: "#18181b",
+      color: "#fff",
+      confirmButtonColor: "#facc15",
+      cancelButtonColor: "#3f3f46",
     }).then((result) => {
       if (result.isConfirmed) {
         statusMutation.mutate({ id, status });
@@ -73,12 +76,14 @@ const PendingTeachers = () => {
     return <ContentNotFound title="No Teachers Found" />;
 
   return (
-    <div className="p-4">
-      <h2 className="text-2xl font-semibold mb-4">Pending Teacher Requests</h2>
+    <div className="p-4 bg-black text-white min-h-screen">
+      <h2 className="text-2xl font-semibold mb-4 text-white">
+        Pending Teacher Requests
+      </h2>
       <div className="overflow-x-auto">
-        <table className="table-auto w-full border border-gray-300 min-w-[1000px]">
-          <thead className="bg-gray-200 ">
-            <tr className="text-left">
+        <table className="table-auto w-full border border-zinc-800 bg-zinc-950 min-w-[1000px]">
+          <thead className="bg-zinc-900">
+            <tr className="text-left text-gray-300">
               <th className="py-2 text-center">Image</th>
               <th className="py-2">Name</th>
               <th className="py-2">Experience</th>
@@ -92,24 +97,26 @@ const PendingTeachers = () => {
             {data?.teachers?.map((teacher) => (
               <tr
                 key={teacher._id}
-                className="border-b border-gray-300 hover:bg-gray-100"
+                className="border-b border-zinc-800 hover:bg-zinc-900 text-gray-200"
               >
                 <td className="py-2">
                   <img
                     src={teacher.photoURL}
                     alt="profile"
-                    className="w-12 h-12 rounded-full mx-auto"
+                    className="w-12 h-12 rounded-full mx-auto border-2 border-yellow-400"
                   />
                 </td>
-                <td>{teacher.name}</td>
-                <td>{teacher.experience}</td>
-                <td>{teacher.title}</td>
-                <td>{teacher.category}</td>
+                <td className="text-white">{teacher.name}</td>
+                <td className="text-gray-300">{teacher.experience}</td>
+                <td className="text-gray-300">{teacher.title}</td>
+                <td className="text-gray-300">{teacher.category}</td>
                 <td
                   className={`capitalize font-semibold ${
                     teacher.status === "approved"
-                      ? "text-blue-500"
-                      : "text-red-500"
+                      ? "text-green-400"
+                      : teacher.status === "rejected"
+                      ? "text-red-400"
+                      : "text-yellow-400"
                   }`}
                 >
                   {teacher.status}
@@ -120,7 +127,7 @@ const PendingTeachers = () => {
                       teacher.status === "approved" ||
                       teacher.status === "rejected"
                     }
-                    className="bg-green-500 px-3 py-1 text-white rounded disabled:opacity-50"
+                    className="bg-yellow-400 text-black px-3 py-1 rounded hover:bg-yellow-500 disabled:opacity-50 font-medium transition"
                     onClick={() => handleStatusChange(teacher._id, "approved")}
                   >
                     Approve
@@ -130,7 +137,7 @@ const PendingTeachers = () => {
                       teacher.status === "approved" ||
                       teacher.status === "rejected"
                     }
-                    className="bg-red-500 px-3 py-1 text-white rounded disabled:opacity-50"
+                    className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700 disabled:opacity-50 font-medium transition"
                     onClick={() => handleStatusChange(teacher._id, "rejected")}
                   >
                     Reject
@@ -142,21 +149,21 @@ const PendingTeachers = () => {
         </table>
 
         {/* Pagination Controls */}
-        <div className="mt-4 flex justify-center gap-4">
+        <div className="mt-4 flex justify-center gap-4 items-center">
           <button
             disabled={page === 1}
             onClick={handlePrevPage}
-            className="btn btn-primary"
+            className="px-4 py-2 bg-zinc-900 border border-zinc-700 text-white rounded hover:bg-zinc-800 disabled:opacity-50"
           >
             Previous
           </button>
-          <div className="px-4 py-1 border border-gray-300 rounded">
+          <div className="px-4 py-2 border border-zinc-700 rounded bg-zinc-900 text-white">
             Page: {page}
           </div>
           <button
             disabled={!data.hasNextPage}
             onClick={handleNextPage}
-            className="btn btn-primary"
+            className="px-4 py-2 bg-zinc-900 border border-zinc-700 text-white rounded hover:bg-zinc-800 disabled:opacity-50"
           >
             Next
           </button>

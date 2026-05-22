@@ -1,21 +1,42 @@
+/* Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Poppins:wght@600;700;800;900&display=swap');
+
 @import "tailwindcss";
 
-@plugin "daisyui" {
-    themes: light --default;
+@plugin "daisyui";
+
+/* Override DaisyUI's base colors for the Creators Hub dark theme */
+:root {
+  --color-base-100: #000000;      /* black background */
+  --color-base-content: #ffffff;  /* white text */
+  --color-primary: #facc15;       /* yellow accent */
+  --color-primary-content: #000000;
+  --color-secondary: #27272a;     /* zinc-800 */
+  --color-secondary-content: #ffffff;
+  --color-accent: #facc15;
+  --color-neutral: #18181b;       /* zinc-900 */
+  --color-neutral-content: #ffffff;
 }
 
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: scale(0.95);
-    }
+/* Global base styles */
+body {
+  font-family: 'Inter', sans-serif;
+  background: #000;
+  color: #fff;
+  margin: 0;
+  padding: 0;
+}
 
-    to {
-        opacity: 1;
-        transform: scale(1);
-    }
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Poppins', sans-serif;
+}
+
+/* Keep your fade‑in animation */
+@keyframes fadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to   { opacity: 1; transform: scale(1); }
 }
 
 .animate-fadeIn {
-    animation: fadeIn 0.3s ease-out forwards;
+  animation: fadeIn 0.3s ease-out forwards;
 }

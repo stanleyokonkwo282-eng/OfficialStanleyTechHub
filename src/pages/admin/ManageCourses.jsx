@@ -23,8 +23,6 @@ export default function AllCourses() {
           params: { page: currentPage, limit: 10 },
         }
       );
-      // console.log(res.data);
-
       return res.data;
     },
     enabled: user.accessToken !== null,
@@ -52,6 +50,10 @@ export default function AllCourses() {
       icon: "warning",
       showCancelButton: true,
       confirmButtonText: `Yes, ${status}`,
+      background: "#18181b",
+      color: "#fff",
+      confirmButtonColor: "#facc15",
+      cancelButtonColor: "#3f3f46",
     }).then((result) => {
       if (result.isConfirmed) {
         updateStatus.mutate({ id, status });
@@ -81,24 +83,27 @@ export default function AllCourses() {
     return <ContentNotFound title="No Courses Found" />;
 
   return (
-    <div className="p-4">
-      <h2 className="text-2xl font-bold mb-4">All Courses</h2>
+    <div className="p-4 bg-black text-white min-h-screen">
+      <h2 className="text-2xl font-bold mb-4 text-white">All Courses</h2>
 
       <div className="overflow-x-auto">
-        <table className="table table-zebra w-full border-gray-300 min-w-[1000px]">
+        <table className="table w-full border border-zinc-800 bg-zinc-950 min-w-[1000px]">
           <thead>
-            <tr>
-              <th>Image</th>
-              <th>Title</th>
-              <th>Email</th>
-              <th>Status</th>
-              <th>Progress</th>
-              <th>Actions</th>
+            <tr className="bg-zinc-900 text-gray-300">
+              <th className="text-gray-300">Image</th>
+              <th className="text-gray-300">Title</th>
+              <th className="text-gray-300">Email</th>
+              <th className="text-gray-300">Status</th>
+              <th className="text-gray-300">Progress</th>
+              <th className="text-gray-300">Actions</th>
             </tr>
           </thead>
           <tbody>
             {coursesData.courses.map((course) => (
-              <tr key={course._id}>
+              <tr
+                key={course._id}
+                className="border-t border-zinc-800 hover:bg-zinc-900 text-gray-200"
+              >
                 <td>
                   <img
                     src={course.image}
@@ -106,8 +111,8 @@ export default function AllCourses() {
                     className="w-16 h-12 rounded"
                   />
                 </td>
-                <td>{course.title}</td>
-                <td>{course.instructorEmail}</td>
+                <td className="text-white">{course.title}</td>
+                <td className="text-gray-400">{course.instructorEmail}</td>
 
                 <td>
                   <span
@@ -125,22 +130,23 @@ export default function AllCourses() {
                 <td>
                   <Link
                     to={`/dashboard/courses/${course._id}`}
-                    disabled={course.status === "pending"}
-                    className="btn btn-sm btn-secondary"
+                    className={`btn btn-sm bg-zinc-800 border-zinc-700 text-white hover:bg-zinc-700 ${
+                      course.status === "pending" ? "btn-disabled" : ""
+                    }`}
                   >
                     Progress
                   </Link>
                 </td>
                 <td>
                   <button
-                    className="btn btn-xs btn-primary text-white mr-2"
+                    className="btn btn-xs bg-yellow-400 text-black hover:bg-yellow-500 border-none mr-2"
                     disabled={course.status === "approved"}
                     onClick={() => handleStatusChange(course._id, "approved")}
                   >
                     Approve
                   </button>
                   <button
-                    className="btn btn-xs btn-error text-white"
+                    className="btn btn-xs bg-red-600 text-white hover:bg-red-700 border-none"
                     disabled={course.status === "rejected"}
                     onClick={() => handleStatusChange(course._id, "rejected")}
                   >
@@ -156,17 +162,17 @@ export default function AllCourses() {
           <button
             disabled={currentPage === 1}
             onClick={handlePrevPage}
-            className="join-item btn text-lg"
+            className="join-item btn bg-zinc-900 border-zinc-700 text-white hover:bg-zinc-800"
           >
             «
           </button>
-          <button className="join-item btn">
+          <button className="join-item btn bg-zinc-900 border-zinc-700 text-white">
             Page {currentPage} of {coursesData.totalPages}
           </button>
           <button
             disabled={!coursesData.hasNextPage}
             onClick={handleNextPage}
-            className="join-item btn text-lg"
+            className="join-item btn bg-zinc-900 border-zinc-700 text-white hover:bg-zinc-800"
           >
             »
           </button>

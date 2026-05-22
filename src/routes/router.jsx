@@ -21,6 +21,7 @@ import CourseSummery from "../pages/teacher/CourseSummery";
 import Unauthorized from "../pages/Unauthorized";
 import PrivateRoute from "./PrivateRoute";
 import RoleBasedRoute from "./RoleBasedRoute";
+import CategoryCourses from "../pages/CategoryCourses"; // new import
 
 const router = createBrowserRouter([
   {
@@ -44,6 +45,11 @@ const router = createBrowserRouter([
         element: <Courses />,
       },
       {
+        // NEW: Category courses page
+        path: "/category/:category",
+        element: <CategoryCourses />,
+      },
+      {
         path: "/login",
         element: <Login />,
       },
@@ -51,6 +57,7 @@ const router = createBrowserRouter([
         path: "/signup",
         element: <Signup />,
       },
+      // ... rest of routes unchanged
       {
         path: "/become-teacher",
         element: (
@@ -127,7 +134,6 @@ const router = createBrowserRouter([
               </RoleBasedRoute>
             ),
           },
-
           {
             path: "teachers",
             element: (

@@ -28,7 +28,6 @@ const CourseAssignments = () => {
       const { data } = await axiosSecure.get(
         `/assignments/${courseId}/${user.email}`
       );
-      // console.log("Assignments fetched:", data.assignments);
       return data.assignments;
     },
     enabled: user.accessToken !== null,
@@ -41,8 +40,6 @@ const CourseAssignments = () => {
       const { data } = await axios.get(
         `${import.meta.env.VITE_BASE_URL}/courses/${courseId}`
       );
-      // console.log("Course info fetched:", data.course);
-
       return data.course;
     },
     enabled: !!courseId,
@@ -57,8 +54,6 @@ const CourseAssignments = () => {
           import.meta.env.VITE_BASE_URL
         }/feedbacks?courseId=${courseId}&studentEmail=${user.email}`
       );
-      // console.log("Feedbacks fetched:", response.data?.feedbacks);
-
       return response.data.feedbacks;
     },
     onError: (error) => {
@@ -81,57 +76,55 @@ const CourseAssignments = () => {
     );
 
   return (
-    <div className="p-4">
+    <div className="p-4 bg-black min-h-screen text-white">
       <div className="flex justify-end mb-4">
         <button
           onClick={() => setIsModalOpen(true)}
-          className="px-6 py-2 bg-indigo-600 text-white rounded hover:bg-indigo-700"
+          className="px-6 py-2 bg-yellow-400 text-black rounded hover:bg-yellow-500 font-medium transition"
         >
           Give Feedback
         </button>
       </div>
       <h2 className="text-2xl font-bold mb-4">
         Assignments{" "}
-        <span className="text-lg italic font-semibold">
+        <span className="text-lg italic font-semibold text-gray-300">
           (Course: {courseInfo.title})
         </span>
       </h2>
 
       {assignments.length === 0 ? (
-        <p>No assignments available.</p>
+        <p className="text-gray-400">No assignments available.</p>
       ) : (
         <div className="overflow-x-auto">
-          <table className="border border-gray-200 rounded min-w-[1000px]">
-            <thead className="bg-gray-100 text-left">
+          <table className="border border-zinc-800 rounded min-w-[1000px] bg-zinc-950">
+            <thead className="bg-zinc-900 text-left">
               <tr>
-                <th className="px-4 py-2 border border-gray-200">Title</th>
-                <th className="px-4 py-2 border border-gray-200">
-                  Description
-                </th>
-                <th className="px-4 py-2 border border-gray-200">Deadline</th>
-                <th className="px-4 py-2 border border-gray-200">Submission</th>
+                <th className="px-4 py-2 border border-zinc-800 text-gray-200">Title</th>
+                <th className="px-4 py-2 border border-zinc-800 text-gray-200">Description</th>
+                <th className="px-4 py-2 border border-zinc-800 text-gray-200">Deadline</th>
+                <th className="px-4 py-2 border border-zinc-800 text-gray-200">Submission</th>
               </tr>
             </thead>
             <tbody>
               {assignments.map((assignment) => (
-                <tr key={assignment._id} className="border-t border-gray-200">
-                  <td className="px-4 py-2 border border-gray-200 font-semibold">
+                <tr key={assignment._id} className="border-t border-zinc-800 hover:bg-zinc-900">
+                  <td className="px-4 py-2 border border-zinc-800 font-semibold text-white">
                     {assignment.title}
                   </td>
-                  <td className="px-4 py-2 border border-gray-200">
+                  <td className="px-4 py-2 border border-zinc-800 text-gray-300">
                     {assignment.description}
                   </td>
-                  <td className="px-4 py-2 border border-gray-200 text-sm text-red-600">
+                  <td className="px-4 py-2 border border-zinc-800 text-sm text-red-400">
                     {new Date(assignment.deadline).toLocaleString()}
                   </td>
-                  <td className="px-4 py-2 border border-gray-200">
+                  <td className="px-4 py-2 border border-zinc-800">
                     {assignment._id ===
                     assignment.studentSubmission[0]?.assignmentId ? (
-                      <p className="text-blue-600">Submitted</p>
+                      <p className="text-green-400">Submitted</p>
                     ) : (
                       <button
                         onClick={() => onSubmit(assignment._id)}
-                        className="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm"
+                        className="bg-yellow-400 hover:bg-yellow-500 text-black px-3 py-1 rounded text-sm font-medium"
                       >
                         Submit
                       </button>

@@ -37,7 +37,7 @@ export default function Navbar() {
 
       <li>
         <NavLink to="/become-teacher" className={linkStyle}>
-          Teach on Mentora
+          Teach on Creators Hub
         </NavLink>
       </li>
 
@@ -123,7 +123,9 @@ export default function Navbar() {
             </ul>
           </div>
           <Link to="/">
-            <span className="text-2xl font-bold">Mentora</span>
+            <span className="text-2xl font-bold text-primary">
+              Creators Hub Academy
+            </span>
           </Link>
         </div>
         <div className="navbar-center hidden lg:flex">

@@ -22,12 +22,12 @@ export default function CallToAction() {
         </h2>
 
         <p className="mb-8 text-lg md:text-xl text-gray-200 drop-shadow-sm">
-          Join thousands leveling up their careers with Mentora — start for free
-          and explore the future of learning.
+          Join thousands leveling up their careers with Creators Hub Academy —
+          start for free and explore the future of learning.
         </p>
         <Link
           to="/courses"
-          className="inline-block bg-white text-indigo-700 font-semibold px-8 py-3 rounded-lg shadow-lg hover:bg-gray-200 transition duration-300"
+          className="inline-block bg-yellow-400 text-black font-semibold px-8 py-3 rounded-lg shadow-lg hover:bg-yellow-500 transition duration-300"
         >
           Browse Courses
         </Link>

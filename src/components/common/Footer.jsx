@@ -6,11 +6,11 @@ export default function Footer() {
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
         {/* About */}
         <div>
-          <h2 className="text-xl font-semibold mb-4">About Us</h2>
+          <h2 className="text-xl font-semibold mb-4">About Creators Hub Academy</h2>
           <p className="text-sm text-gray-300">
-            We’re a modern LMS platform helping learners upskill in tech,
-            design, and freelancing. Learn from expert mentors. Build your
-            career your way.
+            Creators Hub Academy is a premium online learning platform empowering 
+            creators, designers, and tech enthusiasts to master in‑demand skills. 
+            Learn. Create. Lead. – build your future with expert‑led courses.
           </p>
         </div>
 
@@ -19,49 +19,49 @@ export default function Footer() {
           <h2 className="text-xl font-semibold mb-4">Quick Links</h2>
           <ul className="space-y-2 text-sm text-gray-300">
             <li>
-              <a href="/about" className="hover:text-white">
+              <a href="/about" className="hover:text-yellow-400 transition-colors">
                 About
               </a>
             </li>
             <li>
-              <a href="/courses" className="hover:text-white">
+              <a href="/courses" className="hover:text-yellow-400 transition-colors">
                 All Courses
               </a>
             </li>
             <li>
-              <a href="/faq" className="hover:text-white">
+              <a href="/faq" className="hover:text-yellow-400 transition-colors">
                 FAQ
               </a>
             </li>
             <li>
-              <a href="/about" className="hover:text-white">
+              <a href="/about" className="hover:text-yellow-400 transition-colors">
                 Contact
               </a>
             </li>
           </ul>
         </div>
 
-        {/* Categories */}
+        {/* Categories – updated with real slugs */}
         <div>
           <h2 className="text-xl font-semibold mb-4">Top Categories</h2>
           <ul className="space-y-2 text-sm text-gray-300">
             <li>
-              <a href="/category/courses" className="hover:text-white">
+              <a href="/category/web-development" className="hover:text-yellow-400 transition-colors">
                 Web Development
               </a>
             </li>
             <li>
-              <a href="/category/courses" className="hover:text-white">
+              <a href="/category/graphic-design" className="hover:text-yellow-400 transition-colors">
                 Graphic Design
               </a>
             </li>
             <li>
-              <a href="/category/courses" className="hover:text-white">
+              <a href="/category/freelancing-skills" className="hover:text-yellow-400 transition-colors">
                 Freelancing Skills
               </a>
             </li>
             <li>
-              <a href="/category/courses" className="hover:text-white">
+              <a href="/category/ui-ux-design" className="hover:text-yellow-400 transition-colors">
                 UI/UX Design
               </a>
             </li>
@@ -76,7 +76,7 @@ export default function Footer() {
               href="https://facebook.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="hover:text-white text-lg"
+              className="hover:text-yellow-400 text-lg transition-colors"
             >
               <FaFacebookF />
             </a>
@@ -84,7 +84,7 @@ export default function Footer() {
               href="https://twitter.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="hover:text-white text-lg"
+              className="hover:text-yellow-400 text-lg transition-colors"
             >
               <FaTwitter />
             </a>
@@ -92,7 +92,7 @@ export default function Footer() {
               href="https://linkedin.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="hover:text-white text-lg"
+              className="hover:text-yellow-400 text-lg transition-colors"
             >
               <FaLinkedinIn />
             </a>
@@ -100,7 +100,7 @@ export default function Footer() {
               href="https://github.com"
               target="_blank"
               rel="noopener noreferrer"
-              className="hover:text-white text-lg"
+              className="hover:text-yellow-400 text-lg transition-colors"
             >
               <FaGithub />
             </a>
@@ -109,7 +109,7 @@ export default function Footer() {
       </div>
 
       <div className="mt-10 border-t border-gray-700 pt-6 text-center text-gray-400 text-sm">
-        &copy; {new Date().getFullYear()} SkillForge LMS. All rights reserved.
+        &copy; {new Date().getFullYear()} Creators Hub Academy. All rights reserved. — Learn. Create. Lead.
       </div>
     </footer>
   );

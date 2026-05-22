@@ -81,30 +81,31 @@ export default function Login() {
 
   return (
     <>
-      <HeadTag title="Mentora | Login" />
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 px-4">
-        <div className="bg-white shadow-lg rounded-lg p-8 w-full max-w-md">
-          <h2 className="text-3xl font-bold text-center text-gray-600 mb-6">
-            Welcome Back to
+      <HeadTag title="Creators Hub Academy | Login" />
+      <div className="min-h-screen flex items-center justify-center bg-black px-4">
+        <div className="bg-zinc-950 border border-zinc-800 shadow-lg rounded-lg p-8 w-full max-w-md">
+          <h2 className="text-3xl font-bold text-center text-white mb-6">
+            Welcome Back to{" "}
+            <span className="text-yellow-400">Creators Hub Academy</span>
           </h2>
 
           <form onSubmit={handleSubmit(loginMutation.mutate)}>
             {/* Email */}
             <div className="mb-4">
-              <label className="block text-sm font-semibold text-gray-700 mb-1">
+              <label className="block text-sm font-semibold text-gray-300 mb-1">
                 Email
               </label>
-              <div className="flex items-center border-2 border-gray-300 rounded-md px-3 py-2">
-                <FaUser className="text-gray-400 mr-2" />
+              <div className="flex items-center border border-zinc-700 rounded-md px-3 py-2 bg-zinc-900">
+                <FaUser className="text-yellow-400 mr-2" />
                 <input
                   type="email"
                   {...register("email", { required: "Email is required" })}
                   placeholder="Enter your email"
-                  className="w-full outline-none"
+                  className="w-full outline-none bg-transparent text-white placeholder-gray-500"
                 />
               </div>
               {errors.email && (
-                <p className="text-red-500 text-sm mt-1">
+                <p className="text-red-400 text-sm mt-1">
                   {errors.email.message}
                 </p>
               )}
@@ -112,22 +113,22 @@ export default function Login() {
 
             {/* Password */}
             <div className="mb-4">
-              <label className="block text-sm font-semibold text-gray-700 mb-1">
+              <label className="block text-sm font-semibold text-gray-300 mb-1">
                 Password
               </label>
-              <div className="flex items-center border-2 border-gray-300 rounded-md px-3 py-2">
-                <FaLock className="text-gray-400 mr-2" />
+              <div className="flex items-center border border-zinc-700 rounded-md px-3 py-2 bg-zinc-900">
+                <FaLock className="text-yellow-400 mr-2" />
                 <input
                   type="password"
                   {...register("password", {
                     required: "Password is required",
                   })}
                   placeholder="Enter your password"
-                  className="w-full outline-none"
+                  className="w-full outline-none bg-transparent text-white placeholder-gray-500"
                 />
               </div>
               {errors.password && (
-                <p className="text-red-500 text-sm mt-1">
+                <p className="text-red-400 text-sm mt-1">
                   {errors.password.message}
                 </p>
               )}
@@ -136,7 +137,7 @@ export default function Login() {
             {/* Login Button */}
             <button
               type="submit"
-              className="w-full bg-indigo-600 text-white py-2 rounded-md hover:bg-indigo-700 transition duration-300"
+              className="w-full bg-yellow-400 text-black font-medium py-2 rounded-md hover:bg-yellow-500 transition duration-300"
               disabled={loginMutation.isPending}
             >
               {loginMutation.isPending ? "Logging in..." : "Log In"}
@@ -144,37 +145,35 @@ export default function Login() {
           </form>
 
           {/* Footer */}
-          <p className="text-center text-sm text-gray-600 mt-4">
-            Don’t have an account?{" "}
+          <p className="text-center text-sm text-gray-400 mt-4">
+            Don't have an account?{" "}
             <Link
               to="/signup"
               state={{ from: location.state?.from || "/" }}
-              className="text-indigo-600 hover:underline font-semibold"
+              className="text-yellow-400 hover:underline font-semibold"
             >
               Register here
             </Link>
           </p>
 
-          <div className="divider">OR</div>
+          <div className="divider text-gray-500 before:bg-zinc-700 after:bg-zinc-700">OR</div>
 
           {/* Google Login Button */}
           <button
-            className="w-full border text-gray-600 border-gray-400 py-2 rounded-md hover:shadow-lg transition duration-300"
+            className="w-full border border-zinc-700 text-gray-300 py-2 rounded-md hover:bg-zinc-900 hover:border-zinc-600 transition duration-300 font-medium"
             disabled={googleLoginMutation.isPending}
             onClick={() => googleLoginMutation.mutate()}
           >
-            {
-              <span className="flex items-center justify-center font-semibold">
-                <img
-                  src={GoogleLogo}
-                  alt="Google Logo"
-                  className="w-6 h-6 mr-2"
-                />
-                {googleLoginMutation.isPending
-                  ? "Logging with Google..."
-                  : "Login with Google"}
-              </span>
-            }
+            <span className="flex items-center justify-center">
+              <img
+                src={GoogleLogo}
+                alt="Google Logo"
+                className="w-6 h-6 mr-2"
+              />
+              {googleLoginMutation.isPending
+                ? "Logging with Google..."
+                : "Login with Google"}
+            </span>
           </button>
         </div>
       </div>

@@ -15,16 +15,15 @@ export default function Banner() {
       <div className="bg-gradient-to-r from-black/90 via-black/60 to-transparent h-full w-full p-5 md:p-10">
         <div className="max-w-7xl mx-auto text-white flex items-center h-full">
           <div className="max-w-2xl">
-            <h1 className="mb-5 text-6xl leading-tight font-bold">
-              Learn Any Skill to Advance Your{" "}
+            <h1 className="mb-5 text-6xl leading-tight font-bold font-heading">
+              Learn. Create.{" "}
               <span className="underline decoration-amber-400 underline-offset-10 decoration-8">
-                Career
+                Lead.
               </span>
             </h1>
-            <p className="md:mb-8 mb-5 text-xl">
-              We're a modern LMS platform helping learners upskill in tech,
-              design, and freelancing. Learn from expert mentors. Build your
-              career your way.
+            <p className="md:mb-8 mb-5 text-xl text-gray-300">
+              Creators Hub Academy helps you master tech, design, and
+              freelancing with expert‑led courses. Build the career you deserve.
             </p>
             <div className="flex flex-wrap items-center gap-8">
               <div className="avatar-group -space-x-6">

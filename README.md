@@ -1,99 +1,79 @@
-# 🎓 Mentora - Learning Management System (LMS)
+# 🎓 Creators Hub Academy – Learning Management System
 
-Welcome to **Mentora**, a full-featured Learning Management System designed to streamline online education and skill development. This platform is built using the powerful **MERN stack** along with modern tools to deliver a smooth experience for students, teachers, and administrators.
+Welcome to **Creators Hub Academy**, a modern, full-featured Learning Management System built to help creators master digital skills. Built with the **MERN stack** and modern tools, it delivers a premium experience for students, teachers, and administrators.
 
 ---
 
 ## 🚀 Live Website
 
-🌐 **Live URL:** [https://mentora-lms.netlify.app](https://mentora-lms.netlify.app) <br>
-🌐 **Server Repo:** [https://github.com/jakariya0dev/mentora-lms-server](https://github.com/jakariya0dev/mentora-lms-server)
+🌐 **Live URL:** https://your-live-site.vercel.app *(update after deployment)*  
+🌐 **Server Repo:** https://github.com/your-username/creators-hub-academy-server *(if applicable)*
 
-
-
-
-> ⚠️ For demo purposes, use the following admin credentials:
-
-- 🧑‍💼 **Admin Email:** `admin@mail.com`
-- 🔐 **Password:** `000000`
+> ⚠️ Demo admin credentials:
+> 🧑‍💼 **Admin Email:** `admin@mail.com`
+> 🔐 **Password:** `000000`
 
 ---
 
 ## 🛠️ Technologies Used
 
-- **React.js** (with Vite)
-- **Tailwind CSS** (fully responsive & mobile-first)
-- **React Router DOM**
-- **Firebase Authentication**
-- **Express.js**
-- **MongoDB**
-- **TanStack React Query**
-- **Axios** (with secure token handling)
-- **Stripe** (for payment system)
-- **React Hook Form + Yup**
-- **React Icons**
-- **React Rating Stars Component**
+- React.js (with Vite)
+- Tailwind CSS (fully responsive, dark premium theme)
+- DaisyUI
+- React Router DOM
+- Firebase Authentication (Email/Password + Google)
+- Express.js
+- MongoDB
+- TanStack React Query
+- Axios (with secure interceptors)
+- Stripe (payment integration)
+- React Hook Form
+- React Icons
+- SweetAlert2
 
 ---
 
 ## ✨ Key Features
 
-✅ Role-based Dashboard System:
-
+✅ Role-based dashboards:
 - 👨‍🎓 Student Dashboard
 - 👩‍🏫 Teacher Dashboard
 - 👨‍💼 Admin Dashboard
 
-✅ Secure Authentication via Firebase  
-✅ JWT-based Route Protection and Role Authorization  
-✅ Add, Approve & Manage Courses by Teachers/Admin  
-✅ Enroll in Courses with **Stripe Payment Integration**  
-✅ Submit & View Assignments (Students & Teachers)  
-✅ Course Reviews & Ratings  
-✅ Teacher Request Approval System  
-✅ Realtime Enrollment Tracking & Feedback  
-✅ Dark Mode Ready (optional toggle available)
+✅ Firebase Authentication with Google sign‑in  
+✅ JWT‑based route protection and role authorization  
+✅ Course creation, approval, and management  
+✅ Student enrollment with Stripe payments  
+✅ Assignment submission and grading  
+✅ Course reviews and ratings  
+✅ Teacher application system (request → approve)  
+✅ Real‑time enrollment tracking and feedback  
+✅ Fully responsive, premium black/yellow design  
+✅ Dark mode by default
 
 ---
 
 ## 📂 Folder Structure Highlights
 
-- `client/` – React frontend (Vite)
-- `server/` – Express + MongoDB API
-- `hooks/` – Custom React hooks (Auth, AxiosSecure, Role)
-- `components/` – Reusable UI components (modals, cards, etc.)
+- `src/components/` – Reusable UI components (cards, modals, sidebar, etc.)
+- `src/pages/` – All route pages (Home, Courses, Dashboard, etc.)
+- `src/hooks/` – Custom React hooks (useAuth, useAxiosSecure, etc.)
+- `src/services/` – Firebase configuration and API utilities
+- `src/assets/` – Images, icons, animations
 
 ---
 
 ## 🔐 Security & Best Practices
 
-- 🔒 Firebase Token Verified on Backend
-- 🧑‍💼 Role-checking Middleware for Admin/Teacher Access
-- ❌ Unauthorized access redirects to login page
-- 🧹 Clean and optimized database queries using MongoDB native driver
+- Firebase token verified on backend
+- Role‑checking middleware for Admin/Teacher routes
+- Unauthorized users automatically redirected
+- Clean, optimised database queries
 
 ---
 
-## 🌐 Installation
+## 🌐 Installation (for local development)
 
-1. Clone the repository: `git clone https://github.com/jakariya0dev/mentora-lms.git`
-2. Navigate to the project directory: `cd mentora-lms`
-3. Install dependencies: `npm install`
-4. Start the development server: `npm run dev`
-
----
-
-## 🧑‍💼 Author
-
-**👨‍💻 Jakariya H.**  
-MERN Stack Developer | Founder of [JCloud Tech](https://www.jcloudtech.com)  
-📧 Email: `jhalhadi@gmail.com`  
-🌐 Portfolio: [www.jakariya.dev](https://www.jakariya.dev)
-
----
-
-## 📢 Recruiter’s Note
-
-> If you're looking for a developer who can deliver complex, real-world MERN applications with best practices, role management, security, and performance in mind — **I’d love to chat!**
-
----
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/your-username/creators-hub-academy.git

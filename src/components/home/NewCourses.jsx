@@ -5,22 +5,22 @@ import Slider from "react-slick";
 import ContentNotFound from "../common/ContentNotFound";
 import CourseCard from "../common/CourseCard";
 
-// Custom Arrows
+// Custom Arrows – dark theme
 const PrevArrow = ({ onClick }) => (
   <button
     onClick={onClick}
-    className="absolute -left-6 top-1/2 transform -translate-y-1/2 z-10 bg-white shadow p-2 rounded-full hover:bg-gray-100"
+    className="absolute -left-6 top-1/2 transform -translate-y-1/2 z-10 bg-zinc-900 border border-zinc-700 shadow p-2 rounded-full hover:bg-zinc-800 transition"
   >
-    <FaArrowLeft className="text-gray-700" />
+    <FaArrowLeft className="text-yellow-400" />
   </button>
 );
 
 const NextArrow = ({ onClick }) => (
   <button
     onClick={onClick}
-    className="absolute -right-6 top-1/2 transform -translate-y-1/2 z-10 bg-white shadow p-2 rounded-full hover:bg-gray-100"
+    className="absolute -right-6 top-1/2 transform -translate-y-1/2 z-10 bg-zinc-900 border border-zinc-700 shadow p-2 rounded-full hover:bg-zinc-800 transition"
   >
-    <FaArrowRight className="text-gray-700" />
+    <FaArrowRight className="text-yellow-400" />
   </button>
 );
 
@@ -63,10 +63,10 @@ export default function NewCourses() {
     return <ContentNotFound title="No Recent Courses available" />;
 
   return (
-    <section className="pb-16 pt-8 md:pb-32 md:pt-16 bg-white relative">
+    <section className="pb-16 pt-8 md:pb-32 md:pt-16 bg-black relative">
       <div className="max-w-7xl mx-auto px-4">
-        <h2 className="text-3xl font-bold text-gray-600 mb-10">
-          Recently Added Courses
+        <h2 className="text-3xl font-bold text-white mb-10">
+          Recently Added <span className="text-yellow-400">Courses</span>
         </h2>
 
         <Slider {...settings}>

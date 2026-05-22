@@ -1,13 +1,14 @@
-import { Elements } from "@stripe/react-stripe-js";
-import { loadStripe } from "@stripe/stripe-js";
+// Stripe temporarily disabled – no payment integration yet
+// import { Elements } from "@stripe/react-stripe-js";
+// import { loadStripe } from "@stripe/stripe-js";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import { useParams } from "react-router";
 import LoaderDotted from "../../components/common/LoaderDotted";
 import useAuth from "../../hooks/useAuth";
-import StripeCheckoutForm from "./StripeCheckoutForm";
+// import StripeCheckoutForm from "./StripeCheckoutForm";
 
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
+// const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
 
 const StripeWrapper = () => {
   const { user } = useAuth();
@@ -88,9 +89,13 @@ const StripeWrapper = () => {
                   ${Number(courseDetails?.price).toFixed(2) || "0.00"}
                 </span>
               </div>
-              <Elements stripe={stripePromise}>
+              {/* Stripe payment form removed until API key is provided */}
+              <div className="text-center text-red-500 font-medium mt-4">
+                Payment system is not configured yet.
+              </div>
+              {/* <Elements stripe={stripePromise}>
                 <StripeCheckoutForm courseDetails={courseDetails} />
-              </Elements>
+              </Elements> */}
             </div>
           </div>
         </div>

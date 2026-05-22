@@ -12,7 +12,7 @@ import WhyChoose from "../components/home/WhyChoose";
 export default function Home() {
   return (
     <section>
-      <HeadTag title="Mentora | Learning Platform" />
+      <HeadTag title="Creators Hub Academy | Learn. Create. Lead." />
       <Banner />
       <TrustedClients />
       <WhyChoose />

@@ -30,8 +30,6 @@ export default function Feedback() {
       const response = await axios.get(
         `${import.meta.env.VITE_BASE_URL}/feedbacks`
       );
-      // console.log("Feedbacks fetched:", response.data?.feedbacks);
-
       return response.data.feedbacks;
     },
   });
@@ -40,18 +38,18 @@ export default function Feedback() {
     return <ContentNotFound title="No Feedbacks Found" />;
 
   return (
-    <section className="px-6 p-0 py-16 md:py-32 bg-gray-100">
+    <section className="px-6 py-16 md:py-32 bg-black">
       <div className="max-w-7xl mx-auto">
-        <h2 className="text-3xl font-bold mb-10 text-gray-600">
-          Student Feedbacks
+        <h2 className="text-3xl font-bold mb-10 text-white">
+          Student <span className="text-yellow-400">Feedbacks</span>
         </h2>
 
         <Slider {...settings}>
           {feedbacks.map((feedback, index) => (
-            <div key={index} className="px-4 h-[100%]">
-              <div className="bg-white rounded-lg shadow-md p-6 flex flex-col mb-2">
+            <div key={index} className="px-4 h-full">
+              <div className="bg-zinc-950 border border-zinc-800 rounded-lg shadow-md p-6 flex flex-col mb-2 hover:shadow-yellow-400/20 transition">
                 <div className="flex items-center gap-5">
-                  <div className="w-20 h-20 rounded-full object-cover border-4 border-amber-400">
+                  <div className="w-20 h-20 rounded-full object-cover border-4 border-yellow-400 overflow-hidden">
                     <img
                       loading="lazy"
                       width="100%"
@@ -62,7 +60,7 @@ export default function Feedback() {
                     />
                   </div>
                   <div>
-                    <h3 className="text-xl font-semibold text-gray-800">
+                    <h3 className="text-xl font-semibold text-white">
                       {feedback.userInfo.displayName || "N/A"}
                     </h3>
                     <p className="text-sm text-gray-400">
@@ -75,7 +73,7 @@ export default function Feedback() {
                 <p className="text-yellow-500 text-center mb-4 text-2xl">
                   {renderStars(feedback.rating)}
                 </p>
-                <p className="text-gray-600 text-sm italic">
+                <p className="text-gray-300 text-sm italic">
                   "{feedback.description}"
                 </p>
               </div>

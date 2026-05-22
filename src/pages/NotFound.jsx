@@ -6,19 +6,19 @@ import HeadTag from "../components/common/HeadTag";
 const NotFound = () => {
   return (
     <>
-      <HeadTag title="Mentora | Page Not Found" />
-      <div className="min-h-screen flex items-center justify-center bg-gray-100 px-6">
+      <HeadTag title="Creators Hub Academy | Page Not Found" />
+      <div className="min-h-screen flex items-center justify-center bg-black px-6">
         <div className="text-center">
           <div className="h-56 w-56 mx-auto">
             <Lottie animationData={notFound} loop={true} size={10} />
           </div>
-          <p className="text-2xl mt-4 text-gray-600">Page Not Found</p>
-          <p className="mt-2 text-gray-500 text-lg">
+          <p className="text-2xl mt-4 text-white">Page Not Found</p>
+          <p className="mt-2 text-gray-400 text-lg">
             The page you are looking for doesn't exist or has been moved.
           </p>
           <Link
             to="/"
-            className="mt-6 inline-block px-6 py-3 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 transition"
+            className="mt-6 inline-block px-6 py-3 bg-yellow-400 text-black font-medium rounded-lg shadow hover:bg-yellow-500 transition"
           >
             Go Home
           </Link>

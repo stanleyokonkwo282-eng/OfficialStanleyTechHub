@@ -8,7 +8,7 @@ async function handleUpload(imageFile) {
   const formData = new FormData();
   formData.append("file", imageFile);
   formData.append("fileName", imageFile.name || Date.now());
-  formData.append("folder", "mentora");
+  formData.append("folder", "creators-hub-academy");   // your new folder name
   formData.append("signature", signature);
   formData.append("token", token);
   formData.append("expire", expire);
