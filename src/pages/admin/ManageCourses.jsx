@@ -14,33 +14,27 @@ export default function AllCourses() {
   const [currentPage, setCurrentPage] = useState(1);
   const { user } = useAuth();
 
-  const { data: coursesData = [], isLoading } = useQuery({
+  const { data: coursesData, isLoading } = useQuery({
     queryKey: ["courses", { page: currentPage }],
     queryFn: async () => {
-      const res = await axiosSecure.get(
-        `${import.meta.env.VITE_BASE_URL}/courses/all`,
-        {
-          params: { page: currentPage, limit: 10 },
-        }
-      );
+      const res = await axiosSecure.get(`/courses/all`, {
+        params: { page: currentPage, limit: 10 },
+      });
       return res.data;
     },
-    enabled: user.accessToken !== null,
+    enabled: user?.accessToken !== null,
   });
 
   const updateStatus = useMutation({
     mutationFn: async ({ id, status }) => {
-      await axiosSecure.patch(`/courses/change-status/${id}`, {
-        status,
-      });
+      await axiosSecure.patch(`/courses/change-status/${id}`, { status });
     },
     onSuccess: () => {
       toast.success("Status updated");
       queryClient.invalidateQueries(["courses"]);
     },
-    onError: (error) => {
+    onError: () => {
       toast.error("Failed to update status");
-      console.log(error);
     },
   });
 
@@ -62,7 +56,7 @@ export default function AllCourses() {
   };
 
   const handleNextPage = () => {
-    if (coursesData.hasNextPage) {
+    if (coursesData?.hasNextPage) {
       setCurrentPage((prevPage) => prevPage + 1);
     } else {
       toast.error("No more pages available");
@@ -79,7 +73,7 @@ export default function AllCourses() {
 
   if (isLoading) return <LoaderSpinner />;
 
-  if (coursesData.courses.length === 0)
+  if (coursesData?.courses?.length === 0)
     return <ContentNotFound title="No Courses Found" />;
 
   return (
@@ -99,7 +93,7 @@ export default function AllCourses() {
             </tr>
           </thead>
           <tbody>
-            {coursesData.courses.map((course) => (
+            {coursesData?.courses?.map((course) => (
               <tr
                 key={course._id}
                 className="border-t border-zinc-800 hover:bg-zinc-900 text-gray-200"
@@ -113,7 +107,6 @@ export default function AllCourses() {
                 </td>
                 <td className="text-white">{course.title}</td>
                 <td className="text-gray-400">{course.instructorEmail}</td>
-
                 <td>
                   <span
                     className={`badge ${
@@ -157,7 +150,6 @@ export default function AllCourses() {
             ))}
           </tbody>
         </table>
-        {/* Pagination */}
         <div className="join mt-10 flex justify-center">
           <button
             disabled={currentPage === 1}
@@ -167,10 +159,10 @@ export default function AllCourses() {
             «
           </button>
           <button className="join-item btn bg-zinc-900 border-zinc-700 text-white">
-            Page {currentPage} of {coursesData.totalPages}
+            Page {currentPage} of {coursesData?.totalPages}
           </button>
           <button
-            disabled={!coursesData.hasNextPage}
+            disabled={!coursesData?.hasNextPage}
             onClick={handleNextPage}
             className="join-item btn bg-zinc-900 border-zinc-700 text-white hover:bg-zinc-800"
           >

@@ -13,14 +13,14 @@ export default function AllUsers() {
   const [page, setPage] = useState(1);
   const { user } = useAuth();
 
-  const { data = {}, isLoading } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ["users", { page, search }],
     queryFn: async () => {
       const res = await axiosSecure.get(`/users?search=${search}&page=${page}`);
       return res.data;
     },
     onError: () => console.error("Failed to fetch users"),
-    enabled: user.accessToken !== null,
+    enabled: user?.accessToken !== null,
   });
 
   const makeAdmin = useMutation({
@@ -59,7 +59,7 @@ export default function AllUsers() {
   };
 
   const handleNextPage = () => {
-    if (data.hasNextPage) {
+    if (data?.hasNextPage) {
       setPage((prevPage) => prevPage + 1);
     } else {
       toast.error("No more pages available");
@@ -76,7 +76,7 @@ export default function AllUsers() {
 
   if (isLoading) return <LoaderSpinner />;
 
-  if (data.users.length === 0)
+  if (data?.users?.length === 0)
     return <p className="text-center my-10 text-white">No users found</p>;
 
   return (
@@ -112,7 +112,7 @@ export default function AllUsers() {
             </tr>
           </thead>
           <tbody>
-            {data.users.map((user) => (
+            {data?.users?.map((user) => (
               <tr key={user._id} className="border-t border-zinc-800 hover:bg-zinc-900">
                 <td>
                   <img
@@ -153,7 +153,6 @@ export default function AllUsers() {
           </tbody>
         </table>
 
-        {/* Pagination Controls */}
         <div className="mt-4 flex justify-center gap-4 items-center">
           <button
             disabled={page === 1}
@@ -163,10 +162,10 @@ export default function AllUsers() {
             Previous
           </button>
           <div className="px-4 py-2 border border-zinc-700 rounded bg-zinc-900 text-white">
-            Page: {page} of {data.totalPages}
+            Page: {page} of {data?.totalPages}
           </div>
           <button
-            disabled={!data.hasNextPage}
+            disabled={!data?.hasNextPage}
             onClick={handleNextPage}
             className="px-4 py-2 bg-zinc-900 border border-zinc-700 text-white rounded hover:bg-zinc-800 disabled:opacity-50"
           >

@@ -1,8 +1,10 @@
 import { useMutation } from "@tanstack/react-query";
+import { sendPasswordResetEmail } from "firebase/auth";
 import { useForm } from "react-hook-form";
 import { FaLock, FaUser } from "react-icons/fa";
 import { Link, Navigate, useLocation, useNavigate } from "react-router";
 import { toast } from "react-toastify";
+import { auth } from "../../firebase.config";
 import GoogleLogo from "../assets/icons/google.svg";
 import HeadTag from "../components/common/HeadTag";
 import LoaderDotted from "../components/common/LoaderDotted";
@@ -26,6 +28,7 @@ export default function Login() {
   const {
     register,
     handleSubmit,
+    getValues,
     formState: { errors },
   } = useForm();
 
@@ -57,7 +60,6 @@ export default function Login() {
       return userCredential.user;
     },
     onSuccess: async (user) => {
-      // Save user in database on MongoDB
       await axiosSecure.post(`/users`, {
         email: user.email,
       });
@@ -74,6 +76,22 @@ export default function Login() {
       console.log(error);
     },
   });
+
+  // Forgot Password Handler
+  const handleForgotPassword = async () => {
+    const email = getValues("email");
+    if (!email) {
+      toast.error("Please enter your email address first.");
+      return;
+    }
+    try {
+      await sendPasswordResetEmail(auth, email);
+      toast.success("Password reset email sent! Check your inbox.");
+    } catch (error) {
+      const message = errorMap[error.code] || "Failed to send reset email.";
+      toast.error(message);
+    }
+  };
 
   if (isUserLoading) return <LoaderDotted />;
 
@@ -134,6 +152,17 @@ export default function Login() {
               )}
             </div>
 
+            {/* Forgot Password Link */}
+            <div className="flex justify-end mb-4">
+              <button
+                type="button"
+                onClick={handleForgotPassword}
+                className="text-yellow-400 hover:underline text-sm font-medium"
+              >
+                Forgot Password?
+              </button>
+            </div>
+
             {/* Login Button */}
             <button
               type="submit"
@@ -156,7 +185,9 @@ export default function Login() {
             </Link>
           </p>
 
-          <div className="divider text-gray-500 before:bg-zinc-700 after:bg-zinc-700">OR</div>
+          <div className="divider text-gray-500 before:bg-zinc-700 after:bg-zinc-700">
+            OR
+          </div>
 
           {/* Google Login Button */}
           <button

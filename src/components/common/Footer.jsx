@@ -1,115 +1,92 @@
-import { FaFacebookF, FaGithub, FaLinkedinIn, FaTwitter } from "react-icons/fa";
+import { FaFacebookF, FaInstagram, FaTwitter, FaWhatsapp, FaYoutube } from "react-icons/fa";
+import { Link } from "react-router";
+import logo from "../../assets/logo.png";
 
 export default function Footer() {
   return (
-    <footer className="bg-gray-900 text-white py-10 px-6">
+    <footer className="bg-zinc-950 border-t border-zinc-800 text-white py-12 px-6">
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
-        {/* About */}
+
+        {/* Brand */}
         <div>
-          <h2 className="text-xl font-semibold mb-4">About Creators Hub Academy</h2>
-          <p className="text-sm text-gray-300">
-            Creators Hub Academy is a premium online learning platform empowering 
-            creators, designers, and tech enthusiasts to master in‑demand skills. 
-            Learn. Create. Lead. – build your future with expert‑led courses.
+          <div className="flex items-center gap-3 mb-4">
+            <img src={logo} alt="Creators Hub Academy" className="w-10 h-10 rounded-full object-cover" />
+            <span className="font-bold text-white text-lg">
+              Creators Hub <span className="text-yellow-400">Academy</span>
+            </span>
+          </div>
+          <p className="text-sm text-gray-400 leading-relaxed">
+            A premium online learning platform empowering creators, designers,
+            and entrepreneurs to master in-demand digital skills.
+          </p>
+          <p className="text-yellow-400 text-xs mt-3 font-semibold tracking-wide">
+            LEARN • GROW • CREATE
           </p>
         </div>
 
         {/* Quick Links */}
         <div>
-          <h2 className="text-xl font-semibold mb-4">Quick Links</h2>
-          <ul className="space-y-2 text-sm text-gray-300">
-            <li>
-              <a href="/about" className="hover:text-yellow-400 transition-colors">
-                About
-              </a>
-            </li>
-            <li>
-              <a href="/courses" className="hover:text-yellow-400 transition-colors">
-                All Courses
-              </a>
-            </li>
-            <li>
-              <a href="/faq" className="hover:text-yellow-400 transition-colors">
-                FAQ
-              </a>
-            </li>
-            <li>
-              <a href="/about" className="hover:text-yellow-400 transition-colors">
-                Contact
-              </a>
-            </li>
+          <h2 className="text-base font-bold mb-4 text-white uppercase tracking-wide">Quick Links</h2>
+          <ul className="space-y-2 text-sm text-gray-400">
+            <li><Link to="/" className="hover:text-yellow-400 transition-colors">Home</Link></li>
+            <li><Link to="/courses" className="hover:text-yellow-400 transition-colors">All Courses</Link></li>
+            <li><Link to="/about" className="hover:text-yellow-400 transition-colors">About</Link></li>
+            <li><Link to="/faq" className="hover:text-yellow-400 transition-colors">FAQ</Link></li>
+            <li><Link to="/become-teacher" className="hover:text-yellow-400 transition-colors">Become a Teacher</Link></li>
           </ul>
         </div>
 
-        {/* Categories – updated with real slugs */}
+        {/* Categories */}
         <div>
-          <h2 className="text-xl font-semibold mb-4">Top Categories</h2>
-          <ul className="space-y-2 text-sm text-gray-300">
-            <li>
-              <a href="/category/web-development" className="hover:text-yellow-400 transition-colors">
-                Web Development
-              </a>
-            </li>
-            <li>
-              <a href="/category/graphic-design" className="hover:text-yellow-400 transition-colors">
-                Graphic Design
-              </a>
-            </li>
-            <li>
-              <a href="/category/freelancing-skills" className="hover:text-yellow-400 transition-colors">
-                Freelancing Skills
-              </a>
-            </li>
-            <li>
-              <a href="/category/ui-ux-design" className="hover:text-yellow-400 transition-colors">
-                UI/UX Design
-              </a>
-            </li>
+          <h2 className="text-base font-bold mb-4 text-white uppercase tracking-wide">Top Categories</h2>
+          <ul className="space-y-2 text-sm text-gray-400">
+            <li><Link to={`/category/${encodeURIComponent("Design")}`} className="hover:text-yellow-400 transition-colors">Graphic Design</Link></li>
+            <li><Link to={`/category/${encodeURIComponent("Video Production")}`} className="hover:text-yellow-400 transition-colors">Video Production</Link></li>
+            <li><Link to={`/category/${encodeURIComponent("Marketing")}`} className="hover:text-yellow-400 transition-colors">Digital Marketing</Link></li>
+            <li><Link to={`/category/${encodeURIComponent("Social Media")}`} className="hover:text-yellow-400 transition-colors">Social Media</Link></li>
+            <li><Link to={`/category/${encodeURIComponent("Business")}`} className="hover:text-yellow-400 transition-colors">Business Skills</Link></li>
+            <li><Link to={`/category/${encodeURIComponent("Content Creation")}`} className="hover:text-yellow-400 transition-colors">Content Creation</Link></li>
+            <li><Link to={`/category/${encodeURIComponent("Web Development")}`} className="hover:text-yellow-400 transition-colors">Web Development</Link></li>
+            <li><Link to={`/category/${encodeURIComponent("Artificial Intelligence")}`} className="hover:text-yellow-400 transition-colors">AI Tools</Link></li>
           </ul>
         </div>
 
-        {/* Social Media */}
+        {/* Social + Contact */}
         <div>
-          <h2 className="text-xl font-semibold mb-4">Follow Us</h2>
-          <div className="flex space-x-4 text-gray-300">
-            <a
-              href="https://facebook.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-yellow-400 text-lg transition-colors"
-            >
+          <h2 className="text-base font-bold mb-4 text-white uppercase tracking-wide">Connect With Us</h2>
+          <div className="flex gap-3 mb-6">
+            <a href="https://wa.me/2348134438808" target="_blank" rel="noopener noreferrer"
+              className="w-8 h-8 bg-zinc-800 hover:bg-yellow-400 hover:text-black text-gray-300 rounded-full flex items-center justify-center transition-all">
+              <FaWhatsapp />
+            </a>
+            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer"
+              className="w-8 h-8 bg-zinc-800 hover:bg-yellow-400 hover:text-black text-gray-300 rounded-full flex items-center justify-center transition-all">
+              <FaInstagram />
+            </a>
+            <a href="https://youtube.com" target="_blank" rel="noopener noreferrer"
+              className="w-8 h-8 bg-zinc-800 hover:bg-yellow-400 hover:text-black text-gray-300 rounded-full flex items-center justify-center transition-all">
+              <FaYoutube />
+            </a>
+            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer"
+              className="w-8 h-8 bg-zinc-800 hover:bg-yellow-400 hover:text-black text-gray-300 rounded-full flex items-center justify-center transition-all">
               <FaFacebookF />
             </a>
-            <a
-              href="https://twitter.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-yellow-400 text-lg transition-colors"
-            >
+            <a href="https://twitter.com" target="_blank" rel="noopener noreferrer"
+              className="w-8 h-8 bg-zinc-800 hover:bg-yellow-400 hover:text-black text-gray-300 rounded-full flex items-center justify-center transition-all">
               <FaTwitter />
             </a>
-            <a
-              href="https://linkedin.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-yellow-400 text-lg transition-colors"
-            >
-              <FaLinkedinIn />
-            </a>
-            <a
-              href="https://github.com"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-yellow-400 text-lg transition-colors"
-            >
-              <FaGithub />
-            </a>
+          </div>
+          <div className="text-sm text-gray-400 space-y-1">
+            <p>📞 <span className="text-white">08134438808</span></p>
+            <p>🏦 Opay: <span className="text-white">8134438808</span></p>
+            <p>🏦 Polaris: <span className="text-white">3046748449</span></p>
+            <p className="text-xs text-gray-500 mt-2">Nonso Stanley Okonkwo</p>
           </div>
         </div>
       </div>
 
-      <div className="mt-10 border-t border-gray-700 pt-6 text-center text-gray-400 text-sm">
-        &copy; {new Date().getFullYear()} Creators Hub Academy. All rights reserved. — Learn. Create. Lead.
+      <div className="mt-10 border-t border-zinc-800 pt-6 text-center text-gray-500 text-sm">
+        © {new Date().getFullYear()} Creators Hub Academy. All rights reserved. — Skills Today • Success Tomorrow
       </div>
     </footer>
   );
