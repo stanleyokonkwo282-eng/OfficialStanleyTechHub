@@ -1,61 +1,116 @@
 import { Link } from "react-router";
-import bannerImg from "../../assets/images/banner.jpg";
 
 export default function Banner() {
+  const students = [
+    "https://randomuser.me/api/portraits/women/44.jpg",
+    "https://randomuser.me/api/portraits/men/32.jpg",
+    "https://randomuser.me/api/portraits/women/68.jpg",
+    "https://randomuser.me/api/portraits/men/75.jpg",
+  ];
+
   return (
-    <header
-      style={{
-        backgroundImage: `url(${bannerImg})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center center",
-        backgroundRepeat: "no-repeat",
-      }}
-      className="hero min-h-[80vh] bg-base-200"
-    >
-      <div className="bg-gradient-to-r from-black/90 via-black/60 to-transparent h-full w-full p-5 md:p-10">
-        <div className="max-w-7xl mx-auto text-white flex items-center h-full">
-          <div className="max-w-2xl">
-            <h1 className="mb-5 text-6xl leading-tight font-bold font-heading">
-              Learn. Create.{" "}
-              <span className="underline decoration-amber-400 underline-offset-10 decoration-8">
-                Lead.
+    <header className="min-h-screen bg-black relative overflow-hidden flex items-center">
+      {/* Background gradient blobs */}
+      <div className="absolute top-0 left-0 w-96 h-96 bg-yellow-400 opacity-5 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
+      <div className="absolute bottom-0 right-0 w-96 h-96 bg-yellow-400 opacity-5 rounded-full blur-3xl translate-x-1/2 translate-y-1/2" />
+
+      <div className="max-w-7xl mx-auto px-6 md:px-10 w-full py-20">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+
+          {/* Left — Text */}
+          <div>
+            {/* Badge */}
+            <div className="inline-flex items-center gap-2 bg-yellow-400/10 border border-yellow-400/30 rounded-full px-4 py-2 mb-6">
+              <span className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse" />
+              <span className="text-yellow-400 text-sm font-semibold">
+                Nigeria's #1 Digital Skills Academy
               </span>
+            </div>
+
+            <h1 className="text-5xl md:text-6xl font-black text-white leading-tight mb-6">
+              Learn.{" "}
+              <span className="text-yellow-400">Create.</span>
+              {" "}Lead.
             </h1>
-            <p className="md:mb-8 mb-5 text-xl text-gray-300">
-              Creators Hub Academy helps you master tech, design, and
-              freelancing with expert‑led courses. Build the career you deserve.
+
+            <p className="text-gray-300 text-lg md:text-xl mb-8 leading-relaxed">
+              Master profitable digital skills — Graphic Design, Video Editing,
+              Digital Marketing, AI Tools, and more. Enroll free and earn a
+              verified certificate.
             </p>
-            <div className="flex flex-wrap items-center gap-8">
-              <div className="avatar-group -space-x-6">
-                <div className="avatar">
-                  <div className="w-12">
-                    <img src="https://img.daisyui.com/images/profile/demo/batperson@192.webp" />
-                  </div>
-                </div>
-                <div className="avatar">
-                  <div className="w-12">
-                    <img src="https://img.daisyui.com/images/profile/demo/spiderperson@192.webp" />
-                  </div>
-                </div>
-                <div className="avatar">
-                  <div className="w-12">
-                    <img src="https://img.daisyui.com/images/profile/demo/averagebulk@192.webp" />
-                  </div>
-                </div>
-                <div className="avatar">
-                  <div className="w-12">
-                    <img src="https://img.daisyui.com/images/profile/demo/wonderperson@192.webp" />
-                  </div>
-                </div>
+
+            {/* Skills tags */}
+            <div className="flex flex-wrap gap-2 mb-8">
+              {["Canva", "CapCut", "Photoshop", "Digital Marketing", "AI Tools", "SEO", "Copywriting"].map((skill) => (
+                <span
+                  key={skill}
+                  className="bg-zinc-900 border border-zinc-700 text-gray-300 text-xs px-3 py-1 rounded-full"
+                >
+                  {skill}
+                </span>
+              ))}
+            </div>
+
+            {/* CTA Buttons */}
+            <div className="flex flex-wrap gap-4 mb-10">
+              <Link
+                to="/courses"
+                className="bg-yellow-400 text-black px-8 py-4 rounded-xl font-bold text-lg hover:bg-yellow-500 transition"
+              >
+                Explore Courses — FREE
+              </Link>
+              <Link
+                to="/about"
+                className="bg-zinc-900 border border-zinc-700 text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-zinc-800 transition"
+              >
+                Learn More
+              </Link>
+            </div>
+
+            {/* Social proof */}
+            <div className="flex items-center gap-4">
+              <div className="flex -space-x-3">
+                {students.map((src, i) => (
+                  <img
+                    key={i}
+                    src={src}
+                    alt="student"
+                    className="w-10 h-10 rounded-full border-2 border-yellow-400 object-cover"
+                  />
+                ))}
               </div>
               <div>
-                <p className="text-3xl font-bold">3000+</p>
-                <p className="text-lg font-semibold">Happy Students</p>
+                <p className="text-white font-bold text-lg">3,000+ Students</p>
+                <p className="text-gray-400 text-sm">Already enrolled for free</p>
               </div>
+            </div>
+          </div>
 
-              <Link to="/courses" className="btn btn-primary">
-                Explore Courses
-              </Link>
+          {/* Right — Stats Cards */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 hover:border-yellow-400/50 transition">
+              <div className="text-4xl mb-2">🎨</div>
+              <p className="text-3xl font-black text-yellow-400">25+</p>
+              <p className="text-white font-semibold">Digital Courses</p>
+              <p className="text-gray-400 text-sm mt-1">All completely FREE</p>
+            </div>
+            <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 hover:border-yellow-400/50 transition">
+              <div className="text-4xl mb-2">🎓</div>
+              <p className="text-3xl font-black text-yellow-400">90+</p>
+              <p className="text-white font-semibold">Video Lessons</p>
+              <p className="text-gray-400 text-sm mt-1">Step-by-step tutorials</p>
+            </div>
+            <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 hover:border-yellow-400/50 transition">
+              <div className="text-4xl mb-2">📜</div>
+              <p className="text-3xl font-black text-yellow-400">₦10K</p>
+              <p className="text-white font-semibold">Certificate</p>
+              <p className="text-gray-400 text-sm mt-1">Verified worldwide</p>
+            </div>
+            <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 hover:border-yellow-400/50 transition">
+              <div className="text-4xl mb-2">🏆</div>
+              <p className="text-3xl font-black text-yellow-400">100%</p>
+              <p className="text-white font-semibold">Free Access</p>
+              <p className="text-gray-400 text-sm mt-1">Use code: CREATOR</p>
             </div>
           </div>
         </div>

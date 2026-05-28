@@ -34,6 +34,17 @@ export default function CoursePlayer() {
     enabled: !!user?.email,
   });
 
+  const { data: attemptsData } = useQuery({
+    queryKey: ["attempts", courseId, user?.email],
+    queryFn: async () => {
+      const res = await axiosSecure.get(
+        `/exam/attempts/${courseId}/${user?.email}`
+      );
+      return res.data;
+    },
+    enabled: !!user?.email,
+  });
+
   useEffect(() => {
     if (lessonsData?.lessons?.length > 0) {
       const lastWatchedId = progressData?.lastWatchedLessonId;
@@ -68,8 +79,7 @@ export default function CoursePlayer() {
     onSuccess: (data) => {
       refetchProgress();
       if (data.courseCompleted) {
-        toast.success("Congratulations! You completed the course!");
-        setTimeout(() => navigate(`/dashboard/certificate/${courseId}`), 2000);
+        toast.success("Congratulations! You completed the course! Take the exam to get your certificate.");
       } else {
         toast.success("Lesson marked as complete!");
         goToNextLesson();
@@ -148,9 +158,14 @@ export default function CoursePlayer() {
   }
 
   const youtubeId = getYouTubeId(activeLesson?.videoUrl);
+  const courseCompleted = progressData?.percentage === 100;
+  const attempts = attemptsData?.attempts || [];
+  const hasPassed = attempts.some((a) => a.passed);
+  const isLocked = attempts.length >= 2 && !hasPassed;
 
   return (
     <div className="min-h-screen bg-black text-white flex flex-col">
+
       {/* Top bar */}
       <div className="bg-zinc-950 border-b border-zinc-800 px-6 py-3 flex items-center justify-between">
         <button
@@ -159,7 +174,7 @@ export default function CoursePlayer() {
         >
           Back
         </button>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
           <span className="text-gray-400 text-sm">
             {progressData?.percentage || 0}% Complete
           </span>
@@ -169,18 +184,49 @@ export default function CoursePlayer() {
               style={{ width: `${progressData?.percentage || 0}%` }}
             />
           </div>
-          {progressData?.percentage === 100 && (
+          {courseCompleted && hasPassed && (
             <button
               onClick={() => navigate(`/dashboard/certificate/${courseId}`)}
-              className="bg-yellow-400 text-black px-3 py-1 rounded text-sm font-semibold hover:bg-yellow-500"
+              className="bg-green-500 text-white px-3 py-1 rounded text-sm font-semibold hover:bg-green-600"
             >
               Get Certificate
             </button>
           )}
+          {courseCompleted && !hasPassed && !isLocked && (
+            <button
+              onClick={() => navigate(`/dashboard/exam/${courseId}`)}
+              className="bg-yellow-400 text-black px-3 py-1 rounded text-sm font-semibold hover:bg-yellow-500"
+            >
+              Take Exam
+            </button>
+          )}
+          {courseCompleted && isLocked && (
+            <span className="text-red-400 text-sm font-semibold">
+              Exam Locked
+            </span>
+          )}
         </div>
       </div>
 
+      {/* Course Completed Banner */}
+      {courseCompleted && (
+        <div className={`px-6 py-3 text-center text-sm font-semibold ${
+          hasPassed
+            ? "bg-green-900 border-b border-green-700 text-green-300"
+            : isLocked
+            ? "bg-red-900 border-b border-red-700 text-red-300"
+            : "bg-yellow-900 border-b border-yellow-700 text-yellow-300"
+        }`}>
+          {hasPassed
+            ? "You passed the exam! Click Get Certificate to download your certificate."
+            : isLocked
+            ? "Exam locked. You used both attempts. Contact admin to reset."
+            : "You completed all lessons! Take the exam to earn your certificate."}
+        </div>
+      )}
+
       <div className="flex flex-1 overflow-hidden">
+
         {/* Video Area */}
         <div className="flex-1 flex flex-col p-6 overflow-y-auto">
           {activeLesson && (
@@ -204,8 +250,8 @@ export default function CoursePlayer() {
                       {activeLesson.lessonTitle}
                     </p>
                     <p className="text-gray-400 text-sm max-w-md">
-                      This video cannot be embedded here. Watch it directly on YouTube,
-                      then come back and mark it as complete.
+                      This video cannot be embedded here. Watch it directly on
+                      YouTube, then come back and mark it as complete.
                     </p>
                     <a
                       href={activeLesson.videoUrl}
@@ -227,7 +273,8 @@ export default function CoursePlayer() {
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <p className="text-yellow-400 text-sm mb-1">
-                      Module {activeLesson.moduleNumber} — Lesson {activeLesson.lessonNumber}
+                      Module {activeLesson.moduleNumber} — Lesson{" "}
+                      {activeLesson.lessonNumber}
                     </p>
                     <h2 className="text-2xl font-bold text-white mb-3">
                       {activeLesson.lessonTitle}
@@ -242,24 +289,29 @@ export default function CoursePlayer() {
                     </span>
                   ) : (
                     <button
-                      onClick={() => markCompleteMutation.mutate(activeLesson._id)}
+                      onClick={() =>
+                        markCompleteMutation.mutate(activeLesson._id)
+                      }
                       disabled={markCompleteMutation.isPending}
                       className="bg-yellow-400 text-black px-4 py-2 rounded-lg font-semibold hover:bg-yellow-500 disabled:opacity-50 whitespace-nowrap"
                     >
-                      {markCompleteMutation.isPending ? "Saving..." : "Mark Complete"}
+                      {markCompleteMutation.isPending
+                        ? "Saving..."
+                        : "Mark Complete"}
                     </button>
                   )}
                 </div>
               </div>
 
               {/* Navigation */}
-              <div className="flex justify-between">
+              <div className="flex justify-between mb-6">
                 <button
                   onClick={() => {
                     const index = lessonsData.lessons.findIndex(
                       (l) => l._id === activeLesson._id
                     );
-                    if (index > 0) handleSelectLesson(lessonsData.lessons[index - 1]);
+                    if (index > 0)
+                      handleSelectLesson(lessonsData.lessons[index - 1]);
                   }}
                   className="px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg hover:bg-zinc-700 text-sm"
                 >
@@ -272,6 +324,62 @@ export default function CoursePlayer() {
                   Next Lesson
                 </button>
               </div>
+
+              {/* Take Exam CTA — shown at bottom when course is complete */}
+              {courseCompleted && !hasPassed && !isLocked && (
+                <div className="bg-yellow-950 border border-yellow-600 rounded-xl p-6 text-center">
+                  <p className="text-yellow-400 font-bold text-lg mb-2">
+                    You completed all lessons!
+                  </p>
+                  <p className="text-gray-300 text-sm mb-4">
+                    Take the final exam to earn your Creators Hub Academy certificate.
+                    You need 60% or above to pass.
+                  </p>
+                  <button
+                    onClick={() => navigate(`/dashboard/exam/${courseId}`)}
+                    className="bg-yellow-400 text-black px-8 py-3 rounded-lg font-bold hover:bg-yellow-500 transition text-lg"
+                  >
+                    Take Exam Now
+                  </button>
+                </div>
+              )}
+
+              {/* Certificate CTA — shown when passed */}
+              {hasPassed && (
+                <div className="bg-green-950 border border-green-600 rounded-xl p-6 text-center">
+                  <p className="text-green-400 font-bold text-lg mb-2">
+                    You passed the exam!
+                  </p>
+                  <p className="text-gray-300 text-sm mb-4">
+                    Congratulations! Your certificate is ready to download.
+                  </p>
+                  <button
+                    onClick={() =>
+                      navigate(`/dashboard/certificate/${courseId}`)
+                    }
+                    className="bg-green-500 text-white px-8 py-3 rounded-lg font-bold hover:bg-green-600 transition text-lg"
+                  >
+                    Get My Certificate
+                  </button>
+                </div>
+              )}
+
+              {/* Locked CTA */}
+              {isLocked && (
+                <div className="bg-red-950 border border-red-600 rounded-xl p-6 text-center">
+                  <p className="text-red-400 font-bold text-lg mb-2">
+                    Exam Locked
+                  </p>
+                  <p className="text-gray-300 text-sm">
+                    You used both exam attempts and did not pass. Please contact
+                    admin at{" "}
+                    <span className="text-yellow-400">
+                      codedonlinetraining@gmail.com
+                    </span>{" "}
+                    to reset your exam.
+                  </p>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -281,9 +389,46 @@ export default function CoursePlayer() {
           <div className="p-4 border-b border-zinc-800">
             <h3 className="text-white font-semibold">Course Content</h3>
             <p className="text-gray-400 text-sm mt-1">
-              {progressData?.completedLessons || 0} / {progressData?.totalLessons || 0} lessons completed
+              {progressData?.completedLessons || 0} /{" "}
+              {progressData?.totalLessons || 0} lessons completed
             </p>
           </div>
+
+          {/* Exam Status in Sidebar */}
+          {courseCompleted && (
+            <div className={`p-4 border-b ${
+              hasPassed
+                ? "bg-green-950 border-green-800"
+                : isLocked
+                ? "bg-red-950 border-red-800"
+                : "bg-yellow-950 border-yellow-800"
+            }`}>
+              <p className={`text-sm font-bold mb-1 ${
+                hasPassed ? "text-green-400" : isLocked ? "text-red-400" : "text-yellow-400"
+              }`}>
+                {hasPassed ? "Exam Passed" : isLocked ? "Exam Locked" : "Exam Available"}
+              </p>
+              {!hasPassed && !isLocked && (
+                <button
+                  onClick={() => navigate(`/dashboard/exam/${courseId}`)}
+                  className="w-full bg-yellow-400 text-black py-2 rounded-lg text-sm font-bold hover:bg-yellow-500 mt-1"
+                >
+                  Take Exam
+                </button>
+              )}
+              {hasPassed && (
+                <button
+                  onClick={() => navigate(`/dashboard/certificate/${courseId}`)}
+                  className="w-full bg-green-500 text-white py-2 rounded-lg text-sm font-bold hover:bg-green-600 mt-1"
+                >
+                  Get Certificate
+                </button>
+              )}
+              {isLocked && (
+                <p className="text-red-300 text-xs mt-1">Contact admin to reset</p>
+              )}
+            </div>
+          )}
 
           {modules &&
             Object.values(modules).map((module) => (

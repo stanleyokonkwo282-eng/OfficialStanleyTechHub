@@ -1,4 +1,4 @@
-import { FaBookOpen } from "react-icons/fa";
+import { FaBookOpen, FaCertificate } from "react-icons/fa";
 import { IoIosPerson } from "react-icons/io";
 import { IoDocumentsSharp } from "react-icons/io5";
 import { LuBookUser } from "react-icons/lu";
@@ -11,12 +11,16 @@ export default function DashboardSidebar() {
   const { user } = useAuth();
 
   const linkStyle = ({ isActive }) =>
-    isActive ? "text-yellow-300" : "hover:text-yellow-200";
+    isActive
+      ? "text-yellow-400 bg-zinc-800 rounded-lg px-3 py-2 block"
+      : "text-gray-300 hover:text-yellow-400 hover:bg-zinc-800 rounded-lg px-3 py-2 block transition-all";
 
   return (
-    <div className="w-3/12 bg-gray-800 text-white p-10 space-y-4 hidden md:block">
-      <h2 className="text-2xl font-semibold mb-4">Dashboard</h2>
-      <nav className="flex flex-col space-y-2">
+    <div className="w-3/12 bg-zinc-950 border-r border-zinc-800 text-white p-6 space-y-4 hidden md:block min-h-screen">
+      <h2 className="text-xl font-bold mb-6 text-white">Dashboard</h2>
+      <nav className="flex flex-col space-y-1">
+
+        {/* Admin Links */}
         {user?.role === "admin" && (
           <NavLink to="/dashboard/teachers" className={linkStyle}>
             <LinkTile title="All Teachers">
@@ -24,7 +28,6 @@ export default function DashboardSidebar() {
             </LinkTile>
           </NavLink>
         )}
-
         {user?.role === "admin" && (
           <NavLink to="/dashboard/users" className={linkStyle}>
             <LinkTile title="All Users">
@@ -32,7 +35,6 @@ export default function DashboardSidebar() {
             </LinkTile>
           </NavLink>
         )}
-
         {user?.role === "admin" && (
           <NavLink to="/dashboard/courses" className={linkStyle}>
             <LinkTile title="All Courses">
@@ -40,7 +42,15 @@ export default function DashboardSidebar() {
             </LinkTile>
           </NavLink>
         )}
+        {user?.role === "admin" && (
+          <NavLink to="/dashboard/certificates" className={linkStyle}>
+            <LinkTile title="Certificates">
+              <FaCertificate />
+            </LinkTile>
+          </NavLink>
+        )}
 
+        {/* Student Links */}
         {user?.role === "student" && (
           <NavLink to="/dashboard/courses" className={linkStyle}>
             <LinkTile title="Enrolled Courses">
@@ -49,6 +59,7 @@ export default function DashboardSidebar() {
           </NavLink>
         )}
 
+        {/* Teacher Links */}
         {user?.role === "teacher" && (
           <NavLink to="/dashboard/courses" className={linkStyle}>
             <LinkTile title="My Courses">
@@ -56,7 +67,6 @@ export default function DashboardSidebar() {
             </LinkTile>
           </NavLink>
         )}
-
         {user?.role === "teacher" && (
           <NavLink to="/dashboard/courses/add" className={linkStyle}>
             <LinkTile title="Add Course">
@@ -65,6 +75,7 @@ export default function DashboardSidebar() {
           </NavLink>
         )}
 
+        {/* All Roles */}
         <NavLink to="/dashboard/profile" className={linkStyle}>
           <LinkTile title="My Profile">
             <IoIosPerson />
@@ -77,8 +88,8 @@ export default function DashboardSidebar() {
 
 const LinkTile = ({ title, children }) => {
   return (
-    <span className="flex items-center gap-2 text-lg">
-      {children}
+    <span className="flex items-center gap-3 text-base font-medium">
+      <span className="text-lg">{children}</span>
       {title}
     </span>
   );

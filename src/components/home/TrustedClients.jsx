@@ -1,34 +1,34 @@
-const partners = [
-  "Google",
-  "Airbnb",
-  "Facebook",
-  "LinkedIn",
-  "Slack",
-  "Spotify",
-  "GitHub",
-];
-
 export default function TrustedClients() {
-  return (
-    <section className="px-6 md:px-0 py-16 md:py-32 overflow-hidden">
-      <div className="max-w-7xl mx-auto text-center">
-        <h2 className="text-3xl md:text-4xl font-bold mb-3 text-gray-800">
-          Our Partner <span className="text-indigo-600">Companies</span>
-        </h2>
-        <p className="text-gray-500 mb-10 md:mb-16 text-lg">
-          We are Trusted by industry leaders around the world
-        </p>
+  const skills = [
+    { icon: "🎨", name: "Graphic Design" },
+    { icon: "🎬", name: "Video Editing" },
+    { icon: "📱", name: "Social Media" },
+    { icon: "🤖", name: "AI Tools" },
+    { icon: "💻", name: "Web Design" },
+    { icon: "📈", name: "Digital Marketing" },
+    { icon: "✍️", name: "Copywriting" },
+    { icon: "📧", name: "Email Marketing" },
+    { icon: "🛒", name: "E-Commerce" },
+    { icon: "🎙️", name: "Podcasting" },
+  ];
 
-        <div className="flex flex-wrap justify-center gap-5 items-center text-gray-700">
-          {partners.map((partner, index) => (
-            <div
-              key={index}
-              className="hover:bg-amber-100 transition-all duration-500 bg-gray-100 rounded p-6 flex-1"
-            >
-              <p className="text-3xl md:text-5xl font-semibold">{partner}</p>
-            </div>
-          ))}
-        </div>
+  return (
+    <section className="bg-zinc-950 border-y border-zinc-800 py-10 overflow-hidden">
+      <div className="max-w-7xl mx-auto px-6 text-center mb-6">
+        <p className="text-gray-400 text-sm uppercase tracking-widest font-semibold">
+          Skills You Will Master at Creators Hub Academy
+        </p>
+      </div>
+      <div className="flex flex-wrap justify-center gap-4 px-6">
+        {skills.map((skill, i) => (
+          <div
+            key={i}
+            className="flex items-center gap-2 bg-zinc-900 border border-zinc-700 rounded-full px-5 py-2 hover:border-yellow-400 hover:bg-zinc-800 transition"
+          >
+            <span className="text-xl">{skill.icon}</span>
+            <span className="text-white font-medium text-sm">{skill.name}</span>
+          </div>
+        ))}
       </div>
     </section>
   );

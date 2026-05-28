@@ -51,7 +51,7 @@ export default function Footer() {
           </ul>
         </div>
 
-        {/* Social + Contact */}
+        {/* Social + WhatsApp Contact Only */}
         <div>
           <h2 className="text-base font-bold mb-4 text-white uppercase tracking-wide">Connect With Us</h2>
           <div className="flex gap-3 mb-6">
@@ -76,12 +76,20 @@ export default function Footer() {
               <FaTwitter />
             </a>
           </div>
-          <div className="text-sm text-gray-400 space-y-1">
-            <p>📞 <span className="text-white">08134438808</span></p>
-            <p>🏦 Opay: <span className="text-white">8134438808</span></p>
-            <p>🏦 Polaris: <span className="text-white">3046748449</span></p>
-            <p className="text-xs text-gray-500 mt-2">Nonso Stanley Okonkwo</p>
-          </div>
+
+          {/* WhatsApp CTA button only — no bank details */}
+          <a
+            href="https://wa.me/2348134438808"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded-xl font-semibold text-sm transition w-full justify-center"
+          >
+            <FaWhatsapp className="text-lg" />
+            Chat Us on WhatsApp
+          </a>
+          <p className="text-gray-500 text-xs mt-3 text-center">
+            For certificate payment and enquiries
+          </p>
         </div>
       </div>
 

@@ -1,59 +1,91 @@
-import { FaCertificate, FaClock, FaUserFriends, FaVideo } from "react-icons/fa";
-
 export default function WhyChoose() {
+  const features = [
+    {
+      icon: "🎬",
+      title: "YouTube Video Lessons",
+      description:
+        "Watch high-quality video lessons embedded directly in the platform. Learn at your own pace and resume exactly where you stopped.",
+    },
+    {
+      icon: "📜",
+      title: "Verified Certificates",
+      description:
+        "Complete your course, pass the exam, and earn a certificate verified worldwide for just ₦10,000. Recognized by employers globally.",
+    },
+    {
+      icon: "🆓",
+      title: "100% Free Access",
+      description:
+        "All 25 courses are completely free with coupon code CREATOR. No hidden fees, no credit card required. Just learn and grow.",
+    },
+    {
+      icon: "📊",
+      title: "Progress Tracking",
+      description:
+        "Track your learning progress with lesson completion markers and a visual progress bar. Never lose your place again.",
+    },
+    {
+      icon: "📝",
+      title: "Course Exams",
+      description:
+        "Test your knowledge with 20-question multiple choice exams after completing each course. Pass with 60% to earn your certificate.",
+    },
+    {
+      icon: "📱",
+      title: "Learn Anywhere",
+      description:
+        "Access your courses from any device — phone, tablet, or computer. Learn on your commute, at home, or anywhere you have internet.",
+    },
+    {
+      icon: "🏆",
+      title: "Digital Skills Focus",
+      description:
+        "Every course is designed around profitable, in-demand digital skills that help you earn money online as a Nigerian creator.",
+    },
+    {
+      icon: "🤝",
+      title: "Community Support",
+      description:
+        "Join a community of Nigerian digital creators. Get support, share your work, and grow together with like-minded learners.",
+    },
+  ];
+
   return (
-    <section className="bg-black py-16 md:py-32 px-6">
-      <div className="max-w-7xl mx-auto text-center">
-        <h2 className="text-4xl font-bold text-white mb-6">
-          Why Choose{" "}
-          <span className="text-yellow-400">Creators Hub Academy?</span>
-        </h2>
-        <p className="text-gray-400 mb-10 max-w-2xl mx-auto text-lg">
-          Thousands of learners trust Creators Hub Academy for its premium
-          content, expert mentors, and career‑focused learning tools.
-        </p>
+    <section className="bg-black py-16 md:py-24 px-6">
+      <div className="max-w-7xl mx-auto">
+        <div className="text-center mb-12">
+          <p className="text-yellow-400 text-sm font-semibold uppercase tracking-widest mb-2">
+            Why We Are Different
+          </p>
+          <h2 className="text-4xl font-black text-white mb-4">
+            Why Choose{" "}
+            <span className="text-yellow-400">Creators Hub Academy?</span>
+          </h2>
+          <p className="text-gray-400 max-w-2xl mx-auto text-lg">
+            Built specifically for Nigerian digital creators who want to learn
+            profitable skills, earn internationally, and build a future online.
+          </p>
+        </div>
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {/* 1. Interactive Video Courses */}
-          <Card
-            title="Interactive Video Courses"
-            description="Engage with high-quality videos, quizzes, and projects that help you apply what you learn."
-          >
-            <FaVideo className="text-6xl text-yellow-400 mx-auto mb-4" />
-          </Card>
-
-          {/* 2. Verified Certificates */}
-          <Card
-            title="Verified Certificates"
-            description="Earn recognized certificates to showcase your new skills and boost your resume."
-          >
-            <FaCertificate className="text-6xl text-yellow-400 mx-auto mb-4" />
-          </Card>
-
-          {/* 3. 1-on-1 Mentor Support */}
-          <Card
-            title="1-on-1 Mentor Support"
-            description="Get personalized feedback and career advice directly from industry experts."
-          >
-            <FaUserFriends className="text-6xl text-yellow-400 mx-auto mb-4" />
-          </Card>
-
-          {/* 4. Learn Anytime */}
-          <Card
-            title="Learn Anytime"
-            description="Access your courses anytime, anywhere — perfect for busy professionals and freelancers."
-          >
-            <FaClock className="text-6xl text-yellow-400 mx-auto mb-4" />
-          </Card>
+          {features.map((feature, i) => (
+            <div
+              key={i}
+              className="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 hover:border-yellow-400/50 hover:shadow-lg hover:shadow-yellow-400/10 transition group"
+            >
+              <div className="text-5xl mb-4 group-hover:scale-110 transition-transform">
+                {feature.icon}
+              </div>
+              <h4 className="font-bold text-lg text-white mb-3">
+                {feature.title}
+              </h4>
+              <p className="text-gray-400 text-sm leading-relaxed">
+                {feature.description}
+              </p>
+            </div>
+          ))}
         </div>
       </div>
     </section>
   );
 }
-
-const Card = ({ title, description, children }) => (
-  <div className="bg-zinc-950 border border-zinc-800 p-6 rounded-xl shadow hover:shadow-lg hover:shadow-yellow-400/20 transition">
-    {children}
-    <h4 className="font-bold text-xl mb-4 text-white">{title}</h4>
-    <p className="text-gray-400">{description}</p>
-  </div>
-);

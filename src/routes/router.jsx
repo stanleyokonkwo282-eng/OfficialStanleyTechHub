@@ -1,10 +1,12 @@
 import { createBrowserRouter } from "react-router";
 import App from "../App";
 import About from "../pages/About";
+import ManageCertificates from "../pages/admin/ManageCertificates";
 import ManageCourses from "../pages/admin/ManageCourses";
 import ManageTeachers from "../pages/admin/ManageTeachers";
 import ManageUsers from "../pages/admin/ManageUsers";
 import BeTeacher from "../pages/BeTeacher";
+import CategoryCourses from "../pages/CategoryCourses";
 import CourseDash from "../pages/common/CourseDash";
 import DashBoard from "../pages/common/Dashboard";
 import Profile from "../pages/common/Profile";
@@ -14,17 +16,18 @@ import Home from "../pages/Home";
 import Login from "../pages/Login";
 import NotFound from "../pages/NotFound";
 import Signup from "../pages/Signup";
+import Unauthorized from "../pages/Unauthorized";
+import VerifyCertificate from "../pages/VerifyCertificate";
 import CourseAssignments from "../pages/student/CourseAssignments";
+import Certificate from "../pages/student/Certificate";
 import CourseDetails from "../pages/student/CourseDetails";
 import CoursePlayer from "../pages/student/CoursePlayer";
-import Certificate from "../pages/student/Certificate";
+import ExamPage from "../pages/student/ExamPage";
 import StripeWrapper from "../pages/student/StripeWrapper";
 import AddCourse from "../pages/teacher/AddCourse";
 import CourseSummery from "../pages/teacher/CourseSummery";
-import Unauthorized from "../pages/Unauthorized";
 import PrivateRoute from "./PrivateRoute";
 import RoleBasedRoute from "./RoleBasedRoute";
-import CategoryCourses from "../pages/CategoryCourses";
 
 const router = createBrowserRouter([
   {
@@ -38,6 +41,8 @@ const router = createBrowserRouter([
       { path: "/category/:category", element: <CategoryCourses /> },
       { path: "/login", element: <Login /> },
       { path: "/signup", element: <Signup /> },
+      { path: "/verify/:certificateId", element: <VerifyCertificate /> },
+      { path: "/verify", element: <VerifyCertificate /> },
       {
         path: "/become-teacher",
         element: <PrivateRoute><BeTeacher /></PrivateRoute>,
@@ -105,6 +110,14 @@ const router = createBrowserRouter([
               </RoleBasedRoute>
             ),
           },
+          {
+            path: "certificates",
+            element: (
+              <RoleBasedRoute allowedRoles={["admin"]}>
+                <ManageCertificates />
+              </RoleBasedRoute>
+            ),
+          },
         ],
       },
       {
@@ -120,6 +133,14 @@ const router = createBrowserRouter([
         element: (
           <PrivateRoute>
             <Certificate />
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "/dashboard/exam/:courseId",
+        element: (
+          <PrivateRoute>
+            <ExamPage />
           </PrivateRoute>
         ),
       },
