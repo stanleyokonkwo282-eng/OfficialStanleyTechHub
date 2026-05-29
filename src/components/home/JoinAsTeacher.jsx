@@ -1,6 +1,5 @@
 import { FaChalkboardTeacher, FaGlobe, FaMoneyBillWave } from "react-icons/fa";
 import { Link } from "react-router";
-import teacherImg from "../../assets/images/teacher.jpg";
 
 export default function JoinAsTeacher() {
   return (
@@ -9,21 +8,25 @@ export default function JoinAsTeacher() {
         {/* Left - Image */}
         <div>
           <img
-            src={teacherImg}
-            alt="Inspire as a teacher"
+            src="https://i.postimg.cc/6pxqKkV6/WhatsApp-Image-2026-05-21-at-5-03-29-PM.jpg"
+            alt="Stanley Okonkwo - Founder, Creators Hub Academy"
             className="w-full h-auto rounded-xl shadow-md shadow-yellow-400/20 border border-zinc-800"
           />
         </div>
 
         {/* Right - Content */}
         <div>
-          <h2 className="text-4xl font-bold text-white mb-5">
+          <h2 className="text-4xl font-bold text-white mb-2">
             Share Your Knowledge
           </h2>
+          <p className="text-yellow-400 font-semibold mb-4">
+            Stanley Okonkwo — Founder, Creators Hub Academy
+          </p>
           <p className="text-gray-400 mb-5 text-lg text-justify">
             Join thousands of passionate educators who are empowering the next
             generation of developers, designers, and freelancers. Whether you're
-            an expert in tech, design, or freelancing.
+            an expert in tech, design, or freelancing — your knowledge can
+            change lives.
           </p>
 
           <div className="space-y-3 mb-8">
