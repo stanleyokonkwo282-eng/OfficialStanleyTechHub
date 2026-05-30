@@ -5,6 +5,7 @@ import ManageCertificates from "../pages/admin/ManageCertificates";
 import ManageCourses from "../pages/admin/ManageCourses";
 import ManageTeachers from "../pages/admin/ManageTeachers";
 import ManageUsers from "../pages/admin/ManageUsers";
+import ManageVisits from "../pages/admin/ManageVisits";  // ✅ ADDED
 import BeTeacher from "../pages/BeTeacher";
 import CategoryCourses from "../pages/CategoryCourses";
 import CourseDash from "../pages/common/CourseDash";
@@ -115,6 +116,14 @@ const router = createBrowserRouter([
             element: (
               <RoleBasedRoute allowedRoles={["admin"]}>
                 <ManageCertificates />
+              </RoleBasedRoute>
+            ),
+          },
+          {
+            path: "visits",                                    // ✅ ADDED
+            element: (
+              <RoleBasedRoute allowedRoles={["admin"]}>
+                <ManageVisits />
               </RoleBasedRoute>
             ),
           },

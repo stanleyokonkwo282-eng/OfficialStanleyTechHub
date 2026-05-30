@@ -7,7 +7,7 @@ export default function About() {
 
   return (
     <div className="space-y-20 bg-black">
-
+      {/* Hero Section */}
       <section className="relative bg-black text-white py-32 px-6 text-center border-b border-zinc-800">
         <h1 className="text-5xl md:text-6xl font-extrabold mb-4 drop-shadow-lg">
           About <span className="text-yellow-400">Creators Hub Academy</span>
@@ -19,9 +19,14 @@ export default function About() {
         </p>
       </section>
 
+      {/* Who We Are */}
       <section className="max-w-6xl mx-auto px-6 md:flex md:items-center md:gap-12">
         <div className="md:w-1/2">
-          <img src={teamImage} alt="Our Team" className="rounded-lg shadow-lg w-full border border-zinc-800" />
+          <img
+            src={teamImage}
+            alt="Our Team"
+            className="rounded-lg shadow-lg w-full border border-zinc-800"
+          />
         </div>
         <div className="md:w-1/2 mt-8 md:mt-0">
           <h2 className="text-3xl font-bold mb-4 text-yellow-400">Who We Are</h2>
@@ -39,6 +44,7 @@ export default function About() {
         </div>
       </section>
 
+      {/* What We Do */}
       <section className="bg-zinc-950 py-16 px-6 border-t border-b border-zinc-800">
         <div className="max-w-6xl mx-auto text-center md:text-left md:flex md:gap-12 md:items-center">
           <div className="md:w-1/2">
@@ -55,34 +61,45 @@ export default function About() {
             </p>
           </div>
           <div className="md:w-1/2 mt-8 md:mt-0">
-            <img src={learningImage} alt="Learning" className="rounded-lg shadow-lg w-full border border-zinc-800" />
+            <img
+              src={learningImage}
+              alt="Learning"
+              className="rounded-lg shadow-lg w-full border border-zinc-800"
+            />
           </div>
         </div>
       </section>
 
+      {/* How It Works */}
       <section className="max-w-6xl mx-auto px-6">
         <h2 className="text-3xl font-bold mb-8 text-yellow-400 text-center">
           How Creators Hub Academy Works
         </h2>
         <div className="grid md:grid-cols-3 gap-8">
           <div className="bg-zinc-950 border border-zinc-800 p-6 rounded-lg shadow hover:shadow-yellow-400/20 transition">
-            <h3 className="font-semibold text-xl mb-2 text-yellow-400">Sign Up and Explore</h3>
+            <h3 className="font-semibold text-xl mb-2 text-yellow-400">
+              Sign Up and Explore
+            </h3>
             <p className="text-gray-300">
               Create your free account and browse courses in graphic design, AI
               tools, content creation, video editing, and more.
             </p>
           </div>
           <div className="bg-zinc-950 border border-zinc-800 p-6 rounded-lg shadow hover:shadow-yellow-400/20 transition">
-            <h3 className="font-semibold text-xl mb-2 text-yellow-400">Enroll and Learn</h3>
+            <h3 className="font-semibold text-xl mb-2 text-yellow-400">
+              Enroll and Learn
+            </h3>
             <p className="text-gray-300">
               Use coupon code{" "}
-              <span className="text-yellow-400 font-bold">CREATOR</span>{" "}
-              to enroll in any course for FREE. Watch lessons, track your progress,
-              and resume exactly where you stopped.
+              <span className="text-yellow-400 font-bold">CREATOR</span> to enroll
+              in any course for FREE. Watch lessons, track your progress, and resume
+              exactly where you stopped.
             </p>
           </div>
           <div className="bg-zinc-950 border border-zinc-800 p-6 rounded-lg shadow hover:shadow-yellow-400/20 transition">
-            <h3 className="font-semibold text-xl mb-2 text-yellow-400">Get Certified and Grow</h3>
+            <h3 className="font-semibold text-xl mb-2 text-yellow-400">
+              Get Certified and Grow
+            </h3>
             <p className="text-gray-300">
               Complete a course and earn a verified certificate recognised worldwide
               for just 10,000 Naira. Add it to your CV and LinkedIn with confidence.
@@ -91,11 +108,12 @@ export default function About() {
         </div>
       </section>
 
+      {/* Contact Section */}
       <section className="bg-zinc-900 py-16 px-6 text-white border-t border-zinc-800">
         <div className="max-w-7xl mx-auto md:flex md:items-center md:gap-12">
           <div className="md:w-1/2">
             <img
-              src="https://i.postimg.cc/6pxqKkV6/WhatsApp-Image-2026-05-21-at-5-03-29-PM.jpg"
+              src="https://i.postimg.cc/rpdX9MYf/MD.png"
               alt="Stanley Okonkwo - Founder"
               className="rounded-lg shadow-lg w-full border border-zinc-700"
             />
@@ -111,7 +129,12 @@ export default function About() {
             <div className="space-y-3 text-gray-300">
               <p>
                 <span className="text-white font-medium">WhatsApp: </span>
-                <a href={waLink} target="_blank" rel="noreferrer" className="text-yellow-400 hover:underline">
+                <a
+                  href={waLink}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="text-yellow-400 hover:underline"
+                >
                   {phone}
                 </a>
               </p>
@@ -139,7 +162,6 @@ export default function About() {
           </div>
         </div>
       </section>
-
     </div>
   );
 }
