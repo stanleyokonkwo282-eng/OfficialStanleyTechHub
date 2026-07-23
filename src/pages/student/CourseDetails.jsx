@@ -52,7 +52,7 @@ const CourseDetails = () => {
     onSuccess: () => {
       toast.success("🎉 You are now enrolled! Start learning for free!");
       queryClient.invalidateQueries(["enrollment", id, user?.email]);
-      setTimeout(() => navigate(`/dashboard/learn/${id}`), 1500);
+      window.location.href = `/dashboard/learn/${id}`;
     },
     onError: (err) => {
       const message = err?.response?.data?.message;
