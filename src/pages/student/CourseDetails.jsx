@@ -57,7 +57,7 @@ const CourseDetails = () => {
     onError: (err) => {
       const message = err?.response?.data?.message;
       if (message === "Already enrolled in this course") {
-        navigate(`/dashboard/learn/${id}`);
+        window.location.href = `/dashboard/learn/${id}`;
       } else {
         toast.error("Enrollment failed. Please try again.");
       }
@@ -66,7 +66,10 @@ const CourseDetails = () => {
 
   const handleEnrollClick = () => {
     if (!user) { navigate("/login"); return; }
-    if (isEnrolled) { navigate(`/dashboard/learn/${id}`); return; }
+    if (isEnrolled) {
+      window.location.href = `/dashboard/learn/${id}`;
+      return;
+    }
     enrollMutation.mutate();
   };
 
