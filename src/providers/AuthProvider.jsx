@@ -7,7 +7,7 @@ import {
   signOut,
   updateProfile,
 } from "firebase/auth";
-import { createContext, useEffect, useState } from "react";
+import { createContext, useEffect, useState, useMemo } from "react"; // 1. Added useMemo here
 import { auth, provider } from "../../firebase.config";
 
 const AuthContext = createContext(null);
@@ -94,7 +94,8 @@ const AuthProvider = ({ children }) => {
     ]
   );
 
-  return <AuthContext value={authInfo}>{children}</AuthContext>;
+  // 2. Fixed syntax: Must be AuthContext.Provider
+  return <AuthContext.Provider value={authInfo}>{children}</AuthContext.Provider>;
 };
 
 export { AuthContext, AuthProvider };
