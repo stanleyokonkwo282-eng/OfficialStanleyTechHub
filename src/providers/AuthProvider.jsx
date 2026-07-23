@@ -7,7 +7,7 @@ import {
   signOut,
   updateProfile,
 } from "firebase/auth";
-import { createContext, useEffect, useState, useMemo } from "react";
+import { createContext, useEffect, useState } from "react";
 import { auth, provider } from "../../firebase.config";
 
 const AuthContext = createContext(null);
@@ -94,7 +94,7 @@ const AuthProvider = ({ children }) => {
     ]
   );
 
-  return <AuthContext.Provider value={authInfo}>{children}</AuthContext.Provider>;
+  return <AuthContext value={authInfo}>{children}</AuthContext>;
 };
 
 export { AuthContext, AuthProvider };
