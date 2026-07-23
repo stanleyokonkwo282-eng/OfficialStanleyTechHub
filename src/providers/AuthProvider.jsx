@@ -7,7 +7,7 @@ import {
   signOut,
   updateProfile,
 } from "firebase/auth";
-import { createContext, useEffect, useState } from "react";
+import { createContext, useEffect, useState, useMemo } from "react";
 import { auth, provider } from "../../firebase.config";
 
 const AuthContext = createContext(null);
@@ -69,19 +69,32 @@ const AuthProvider = ({ children }) => {
     return signOut(auth);
   };
 
-  const authInfo = {
-    user,
-    setUser,
-    firebaseUser,
-    isUserLoading,
-    userSignup,
-    userLogin,
-    userLogout,
-    loginWithGoogle,
-    updateUserProfile,
-  };
+  const authInfo = useMemo(
+    () => ({
+      user,
+      setUser,
+      firebaseUser,
+      isUserLoading,
+      userSignup,
+      userLogin,
+      userLogout,
+      loginWithGoogle,
+      updateUserProfile,
+    }),
+    [
+      user,
+      setUser,
+      firebaseUser,
+      isUserLoading,
+      userSignup,
+      userLogin,
+      userLogout,
+      loginWithGoogle,
+      updateUserProfile,
+    ]
+  );
 
-  return <AuthContext value={authInfo}>{children}</AuthContext>;
+  return <AuthContext.Provider value={authInfo}>{children}</AuthContext.Provider>;
 };
 
 export { AuthContext, AuthProvider };

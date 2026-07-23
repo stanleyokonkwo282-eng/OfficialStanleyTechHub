@@ -1,6 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
-import { useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { toast } from "react-toastify";
 import LoaderSpinner from "../../components/common/LoaderSpinner";
@@ -14,9 +13,6 @@ const CourseDetails = () => {
   const { user } = useAuth();
   const axiosSecure = useAxiosSecure();
   const queryClient = useQueryClient();
-  const [showCouponModal, setShowCouponModal] = useState(false);
-  const [couponInput, setCouponInput] = useState("");
-  const [couponError, setCouponError] = useState("");
 
   const { data: course, isLoading: courseLoading } = useQuery({
     queryKey: ["course", id],
@@ -56,27 +52,21 @@ const CourseDetails = () => {
     onSuccess: () => {
       toast.success("🎉 You are now enrolled! Start learning for free!");
       queryClient.invalidateQueries(["enrollment", id, user?.email]);
-      setShowCouponModal(false);
       setTimeout(() => navigate(`/dashboard/learn/${id}`), 1500);
     },
-    onError: () => {
-      toast.error("Enrollment failed. Please try again.");
+    onError: (err) => {
+      const message = err?.response?.data?.message;
+      if (message === "Already enrolled in this course") {
+        navigate(`/dashboard/learn/${id}`);
+      } else {
+        toast.error("Enrollment failed. Please try again.");
+      }
     },
   });
 
   const handleEnrollClick = () => {
     if (!user) { navigate("/login"); return; }
     if (isEnrolled) { navigate(`/dashboard/learn/${id}`); return; }
-    setShowCouponModal(true);
-  };
-
-  const handleCouponSubmit = () => {
-    const code = couponInput.trim().toUpperCase();
-    if (code !== "CREATOR") {
-      setCouponError("Invalid coupon code. Please try again.");
-      return;
-    }
-    setCouponError("");
     enrollMutation.mutate();
   };
 
@@ -122,9 +112,9 @@ const CourseDetails = () => {
             </div>
 
             <div className="bg-green-950 border border-green-800 rounded-xl p-4">
-              <p className="text-green-400 font-semibold text-sm">🎁 This course is FREE with coupon code</p>
+              <p className="text-green-400 font-semibold text-sm">🎁 This course is completely FREE</p>
               <p className="text-green-300 text-sm mt-1">
-                Enter code <strong>CREATOR</strong> when enrolling to get full access at no cost.
+                Click <strong>Enroll for FREE</strong> to get full access at no cost.
                 Only pay ₦10,000 when you want your verified certificate.
               </p>
             </div>
@@ -138,7 +128,7 @@ const CourseDetails = () => {
                   <p className="text-gray-500 line-through text-xl">${course.price}</p>
                 </div>
                 <p className="text-gray-400 text-sm mt-1">
-                  Use coupon <span className="text-yellow-400 font-bold">CREATOR</span> to enroll free
+                  Full access at no cost — certificate costs <span className="text-yellow-400 font-bold">₦10,000</span>
                 </p>
               </div>
 
@@ -173,11 +163,18 @@ const CourseDetails = () => {
 
               <button
                 onClick={handleEnrollClick}
-                className={`w-full py-3 rounded-lg font-bold text-base transition-all duration-200 ${
-                  isEnrolled ? "bg-green-500 hover:bg-green-600 text-white" : "bg-yellow-400 hover:bg-yellow-500 text-black"
+                disabled={enrollMutation.isPending}
+                className={`w-full py-3 rounded-lg font-bold text-base transition-all duration-200 disabled:opacity-50 ${
+                  isEnrolled
+                    ? "bg-green-500 hover:bg-green-600 text-white"
+                    : "bg-yellow-400 hover:bg-yellow-500 text-black"
                 }`}
               >
-                {isEnrolled ? "▶ Continue Learning" : "Enroll for FREE"}
+                {enrollMutation.isPending
+                  ? "Enrolling..."
+                  : isEnrolled
+                  ? "▶ Continue Learning"
+                  : "Enroll for FREE"}
               </button>
 
               {isEnrolled && (
@@ -191,45 +188,6 @@ const CourseDetails = () => {
           </div>
         </div>
       </div>
-
-      {/* Coupon Modal */}
-      {showCouponModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-80 flex items-center justify-center z-50 px-4">
-          <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-8 w-full max-w-md">
-            <h3 className="text-white text-2xl font-bold mb-2">Enter Coupon Code</h3>
-            <p className="text-gray-400 text-sm mb-6">
-              Enter your coupon code to get free access to this course.
-              Contact us on WhatsApp or social media to get the code.
-            </p>
-
-            <input
-              type="text"
-              value={couponInput}
-              onChange={(e) => { setCouponInput(e.target.value); setCouponError(""); }}
-              placeholder="Enter coupon code e.g. CREATOR"
-              className="w-full bg-zinc-900 border border-zinc-700 text-white placeholder-zinc-500 rounded-lg px-4 py-3 focus:outline-none focus:border-yellow-400 mb-3 uppercase"
-            />
-
-            {couponError && <p className="text-red-400 text-sm mb-3">{couponError}</p>}
-
-            <div className="flex gap-3">
-              <button
-                onClick={() => { setShowCouponModal(false); setCouponInput(""); setCouponError(""); }}
-                className="flex-1 py-3 bg-zinc-800 border border-zinc-700 text-white rounded-lg hover:bg-zinc-700 font-semibold"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleCouponSubmit}
-                disabled={enrollMutation.isPending}
-                className="flex-1 py-3 bg-yellow-400 text-black rounded-lg hover:bg-yellow-500 font-bold disabled:opacity-50"
-              >
-                {enrollMutation.isPending ? "Enrolling..." : "Apply & Enroll"}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

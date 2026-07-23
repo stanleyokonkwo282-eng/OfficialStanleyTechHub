@@ -18,8 +18,14 @@ const useAxiosSecure = () => {
     // Add request interceptor
     requestInterceptorId.current = axiosSecure.interceptors.request.use(
       async (config) => {
-        if (user?.accessToken) {
-          config.headers.Authorization = `Bearer ${user.accessToken}`;
+        if (user) {
+          try {
+            // ✅ Get Firebase ID token (not accessToken)
+            const token = await user.getIdToken();
+            config.headers.Authorization = `Bearer ${token}`;
+          } catch (err) {
+            console.error("Failed to get ID token", err);
+          }
         }
         return config;
       },
@@ -37,7 +43,6 @@ const useAxiosSecure = () => {
         } else if (status === 401) {
           userLogout()
             .then(() => {
-              // ✅ Eject interceptors when logout
               if (requestInterceptorId.current !== null) {
                 axiosSecure.interceptors.request.eject(
                   requestInterceptorId.current
@@ -57,7 +62,6 @@ const useAxiosSecure = () => {
       }
     );
 
-    // cleanup if component unmounts
     return () => {
       if (requestInterceptorId.current !== null) {
         axiosSecure.interceptors.request.eject(requestInterceptorId.current);
@@ -72,4 +76,3 @@ const useAxiosSecure = () => {
 };
 
 export default useAxiosSecure;
-

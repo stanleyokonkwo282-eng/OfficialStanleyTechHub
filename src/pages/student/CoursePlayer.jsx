@@ -18,6 +18,7 @@ export default function CoursePlayer() {
   const [watchPercent, setWatchPercent] = useState(0);
   const [videoDuration, setVideoDuration] = useState(0);
   const [videoError, setVideoError] = useState(false);
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const watchInterval = useRef(null);
   const completedRef = useRef(false);
   const lastKnownTime = useRef(0);
@@ -213,6 +214,7 @@ export default function CoursePlayer() {
     setVideoDuration(0);
     completedRef.current = false;
     lastKnownTime.current = 0;
+    setDrawerOpen(false); // Close drawer on mobile after selection
   };
 
   const goToNextLesson = () => {
@@ -265,43 +267,43 @@ export default function CoursePlayer() {
 
   return (
     <div className="min-h-screen bg-black text-white flex flex-col">
-      {/* Top bar unchanged */}
-      <div className="bg-zinc-950 border-b border-zinc-800 px-6 py-3 flex items-center justify-between">
-        <button onClick={() => navigate(-1)} className="text-yellow-400 hover:underline text-sm">← Back</button>
-        <div className="flex items-center gap-3">
-          <span className="text-gray-400 text-sm">{progressData?.percentage || 0}% Complete</span>
-          <div className="w-40 bg-zinc-700 rounded-full h-2">
+      {/* Top bar (responsive) */}
+      <div className="bg-zinc-950 border-b border-zinc-800 px-4 py-3 flex items-center justify-between flex-wrap gap-2">
+        <button onClick={() => navigate(-1)} className="text-yellow-400 text-sm md:text-base">← Back</button>
+        <div className="flex items-center gap-2 md:gap-3">
+          <span className="text-gray-400 text-xs md:text-sm">{progressData?.percentage || 0}%</span>
+          <div className="w-24 md:w-40 bg-zinc-700 rounded-full h-2">
             <div className="bg-yellow-400 h-2 rounded-full transition-all" style={{ width: `${progressData?.percentage || 0}%` }} />
           </div>
           {courseCompleted && hasPassed && (
-            <button onClick={() => navigate(`/dashboard/certificate/${courseId}`)} className="bg-green-500 text-white px-3 py-1 rounded text-sm font-semibold">
-              Get Certificate
+            <button onClick={() => navigate(`/dashboard/certificate/${courseId}`)} className="bg-green-500 text-white px-2 py-1 md:px-3 rounded text-xs md:text-sm">
+              Certificate
             </button>
           )}
           {courseCompleted && !hasPassed && !isLocked && (
-            <button onClick={() => navigate(`/dashboard/exam/${courseId}`)} className="bg-yellow-400 text-black px-3 py-1 rounded text-sm font-semibold">
-              Take Exam
+            <button onClick={() => navigate(`/dashboard/exam/${courseId}`)} className="bg-yellow-400 text-black px-2 py-1 md:px-3 rounded text-xs md:text-sm">
+              Exam
             </button>
           )}
-          {courseCompleted && isLocked && <span className="text-red-400 text-sm font-semibold">Exam Locked</span>}
+          {courseCompleted && isLocked && <span className="text-red-400 text-xs md:text-sm">Exam Locked</span>}
         </div>
       </div>
 
-      {/* Completion banner unchanged */}
+      {/* Completion banner */}
       {courseCompleted && (
-        <div className={`px-6 py-3 text-center text-sm font-semibold ${
+        <div className={`px-4 py-2 text-center text-xs md:text-sm font-semibold ${
           hasPassed ? "bg-green-900 text-green-300" : isLocked ? "bg-red-900 text-red-300" : "bg-yellow-900 text-yellow-300"
         }`}>
           {hasPassed ? "You passed! Click Get Certificate." : isLocked ? "Exam locked. Contact admin." : "All lessons done! Take the exam."}
         </div>
       )}
 
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 overflow-hidden relative">
         {/* Video area */}
-        <div className="flex-1 flex flex-col p-6 overflow-y-auto">
+        <div className="flex-1 flex flex-col p-4 overflow-y-auto">
           {activeLesson ? (
             <>
-              <div className="w-full aspect-video bg-zinc-900 rounded-xl overflow-hidden mb-6">
+              <div className="w-full aspect-video bg-zinc-900 rounded-xl overflow-hidden mb-4">
                 {!useFallback ? (
                   <div id={playerContainerId} className="w-full h-full" />
                 ) : (
@@ -322,9 +324,9 @@ export default function CoursePlayer() {
               </div>
 
               {playerReady && !isCompleted(activeLesson._id) && watchPercent > 0 && watchPercent < 90 && (
-                <div className="mb-4">
+                <div className="mb-3">
                   <div className="flex justify-between text-xs text-gray-400 mb-1">
-                    <span>Auto‑complete at 90% watched (no skipping)</span>
+                    <span>Auto‑complete at 90%</span>
                     <span>{Math.floor(watchPercent)}%</span>
                   </div>
                   <div className="w-full bg-zinc-700 rounded-full h-1.5">
@@ -333,27 +335,27 @@ export default function CoursePlayer() {
                 </div>
               )}
 
-              <div className="bg-zinc-950 border border-zinc-800 rounded-xl p-6 mb-4">
-                <div className="flex items-start justify-between gap-4">
+              <div className="bg-zinc-950 border border-zinc-800 rounded-xl p-4 mb-4">
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
                   <div>
-                    <p className="text-yellow-400 text-sm mb-1">Module {activeLesson.moduleNumber} — Lesson {activeLesson.lessonNumber}</p>
-                    <h2 className="text-2xl font-bold text-white mb-3">{activeLesson.lessonTitle}</h2>
-                    <p className="text-gray-300 leading-relaxed">{activeLesson.lessonDescription}</p>
+                    <p className="text-yellow-400 text-xs sm:text-sm">Module {activeLesson.moduleNumber} — Lesson {activeLesson.lessonNumber}</p>
+                    <h2 className="text-lg sm:text-xl font-bold text-white mt-1">{activeLesson.lessonTitle}</h2>
+                    <p className="text-gray-300 text-sm sm:text-base mt-2">{activeLesson.lessonDescription}</p>
                   </div>
                   {isCompleted(activeLesson._id) && (
-                    <span className="bg-green-500 text-white text-xs px-3 py-1 rounded-full">✓ Completed</span>
+                    <span className="bg-green-500 text-white text-xs px-3 py-1 rounded-full whitespace-nowrap">✓ Completed</span>
                   )}
                 </div>
               </div>
 
-              <div className="flex justify-between">
+              <div className="flex justify-between gap-3">
                 <button onClick={() => {
                   const idx = lessonsData.lessons.findIndex(l => l._id === activeLesson._id);
                   if (idx > 0) handleSelectLesson(lessonsData.lessons[idx - 1]);
-                }} className="px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg hover:bg-zinc-700">
+                }} className="px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg hover:bg-zinc-700 text-sm md:text-base flex-1 md:flex-none">
                   ← Previous
                 </button>
-                <button onClick={goToNextLesson} className="px-4 py-2 bg-yellow-400 text-black rounded-lg hover:bg-yellow-500 font-semibold">
+                <button onClick={goToNextLesson} className="px-4 py-2 bg-yellow-400 text-black rounded-lg hover:bg-yellow-500 font-semibold text-sm md:text-base flex-1 md:flex-none">
                   Next →
                 </button>
               </div>
@@ -363,20 +365,34 @@ export default function CoursePlayer() {
           )}
         </div>
 
-        {/* Sidebar unchanged */}
-        <div className="w-80 bg-zinc-950 border-l border-zinc-800 overflow-y-auto flex-shrink-0">
-          <div className="p-4 border-b border-zinc-800">
+        {/* Floating drawer button (mobile only) */}
+        <button
+          onClick={() => setDrawerOpen(!drawerOpen)}
+          className="md:hidden fixed bottom-4 right-4 bg-yellow-400 text-black p-3 rounded-full shadow-lg z-20"
+        >
+          📚 Course Content
+        </button>
+
+        {/* Sidebar as drawer on mobile */}
+        <div className={`
+          fixed md:static top-0 right-0 h-full w-80 bg-zinc-950 border-l border-zinc-800 overflow-y-auto z-30 transition-transform duration-300
+          ${drawerOpen ? 'translate-x-0' : 'translate-x-full md:translate-x-0'}
+        `}>
+          <div className="p-4 border-b border-zinc-800 flex justify-between items-center">
             <h3 className="text-white font-semibold">Course Content</h3>
-            <p className="text-gray-400 text-sm mt-1">{progressData?.completedLessons || 0} / {progressData?.totalLessons || 0}</p>
+            <button onClick={() => setDrawerOpen(false)} className="md:hidden text-gray-400 text-xl">&times;</button>
+          </div>
+          <div className="p-2">
+            <p className="text-gray-400 text-sm mb-2">{progressData?.completedLessons || 0} / {progressData?.totalLessons || 0} lessons</p>
           </div>
           {modules && Object.values(modules).map(module => (
             <div key={module.moduleNumber} className="border-b border-zinc-800">
-              <button onClick={() => toggleModule(module.moduleNumber)} className="w-full p-4 text-left flex justify-between hover:bg-zinc-900">
+              <button onClick={() => toggleModule(module.moduleNumber)} className="w-full p-3 text-left flex justify-between items-center hover:bg-zinc-900">
                 <div>
                   <p className="text-white font-medium text-sm">Module {module.moduleNumber}</p>
                   <p className="text-gray-400 text-xs">{module.moduleTitle}</p>
                 </div>
-                <span>{expandedModules[module.moduleNumber] ? "▲" : "▼"}</span>
+                <span className="text-gray-400">{expandedModules[module.moduleNumber] ? "▲" : "▼"}</span>
               </button>
               {expandedModules[module.moduleNumber] && (
                 <div className="bg-zinc-900">
@@ -384,7 +400,7 @@ export default function CoursePlayer() {
                     <button
                       key={lesson._id}
                       onClick={() => handleSelectLesson(lesson)}
-                      className={`w-full p-3 pl-6 text-left flex items-center gap-3 hover:bg-zinc-800 border-t border-zinc-800 ${
+                      className={`w-full p-3 pl-6 text-left flex items-center gap-2 hover:bg-zinc-800 border-t border-zinc-800 ${
                         activeLesson?._id === lesson._id ? "bg-zinc-800 border-l-2 border-l-yellow-400" : ""
                       }`}
                     >
