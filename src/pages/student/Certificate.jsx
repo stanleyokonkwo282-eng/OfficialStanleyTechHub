@@ -156,6 +156,11 @@ export default function Certificate() {
 
     return (
       <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6">
+        <style>{`
+          @import url('https://fonts.googleapis.com/css2?family=Great+Vibes&family=Playfair+Display:wght@600;700;800&family=Cormorant+Garamond:wght@500;600&display=swap');
+          .cert-print-colors { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        `}</style>
+
         <div className="flex gap-4 mb-8 print:hidden">
           <button onClick={() => navigate(-1)} className="px-4 py-2 bg-zinc-800 border border-zinc-700 text-white rounded-lg hover:bg-zinc-700">
             Back
@@ -165,32 +170,146 @@ export default function Certificate() {
           </button>
         </div>
 
-        <div ref={certRef} className="w-full max-w-3xl bg-white text-black rounded-2xl shadow-2xl overflow-hidden print:shadow-none">
-          <div className="h-4" style={{ background: "linear-gradient(90deg, #1a1a2e, #7c3aed, #f59e0b)" }} />
-          <div className="p-12 flex flex-col items-center text-center">
-            <img src="/logo.png" alt="Creators Hub Academy" className="w-24 h-24 object-contain mb-4" />
-            <p className="text-purple-700 font-semibold text-sm tracking-widest uppercase mb-2">Creators Hub Academy</p>
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">Certificate of Completion</h1>
-            <div className="w-24 h-1 mb-6" style={{ background: "linear-gradient(90deg, #7c3aed, #f59e0b)" }} />
-            <p className="text-gray-500 text-lg mb-2">This is to certify that</p>
-            <h2 className="text-4xl font-bold mb-2" style={{ color: "#7c3aed" }}>{studentName}</h2>
-            <p className="text-gray-500 text-lg mb-2">has successfully completed the course</p>
-            <h3 className="text-2xl font-bold text-gray-900 mb-2">{courseName}</h3>
-            <p className="text-gray-400 text-sm mb-2">Issued on {completionDate}</p>
-            <p className="text-gray-400 text-xs mb-6">Certificate ID: <strong>{certificate.certificateId}</strong></p>
-            <div className="w-full border-t border-gray-200 mb-6" />
-            <div className="flex flex-col items-center mb-4">
-              <p className="text-xl font-bold text-gray-900">Stanley Okonkwo</p>
-              <div className="w-40 border-t border-gray-400 my-2" />
-              <p className="text-gray-500 text-sm">Founder, Creators Hub Academy</p>
+        {/* Outer gradient border frame */}
+        <div
+          ref={certRef}
+          className="cert-print-colors w-full max-w-3xl rounded-2xl shadow-2xl print:shadow-none relative"
+          style={{
+            background: "linear-gradient(135deg, #f59e0b, #7c3aed 45%, #1a1a2e)",
+            padding: "10px",
+          }}
+        >
+          {/* Inner ivory card */}
+          <div
+            className="relative rounded-xl overflow-hidden"
+            style={{
+              background: "#fdfaf2",
+              backgroundImage:
+                "radial-gradient(circle, rgba(124,58,237,0.06) 1px, transparent 1px)",
+              backgroundSize: "18px 18px",
+              border: "2px solid #e8d9b5",
+            }}
+          >
+            {/* Corner flourishes */}
+            <svg className="absolute top-3 left-3 w-16 h-16 opacity-70" viewBox="0 0 90 90" fill="none">
+              <path d="M5 85 C5 40, 40 5, 85 5" stroke="#c99a3f" strokeWidth="2" fill="none" />
+              <circle cx="15" cy="75" r="3" fill="#f59e0b" />
+              <circle cx="32" cy="52" r="2" fill="#7c3aed" />
+              <circle cx="55" cy="30" r="2.5" fill="#f59e0b" />
+            </svg>
+            <svg className="absolute top-3 right-3 w-16 h-16 opacity-70" viewBox="0 0 90 90" fill="none" style={{ transform: "scaleX(-1)" }}>
+              <path d="M5 85 C5 40, 40 5, 85 5" stroke="#c99a3f" strokeWidth="2" fill="none" />
+              <circle cx="15" cy="75" r="3" fill="#f59e0b" />
+              <circle cx="32" cy="52" r="2" fill="#7c3aed" />
+              <circle cx="55" cy="30" r="2.5" fill="#f59e0b" />
+            </svg>
+            <svg className="absolute bottom-3 left-3 w-16 h-16 opacity-70" viewBox="0 0 90 90" fill="none" style={{ transform: "scaleY(-1)" }}>
+              <path d="M5 85 C5 40, 40 5, 85 5" stroke="#c99a3f" strokeWidth="2" fill="none" />
+              <circle cx="15" cy="75" r="3" fill="#f59e0b" />
+              <circle cx="32" cy="52" r="2" fill="#7c3aed" />
+              <circle cx="55" cy="30" r="2.5" fill="#f59e0b" />
+            </svg>
+            <svg className="absolute bottom-3 right-3 w-16 h-16 opacity-70" viewBox="0 0 90 90" fill="none" style={{ transform: "scale(-1,-1)" }}>
+              <path d="M5 85 C5 40, 40 5, 85 5" stroke="#c99a3f" strokeWidth="2" fill="none" />
+              <circle cx="15" cy="75" r="3" fill="#f59e0b" />
+              <circle cx="32" cy="52" r="2" fill="#7c3aed" />
+              <circle cx="55" cy="30" r="2.5" fill="#f59e0b" />
+            </svg>
+
+            <div className="px-10 py-12 sm:px-14 sm:py-14 flex flex-col items-center text-center relative z-10">
+              <img src="/logo.png" alt="Creators Hub Academy" className="w-20 h-20 object-contain mb-3" />
+              <p
+                className="text-sm tracking-[0.3em] uppercase mb-1"
+                style={{ color: "#7c3aed", fontFamily: "'Cormorant Garamond', serif", fontWeight: 600 }}
+              >
+                Creators Hub Academy
+              </p>
+
+              <h1
+                className="text-3xl sm:text-4xl mb-4"
+                style={{ fontFamily: "'Playfair Display', serif", fontWeight: 800, color: "#1a1a2e" }}
+              >
+                Certificate of Completion
+              </h1>
+
+              <div
+                className="mb-8 px-8 py-2"
+                style={{
+                  background: "linear-gradient(90deg, #7c3aed, #f59e0b)",
+                  clipPath: "polygon(3% 0%, 97% 0%, 100% 50%, 97% 100%, 3% 100%, 0% 50%)",
+                }}
+              >
+                <p className="text-white text-xs sm:text-sm font-bold tracking-widest uppercase">
+                  This certificate is proudly presented to
+                </p>
+              </div>
+
+              <h2
+                className="text-3xl sm:text-5xl mb-4"
+                style={{
+                  fontFamily: "'Playfair Display', serif",
+                  fontWeight: 700,
+                  background: "linear-gradient(90deg, #7c3aed, #c026d3)",
+                  WebkitBackgroundClip: "text",
+                  WebkitTextFillColor: "transparent",
+                }}
+              >
+                {studentName}
+              </h2>
+
+              <p className="text-gray-600 text-base sm:text-lg mb-2" style={{ fontFamily: "'Cormorant Garamond', serif" }}>
+                for successfully completing the course
+              </p>
+              <h3 className="text-xl sm:text-2xl font-bold mb-6" style={{ color: "#1a1a2e" }}>
+                {courseName}
+              </h3>
+
+              <div className="flex flex-wrap justify-center gap-x-10 gap-y-1 mb-8 text-sm text-gray-500">
+                <p>Issued on <strong style={{ color: "#1a1a2e" }}>{completionDate}</strong></p>
+                <p>Certificate ID: <strong style={{ color: "#1a1a2e" }}>{certificate.certificateId}</strong></p>
+              </div>
+
+              <div className="w-full border-t mb-8" style={{ borderColor: "#e8d9b5" }} />
+
+              <div className="w-full flex flex-col sm:flex-row items-center justify-between gap-8">
+                {/* Seal */}
+                <div className="flex flex-col items-center">
+                  <div
+                    className="w-24 h-24 rounded-full flex flex-col items-center justify-center border-4"
+                    style={{
+                      borderColor: "#f59e0b",
+                      background: "linear-gradient(135deg, #7c3aed, #1a1a2e)",
+                    }}
+                  >
+                    <span className="text-yellow-400 text-2xl">✦</span>
+                    <span className="text-white text-[9px] font-bold tracking-widest mt-1">VERIFIED</span>
+                  </div>
+                  <p className="text-gray-500 text-[10px] tracking-widest uppercase mt-2">Official Seal</p>
+                </div>
+
+                {/* Signature */}
+                <div className="flex flex-col items-center">
+                  <p
+                    style={{
+                      fontFamily: "'Great Vibes', cursive",
+                      fontSize: "2.75rem",
+                      color: "#1a1a2e",
+                      lineHeight: 1,
+                    }}
+                  >
+                    Stanley Okonkwo
+                  </p>
+                  <div className="w-48 border-t mt-2 mb-2" style={{ borderColor: "#1a1a2e" }} />
+                  <p className="text-gray-600 text-sm font-semibold">Stanley Okonkwo</p>
+                  <p className="text-gray-500 text-xs">Founder, Creators Hub Academy</p>
+                </div>
+              </div>
+
+              <p className="text-gray-400 text-[10px] tracking-[0.25em] uppercase mt-10">
+                Learn · Grow · Create · Build Your Future Together
+              </p>
             </div>
-            <div className="bg-green-50 border border-green-200 rounded-lg px-6 py-3 mb-4">
-              <p className="text-green-700 text-sm font-semibold">VERIFIED CERTIFICATE</p>
-              <p className="text-green-600 text-xs">ID: {certificate.certificateId}</p>
-            </div>
-            <p className="text-gray-400 text-xs tracking-widest uppercase">Learn - Grow - Create - Build Your Future Together</p>
           </div>
-          <div className="h-4" style={{ background: "linear-gradient(90deg, #f59e0b, #7c3aed, #1a1a2e)" }} />
         </div>
       </div>
     );
