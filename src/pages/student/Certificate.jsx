@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useRef, useState } from "react";
-import { useNavigate, useParams } from "react-router";
+import { useEffect, useRef, useState } from "react";
+import { useNavigate, useParams, useSearchParams } from "react-router";
 import { toast } from "react-toastify";
 import LoaderSpinner from "../../components/common/LoaderSpinner";
 import useAuth from "../../hooks/useAuth";
@@ -15,6 +15,8 @@ export default function Certificate() {
   const certRef = useRef();
   const [proofUrl, setProofUrl] = useState("");
   const [showPaymentForm, setShowPaymentForm] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const paystackReference = searchParams.get("reference");
 
   const { data: courseData, isLoading: courseLoading } = useQuery({
     queryKey: ["course", courseId],
@@ -63,7 +65,66 @@ export default function Certificate() {
     },
   });
 
-  if (courseLoading || progressLoading || certLoading) return <LoaderSpinner />;
+  const paystackInitMutation = useMutation({
+    mutationFn: async () => {
+      const res = await axiosSecure.post("/certificates/paystack/initialize", {
+        studentEmail: user?.email,
+        studentName: user?.displayName || user?.email?.split("@")[0],
+        courseId,
+        courseName: courseData?.course?.title,
+        callbackUrl: `${window.location.origin}/dashboard/certificate/${courseId}`,
+      });
+      return res.data;
+    },
+    onSuccess: (data) => {
+      if (data?.authorizationUrl) {
+        window.location.href = data.authorizationUrl;
+      } else if (data?.alreadyApproved) {
+        toast.success("Certificate already approved!");
+        queryClient.invalidateQueries(["certificate", courseId, user?.email]);
+      } else {
+        toast.error(data?.message || "Could not start payment.");
+      }
+    },
+    onError: () => {
+      toast.error("Could not start payment. Please try again.");
+    },
+  });
+
+  const paystackVerifyMutation = useMutation({
+    mutationFn: async (reference) => {
+      const res = await axiosSecure.get(`/certificates/paystack/verify/${reference}`);
+      return res.data;
+    },
+    onSuccess: (data) => {
+      if (data.success) {
+        toast.success("Payment verified! Your certificate is ready.");
+        queryClient.invalidateQueries(["certificate", courseId, user?.email]);
+      } else {
+        toast.error(data.message || "Payment verification failed. Contact support if you were charged.");
+      }
+      const nextParams = new URLSearchParams(searchParams);
+      nextParams.delete("reference");
+      setSearchParams(nextParams, { replace: true });
+    },
+    onError: () => {
+      toast.error("Could not verify payment. Contact support if you were charged.");
+      const nextParams = new URLSearchParams(searchParams);
+      nextParams.delete("reference");
+      setSearchParams(nextParams, { replace: true });
+    },
+  });
+
+  useEffect(() => {
+    if (paystackReference && !paystackVerifyMutation.isPending && !paystackVerifyMutation.isSuccess) {
+      paystackVerifyMutation.mutate(paystackReference);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [paystackReference]);
+
+  if (courseLoading || progressLoading || certLoading || paystackVerifyMutation.isPending) {
+    return <LoaderSpinner />;
+  }
 
   const courseName = courseData?.course?.title || "Digital Skills Course";
   const studentName = user?.displayName || user?.email?.split("@")[0] || "Student";
@@ -135,7 +196,7 @@ export default function Certificate() {
     );
   }
 
-  // Certificate pending review
+  // Certificate pending review (manual bank transfer, awaiting admin)
   if (certificate?.paymentStatus === "pending") {
     return (
       <div className="min-h-screen bg-black flex flex-col items-center justify-center gap-6 px-4">
@@ -189,7 +250,7 @@ export default function Certificate() {
     );
   }
 
-  // Course complete — show payment instructions
+  // Course complete — show payment options
   return (
     <div className="min-h-screen bg-black text-white py-10 px-4">
       <div className="max-w-2xl mx-auto">
@@ -199,6 +260,29 @@ export default function Certificate() {
           <h2 className="text-2xl font-bold text-green-400">Congratulations!</h2>
           <p className="text-green-300 mt-2">You completed <strong>{courseName}</strong></p>
           <p className="text-gray-400 text-sm mt-1">Pay ₦10,000 to receive your verified certificate</p>
+        </div>
+
+        <div className="bg-yellow-400 text-black rounded-xl p-4 text-center mb-6">
+          <p className="text-sm font-semibold">Amount to Pay</p>
+          <p className="text-4xl font-bold">₦10,000</p>
+          <p className="text-xs mt-1">Certificate verified worldwide · Unique ID issued</p>
+        </div>
+
+        <button
+          onClick={() => paystackInitMutation.mutate()}
+          disabled={paystackInitMutation.isPending}
+          className="w-full py-4 bg-green-500 text-white rounded-xl font-bold text-lg hover:bg-green-600 disabled:opacity-50 mb-3"
+        >
+          {paystackInitMutation.isPending ? "Starting payment..." : "💳 Pay ₦10,000 with Card (Instant)"}
+        </button>
+        <p className="text-gray-500 text-xs text-center mb-8">
+          Secure payment via Paystack. Your certificate unlocks immediately after payment.
+        </p>
+
+        <div className="flex items-center gap-4 mb-8">
+          <div className="flex-1 h-px bg-zinc-800" />
+          <p className="text-gray-500 text-xs uppercase">Or pay manually by bank transfer</p>
+          <div className="flex-1 h-px bg-zinc-800" />
         </div>
 
         <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 mb-6">
@@ -231,15 +315,9 @@ export default function Certificate() {
           </div>
         </div>
 
-        <div className="bg-yellow-400 text-black rounded-xl p-4 text-center mb-6">
-          <p className="text-sm font-semibold">Amount to Transfer</p>
-          <p className="text-4xl font-bold">₦10,000</p>
-          <p className="text-xs mt-1">Certificate verified worldwide · Unique ID issued</p>
-        </div>
-
         {!showPaymentForm ? (
-          <button onClick={() => setShowPaymentForm(true)} className="w-full py-4 bg-yellow-400 text-black rounded-xl font-bold text-lg hover:bg-yellow-500">
-            I Have Paid — Submit Proof
+          <button onClick={() => setShowPaymentForm(true)} className="w-full py-4 bg-zinc-800 border border-zinc-700 text-white rounded-xl font-bold text-lg hover:bg-zinc-700">
+            I Have Paid by Bank Transfer — Submit Proof
           </button>
         ) : (
           <div className="bg-zinc-950 border border-zinc-800 rounded-xl p-6">
