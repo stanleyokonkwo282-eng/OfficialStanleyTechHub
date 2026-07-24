@@ -1,78 +1,65 @@
 import axios from "axios";
-import { useEffect, useRef } from "react";
-import { useNavigate } from "react-router";
-import useAuth from "./useAuth";
+import { auth } from "../../firebase.config";
 
 const axiosSecure = axios.create({
   baseURL: import.meta.env.VITE_BASE_URL,
 });
 
-const useAxiosSecure = () => {
-  const { user, userLogout } = useAuth();
-  const navigate = useNavigate();
+// Attach the freshest Firebase ID token directly from the SDK on every
+// request. Using auth.currentUser (Firebase's live object) instead of
+// React state avoids any race where React hasn't re-rendered yet.
+axiosSecure.interceptors.request.use(
+  async (config) => {
+    const currentUser = auth.currentUser;
+    if (currentUser) {
+      try {
+        const token = await currentUser.getIdToken();
+        config.headers.Authorization = `Bearer ${token}`;
+      } catch (err) {
+        console.error("Failed to get ID token", err);
+      }
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
-  const requestInterceptorId = useRef(null);
-  const responseInterceptorId = useRef(null);
+axiosSecure.interceptors.response.use(
+  (res) => res,
+  async (error) => {
+    const status = error?.response?.status;
+    const originalRequest = error.config;
 
-  useEffect(() => {
-    // Add request interceptor
-    requestInterceptorId.current = axiosSecure.interceptors.request.use(
-      async (config) => {
-        if (user) {
-          try {
-            // ✅ Get Firebase ID token (not accessToken)
-            const token = await user.getIdToken();
-            config.headers.Authorization = `Bearer ${token}`;
-          } catch (err) {
-            console.error("Failed to get ID token", err);
-          }
+    if (status === 403) {
+      window.location.href = "/unauthorized";
+      return Promise.reject(error);
+    }
+
+    // On 401, try ONE forced token refresh + retry before giving up.
+    // This protects against a token being momentarily stale or missing
+    // right after a fresh login or page reload.
+    if (status === 401 && originalRequest && !originalRequest._retry) {
+      originalRequest._retry = true;
+      const currentUser = auth.currentUser;
+      if (currentUser) {
+        try {
+          const freshToken = await currentUser.getIdToken(true);
+          originalRequest.headers.Authorization = `Bearer ${freshToken}`;
+          return axiosSecure(originalRequest);
+        } catch (refreshErr) {
+          console.error("Token refresh failed:", refreshErr.message);
         }
-        return config;
-      },
-      (error) => Promise.reject(error)
-    );
-
-    // Add response interceptor
-    responseInterceptorId.current = axiosSecure.interceptors.response.use(
-      (res) => res,
-      (error) => {
-        const status = error?.response?.status;
-
-        if (status === 403) {
-          navigate("/unauthorized");
-        } else if (status === 401) {
-          userLogout()
-            .then(() => {
-              if (requestInterceptorId.current !== null) {
-                axiosSecure.interceptors.request.eject(
-                  requestInterceptorId.current
-                );
-              }
-              if (responseInterceptorId.current !== null) {
-                axiosSecure.interceptors.response.eject(
-                  responseInterceptorId.current
-                );
-              }
-              navigate("/login");
-            })
-            .catch(() => {});
-        }
-
-        return Promise.reject(error);
       }
-    );
+      // Refresh failed, or there's genuinely no user — real logout.
+      await auth.signOut().catch(() => {});
+      window.location.href = "/login";
+      return Promise.reject(error);
+    }
 
-    return () => {
-      if (requestInterceptorId.current !== null) {
-        axiosSecure.interceptors.request.eject(requestInterceptorId.current);
-      }
-      if (responseInterceptorId.current !== null) {
-        axiosSecure.interceptors.response.eject(responseInterceptorId.current);
-      }
-    };
-  }, [user, userLogout, navigate]);
+    return Promise.reject(error);
+  }
+);
 
-  return axiosSecure;
-};
+const useAxiosSecure = () => axiosSecure;
 
 export default useAxiosSecure;
