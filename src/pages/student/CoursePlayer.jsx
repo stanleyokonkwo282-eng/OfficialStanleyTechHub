@@ -19,11 +19,28 @@ export default function CoursePlayer() {
   const [videoDuration, setVideoDuration] = useState(0);
   const [videoError, setVideoError] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  
+  // --- AI Assistant States ---
+  const [aiDrawerOpen, setAiDrawerOpen] = useState(false);
+  const [chatMessages, setChatMessages] = useState([
+    { sender: "ai", text: "Hello! I'm your AI Course Assistant. Ask me anything about this lesson or course!" }
+  ]);
+  const [chatInput, setChatInput] = useState("");
+  const [aiLoading, setAiLoading] = useState(false);
+  const chatEndRef = useRef(null);
+
   const watchInterval = useRef(null);
   const completedRef = useRef(false);
   const lastKnownTime = useRef(0);
   const playerContainerId = "youtube-player-container";
   const apiLoadedRef = useRef(false);
+
+  // --- Scroll chat to bottom ---
+  useEffect(() => {
+    if (aiDrawerOpen && chatEndRef.current) {
+      chatEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [chatMessages, aiDrawerOpen]);
 
   // --- Data fetching (unchanged) ---
   const { data: lessonsData, isLoading: lessonsLoading } = useQuery({
@@ -177,15 +194,14 @@ export default function CoursePlayer() {
       }
     };
 
-    // Mobile inline playback: add 'playsinline: 1'
     const newPlayer = new window.YT.Player(playerContainerId, {
       videoId: youtubeId,
       playerVars: {
         rel: 0,
         modestbranding: 1,
         start: activeLesson.lastWatchedTime || 0,
-        playsinline: 1,          // ✅ Mobile inline playback
-        controls: 1,             // Show player controls
+        playsinline: 1,
+        controls: 1,
       },
       events: { onReady: onPlayerReady, onStateChange: onPlayerStateChange },
     });
@@ -214,7 +230,7 @@ export default function CoursePlayer() {
     setVideoDuration(0);
     completedRef.current = false;
     lastKnownTime.current = 0;
-    setDrawerOpen(false); // Close drawer on mobile after selection
+    setDrawerOpen(false);
   };
 
   const goToNextLesson = () => {
@@ -232,6 +248,31 @@ export default function CoursePlayer() {
   };
 
   const isCompleted = (lessonId) => progressData?.completedLessonIds?.includes(lessonId);
+
+  // --- Send message to AI Assistant ---
+  const handleSendAiMessage = async (e) => {
+    e.preventDefault();
+    if (!chatInput.trim() || aiLoading) return;
+
+    const userMessage = chatInput.trim();
+    setChatInput("");
+    setChatMessages(prev => [...prev, { sender: "user", text: userMessage }]);
+    setAiLoading(true);
+
+    try {
+      const res = await axiosSecure.post("/ai/chat", {
+        prompt: userMessage,
+        lessonTitle: activeLesson?.lessonTitle || "General",
+        lessonDescription: activeLesson?.lessonDescription || "",
+        courseId,
+      });
+      setChatMessages(prev => [...prev, { sender: "ai", text: res.data.reply }]);
+    } catch (err) {
+      setChatMessages(prev => [...prev, { sender: "ai", text: "Sorry, I encountered an error connecting to the AI. Please try again." }]);
+    } finally {
+      setAiLoading(false);
+    }
+  };
 
   const modules = lessonsData?.lessons?.reduce((acc, lesson) => {
     const key = lesson.moduleNumber;
@@ -260,14 +301,12 @@ export default function CoursePlayer() {
   const attempts = attemptsData?.attempts || [];
   const hasPassed = attempts.some(a => a.passed);
   const isLocked = attempts.length >= 2 && !hasPassed;
-
-  // Fallback iframe (with playsinline for mobile)
   const useFallback = videoError && activeLesson;
   const fallbackYoutubeId = getYouTubeId(activeLesson?.videoUrl);
 
   return (
     <div className="min-h-screen bg-black text-white flex flex-col">
-      {/* Top bar (responsive) */}
+      {/* Top bar */}
       <div className="bg-zinc-950 border-b border-zinc-800 px-4 py-3 flex items-center justify-between flex-wrap gap-2">
         <button onClick={() => navigate(-1)} className="text-yellow-400 text-sm md:text-base">← Back</button>
         <div className="flex items-center gap-2 md:gap-3">
@@ -365,13 +404,64 @@ export default function CoursePlayer() {
           )}
         </div>
 
-        {/* Floating drawer button (mobile only) */}
+        {/* Floating AI Assistant Button */}
+        <button
+          onClick={() => setAiDrawerOpen(!aiDrawerOpen)}
+          className="fixed bottom-16 right-4 bg-purple-600 text-white p-3 rounded-full shadow-lg z-20 flex items-center gap-2 hover:bg-purple-700 transition"
+        >
+          🤖 AI Tutor
+        </button>
+
+        {/* Floating Course Content Drawer Button (mobile only) */}
         <button
           onClick={() => setDrawerOpen(!drawerOpen)}
           className="md:hidden fixed bottom-4 right-4 bg-yellow-400 text-black p-3 rounded-full shadow-lg z-20"
         >
-          📚 Course Content
+          📚 Content
         </button>
+
+        {/* AI Assistant Chat Drawer */}
+        {aiDrawerOpen && (
+          <div className="fixed inset-y-0 right-0 w-80 sm:w-96 bg-zinc-950 border-l border-zinc-800 flex flex-col z-40 shadow-2xl">
+            <div className="p-4 border-b border-zinc-800 flex justify-between items-center bg-zinc-900">
+              <h3 className="text-white font-semibold flex items-center gap-2">🤖 AI Course Assistant</h3>
+              <button onClick={() => setAiDrawerOpen(false)} className="text-gray-400 text-xl hover:text-white">&times;</button>
+            </div>
+            
+            <div className="flex-1 p-4 overflow-y-auto space-y-3">
+              {chatMessages.map((msg, idx) => (
+                <div key={idx} className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}>
+                  <div className={`max-w-[85%] p-3 rounded-xl text-sm ${
+                    msg.sender === "user" ? "bg-yellow-400 text-black font-medium" : "bg-zinc-900 text-gray-200 border border-zinc-800"
+                  }`}>
+                    {msg.text}
+                  </div>
+                </div>
+              ))}
+              {aiLoading && (
+                <div className="flex justify-start">
+                  <div className="bg-zinc-900 text-gray-400 p-3 rounded-xl text-sm border border-zinc-800 animate-pulse">
+                    Thinking...
+                  </div>
+                </div>
+              )}
+              <div ref={chatEndRef} />
+            </div>
+
+            <form onSubmit={handleSendAiMessage} className="p-3 border-t border-zinc-800 bg-zinc-900 flex gap-2">
+              <input
+                type="text"
+                value={chatInput}
+                onChange={(e) => setChatInput(e.target.value)}
+                placeholder="Ask a question about this lesson..."
+                className="flex-1 bg-zinc-800 border border-zinc-700 text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-yellow-400"
+              />
+              <button type="submit" disabled={aiLoading} className="bg-yellow-400 text-black px-4 py-2 rounded-lg font-semibold text-sm hover:bg-yellow-500 disabled:opacity-50">
+                Send
+              </button>
+            </form>
+          </div>
+        )}
 
         {/* Sidebar as drawer on mobile */}
         <div className={`
