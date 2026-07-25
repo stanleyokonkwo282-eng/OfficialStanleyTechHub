@@ -69,6 +69,31 @@ export default function CoursePlayer() {
     enabled: !!user?.email,
   });
 
+  // --- Fetch saved AI chat history for the active lesson ---
+  const { data: chatHistoryData } = useQuery({
+    queryKey: ["ai-chat-history", courseId, activeLesson?._id, user?.email],
+    queryFn: async () => {
+      const res = await axiosSecure.get(
+        `/ai/chat-history/${courseId}/${activeLesson._id}/${user?.email}`
+      );
+      return res.data;
+    },
+    enabled: !!activeLesson?._id && !!user?.email,
+  });
+
+  // --- Populate chat with saved history when lesson changes ---
+  useEffect(() => {
+    if (chatHistoryData?.messages?.length > 0) {
+      setChatMessages(
+        chatHistoryData.messages.map((m) => ({ sender: m.sender, text: m.text }))
+      );
+    } else {
+      setChatMessages([
+        { sender: "ai", text: "Hello! I'm your AI Course Assistant. Ask me anything about this lesson or course!" }
+      ]);
+    }
+  }, [chatHistoryData, activeLesson?._id]);
+
   // --- Mutations ---
   const markCompleteMutation = useMutation({
     mutationFn: async (lessonId) => {
@@ -265,6 +290,8 @@ export default function CoursePlayer() {
         lessonTitle: activeLesson?.lessonTitle || "General",
         lessonDescription: activeLesson?.lessonDescription || "",
         courseId,
+        lessonId: activeLesson?._id,
+        studentEmail: user?.email,
       });
       setChatMessages(prev => [...prev, { sender: "ai", text: res.data.reply }]);
     } catch (err) {
