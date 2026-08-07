@@ -1,0 +1,40 @@
+const coursesFallback = [
+  {
+    _id: 'fallback-1',
+    title: 'Graphic Design Masterclass',
+    description: 'Learn the foundations of design, branding, and visual storytelling.',
+    image: 'https://images.unsplash.com/photo-1516321497487-e288fb19713f?w=800&q=80',
+    price: 0,
+    category: 'Design',
+    instructorName: 'Creators Hub Academy',
+    instructor: [{ displayName: 'Creators Hub Academy' }],
+    rating: 5,
+    totalEnrollments: 128,
+  },
+  {
+    _id: 'fallback-2',
+    title: 'AI Productivity Toolkit',
+    description: 'Use AI tools to automate content creation, research, and marketing tasks.',
+    image: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800&q=80',
+    price: 49,
+    category: 'Artificial Intelligence',
+    instructorName: 'Creators Hub Academy',
+    instructor: [{ displayName: 'Creators Hub Academy' }],
+    rating: 4.8,
+    totalEnrollments: 96,
+  },
+  {
+    _id: 'fallback-3',
+    title: 'Video Editing for Creators',
+    description: 'Master editing workflows for short-form videos and social media content.',
+    image: 'https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=800&q=80',
+    price: 29,
+    category: 'Video Production',
+    instructorName: 'Creators Hub Academy',
+    instructor: [{ displayName: 'Creators Hub Academy' }],
+    rating: 4.7,
+    totalEnrollments: 84,
+  },
+];
+
+export default coursesFallback;

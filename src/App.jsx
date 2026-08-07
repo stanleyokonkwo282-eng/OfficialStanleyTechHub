@@ -9,6 +9,9 @@ import GoToTopButton from "./components/common/GoToTopButton";
 import Navbar from "./components/common/Navbar";
 import { AuthProvider } from "./providers/AuthProvider";
 
+// ⚠️ STEP 2 TEST: This line checks if your environment keys are working
+console.log("TESTING BACKEND URL:", import.meta.env.VITE_BASE_URL);
+
 function App() {
   return (
     <AuthProvider>
