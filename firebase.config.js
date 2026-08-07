@@ -12,9 +12,9 @@ const firebaseConfig = {
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
 };
 
-// Initialize Firebase
+// Step-by-Step Instance Instantiation Sequence
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
-const provider = new GoogleAuthProvider(app);
+const provider = new GoogleAuthProvider(); // Corrected syntax (no argument needed)
 
 export { auth, provider };
