@@ -189,6 +189,7 @@ export default function CoursePlayer() {
     if (!window.YT) {
       const tag = document.createElement("script");
       tag.src = "https://www.youtube.com/iframe_api";
+      tag.crossOrigin = "anonymous";
       const firstScriptTag = document.getElementsByTagName("script")[0];
       firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
       apiLoadedRef.current = true;
@@ -209,17 +210,17 @@ export default function CoursePlayer() {
     completedRef.current = false;
     lastKnownTime.current = 0;
 
-    // If player already exists, just load new video
-    if (playerRef.current && playerRef.current.loadVideoById) {
-      const startTime = activeLesson.lastWatchedTime || 0;
-      playerRef.current.loadVideoById({ videoId: youtubeId, startSeconds: startTime });
-      if (startTime > 0) {
-        toast.info(`Resuming from ${Math.floor(startTime / 60)}:${Math.floor(startTime % 60)}`, { autoClose: 2000 });
+    // Cleanup previous player instance if it exists
+    if (playerRef.current && playerRef.current.destroy) {
+      try {
+        playerRef.current.destroy();
+      } catch (err) {
+        console.debug("Player cleanup error:", err);
       }
-      return;
+      playerRef.current = null;
     }
 
-    // Create new player with mobile-friendly settings
+    // Create new player with safe parameters
     const onPlayerReady = (event) => {
       setPlayerReady(true);
       const startTime = activeLesson.lastWatchedTime || 0;
@@ -228,6 +229,12 @@ export default function CoursePlayer() {
         lastKnownTime.current = startTime;
       }
       playerRef.current = event.target;
+    };
+
+    const onPlayerError = (event) => {
+      console.error("YouTube Player Error:", event.data);
+      setVideoError(true);
+      toast.error("Video playback failed. Please try again or contact support.");
     };
 
     const onPlayerStateChange = (event) => {
@@ -239,7 +246,6 @@ export default function CoursePlayer() {
             let currentTime = playerRef.current.getCurrentTime();
             const duration = playerRef.current.getDuration();
             if (duration > 0 && lastKnownTime.current > 0) {
-              // Forward seek lock
               if (currentTime > lastKnownTime.current + 1.0) {
                 playerRef.current.seekTo(lastKnownTime.current, true);
                 toast.warning("Forward skipping is not allowed", { autoClose: 1500 });
@@ -268,22 +274,34 @@ export default function CoursePlayer() {
       }
     };
 
-    const newPlayer = new window.YT.Player(playerContainerId, {
-      videoId: youtubeId,
-      playerVars: {
-        rel: 0,
-        modestbranding: 1,
-        start: activeLesson.lastWatchedTime || 0,
-        playsinline: 1,
-        controls: 1,
-        disablekb: 1,
-      },
-      events: { onReady: onPlayerReady, onStateChange: onPlayerStateChange },
-    });
-    playerRef.current = newPlayer;
-    setPlayerReady(false);
+    // Small delay to ensure container is ready
+    const timer = setTimeout(() => {
+      try {
+        const newPlayer = new window.YT.Player(playerContainerId, {
+          videoId: youtubeId,
+          playerVars: {
+            rel: 0,
+            modestbranding: 1,
+            start: activeLesson.lastWatchedTime || 0,
+            playsinline: 1,
+            controls: 1,
+            fs: 0,
+            iv_load_policy: 3,
+            enablejsapi: 1,
+            origin: typeof window !== "undefined" ? window.location.origin : undefined,
+          },
+          events: { onReady: onPlayerReady, onStateChange: onPlayerStateChange, onError: onPlayerError },
+        });
+        playerRef.current = newPlayer;
+        setPlayerReady(false);
+      } catch (err) {
+        console.error("Failed to create YouTube player:", err);
+        setVideoError(true);
+      }
+    }, 100);
 
     return () => {
+      clearTimeout(timer);
       if (watchInterval.current) clearInterval(watchInterval.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -293,7 +311,13 @@ export default function CoursePlayer() {
   useEffect(() => {
     return () => {
       if (watchInterval.current) clearInterval(watchInterval.current);
-      if (playerRef.current && playerRef.current.destroy) playerRef.current.destroy();
+      if (playerRef.current && playerRef.current.destroy) {
+        try {
+          playerRef.current.destroy();
+        } catch (err) {
+          console.debug("Final player cleanup error:", err);
+        }
+      }
     };
   }, []);
 
