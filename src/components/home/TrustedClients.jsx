@@ -19,6 +19,14 @@ export default function TrustedClients() {
           Skills You Will Master at Creators Hub Academy
         </p>
       </div>
+      <div className="max-w-7xl mx-auto px-6 mb-10">
+        <img
+          src="/banner-hero.jpg"
+          alt="Students learning digital skills"
+          className="w-full max-h-80 object-cover rounded-2xl border border-zinc-800"
+          loading="lazy"
+        />
+      </div>
       <div className="flex flex-wrap justify-center gap-4 px-6">
         {skills.map((skill, i) => (
           <div

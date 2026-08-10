@@ -86,18 +86,31 @@ export default function Banner() {
             </div>
           </div>
 
-          {/* Right — Hero Image */}
-          <div className="flex items-center justify-center">
-            <div className="relative">
-              <img
-                src="/banner-hero.jpg"
-                alt="Students learning digital skills"
-                className="w-full max-w-lg rounded-2xl shadow-2xl border border-zinc-800 object-cover"
-                loading="eager"
-              />
-              <div className="absolute -bottom-4 -right-4 bg-yellow-400 text-black px-6 py-3 rounded-xl font-bold text-lg shadow-lg">
-                FREE Courses
-              </div>
+          {/* Right — Stats Cards */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 hover:border-yellow-400/50 transition">
+              <div className="text-4xl mb-2">🎨</div>
+              <p className="text-3xl font-black text-yellow-400">25+</p>
+              <p className="text-white font-semibold">Digital Courses</p>
+              <p className="text-gray-400 text-sm mt-1">All completely FREE</p>
+            </div>
+            <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 hover:border-yellow-400/50 transition">
+              <div className="text-4xl mb-2">🎓</div>
+              <p className="text-3xl font-black text-yellow-400">90+</p>
+              <p className="text-white font-semibold">Video Lessons</p>
+              <p className="text-gray-400 text-sm mt-1">Step-by-step tutorials</p>
+            </div>
+            <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 hover:border-yellow-400/50 transition">
+              <div className="text-4xl mb-2">📜</div>
+              <p className="text-3xl font-black text-yellow-400">₦10K</p>
+              <p className="text-white font-semibold">Certificate</p>
+              <p className="text-gray-400 text-sm mt-1">Verified worldwide</p>
+            </div>
+            <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 hover:border-yellow-400/50 transition">
+              <div className="text-4xl mb-2">🏆</div>
+              <p className="text-3xl font-black text-yellow-400">100%</p>
+              <p className="text-white font-semibold">Free Access</p>
+              <p className="text-gray-400 text-sm mt-1">Use code: CREATOR</p>
             </div>
           </div>
         </div>
