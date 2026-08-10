@@ -312,13 +312,27 @@ The AI Course Assistant uses **Google Gemini Flash** (`gemini-flash-latest`) via
 
 ## 14. YouTube Video Integration
 
-- Lessons use YouTube video URLs
-- Custom player with resume-from-last-watched
+- Lessons use YouTube video URLs via IFrame API
+- Player initialization includes proper cleanup, error handling, and secure parameters
+- `youtube-nocookie.com` used for privacy-friendly embedding
+- Keyboard controls disabled via UI (not invalid API params)
 - Forward seek is locked to ensure students watch full content
 - Auto-completion at 90% watch time
 - Supports standard YouTube URLs, embed URLs, Shorts, and youtu.be links
+- **Leave-page warning**: Browser prompts user if they try to leave while video is playing
+- **Resume memory**: Watch position is explicitly saved before switching lessons and on pause/end
 
 ---
+
+## 15. PDF Document Summary
+
+The PDF summary view provides a professional lesson brief when no actual PDF is available:
+- Gradient header with lesson title and module info
+- "About This Lesson" brief using `lessonDescription`
+- Core Principles and Practice Guide cards
+- Lesson metadata grid (Module, Lesson, Duration, Format)
+- Print and AI Tutor actions in footer
+- If a real PDF URL exists (`/uploads/` or HTTP), it loads in an iframe with loading/error states
 
 ## 15. Important Code Conventions
 
@@ -341,6 +355,7 @@ The AI Course Assistant uses **Google Gemini Flash** (`gemini-flash-latest`) via
    - Fixed `Math.max()` empty array crash in ExamPage
    - Fixed `NaN.toFixed()` crash in CourseCard and renderStars
    - Fixed direct DOM manipulation in Certificate.jsx
+   - Fixed YouTube playback errors by removing invalid API parameters and adding proper error handling
 
 2. **Auth & Security**:
    - Replaced raw `axios` with `useAxiosSecure` in VerifyCertificate, PlatformStats, CourseDetails
@@ -349,7 +364,7 @@ The AI Course Assistant uses **Google Gemini Flash** (`gemini-flash-latest`) via
 
 3. **UI/UX Improvements**:
    - Redesigned About page with professional founder section
-   - Added Stanley Okonkwo biography and contact cards
+   - Added Stanley Chukwunonso Okonkwo biography and contact cards
    - Updated home screen with new banner image in TrustedClients section
    - Updated "Share Your Knowledge" section with new founder photo
    - Redesigned certificate with premium layout and actual signature image
@@ -357,6 +372,8 @@ The AI Course Assistant uses **Google Gemini Flash** (`gemini-flash-latest`) via
    - Improved PDF loading with spinner, error state, and fallback UI
    - Added ARIA labels and roles for accessibility
    - Fixed all course images with fallbacks and error handlers
+   - Redesigned PDF summary with professional lesson brief UI
+   - Added beforeunload warning when video is playing
 
 4. **Performance**:
    - Memoized module computation and event handlers in CoursePlayer
@@ -376,13 +393,20 @@ The AI Course Assistant uses **Google Gemini Flash** (`gemini-flash-latest`) via
    - Added `pdfUrl` field to Lesson model for PDF document support
    - Renamed `Course.thumbnail` to `Course.image` for frontend consistency
 
-2. **AI Chat Fix**:
+2. **AI Chat Upgrade**:
+   - Added comprehensive platform knowledge to system prompt
+   - Includes all 23+ courses with categories
+   - Includes navigation map, payment info, certificate flow
+   - Includes founder biography and contact information
+   - AI can now answer platform questions and guide students accurately
+
+3. **AI Chat Fix**:
    - Added input sanitization to `/api/ai/chat`
    - Validates prompt is non-empty string
    - Truncates long inputs
    - Strips non-text fields to prevent Gemini errors
 
-3. **Seed Data**:
+4. **Seed Data**:
    - Updated `seedCourses.js` with all 23+ courses
    - Includes duplicate prevention logic
 
