@@ -1,15 +1,16 @@
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
+import { useMemo, useState } from "react";
 import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
 import Slider from "react-slick";
 import ContentNotFound from "../common/ContentNotFound";
 import CourseCard from "../common/CourseCard";
 
-// Custom Arrows – dark theme
 const PrevArrow = ({ onClick }) => (
   <button
     onClick={onClick}
     className="absolute -left-6 top-1/2 transform -translate-y-1/2 z-10 bg-zinc-900 border border-zinc-700 shadow p-2 rounded-full hover:bg-zinc-800 transition"
+    aria-label="Previous slide"
   >
     <FaArrowLeft className="text-yellow-400" />
   </button>
@@ -18,7 +19,8 @@ const PrevArrow = ({ onClick }) => (
 const NextArrow = ({ onClick }) => (
   <button
     onClick={onClick}
-    className="absolute -right-6 top-1/2 transform -translate-y-1/2 z-10 bg-zinc-900 border border-zinc-700 shadow p-2 rounded-full hover:bg-zinc-800 transition"
+    className="absolute -right-6 top-1/2 z-10 bg-zinc-900 border border-zinc-700 shadow p-2 rounded-full hover:bg-zinc-800 transition"
+    aria-label="Next slide"
   >
     <FaArrowRight className="text-yellow-400" />
   </button>
@@ -26,7 +28,7 @@ const NextArrow = ({ onClick }) => (
 
 export default function PopularCourses() {
   const { data: courses = [] } = useQuery({
-    queryKey: ["courses"],
+    queryKey: ["popularCourses"],
     queryFn: async () => {
       const response = await axios.get(
         `${import.meta.env.VITE_BASE_URL}/courses/popular`
@@ -36,7 +38,7 @@ export default function PopularCourses() {
     },
   });
 
-  const settings = {
+  const settings = useMemo(() => ({
     dots: false,
     infinite: true,
     speed: 800,
@@ -57,7 +59,7 @@ export default function PopularCourses() {
         settings: { slidesToShow: 1 },
       },
     ],
-  };
+  }), []);
 
   if (courses.length === 0)
     return <ContentNotFound title="No Popular Courses available" />;
@@ -71,7 +73,7 @@ export default function PopularCourses() {
 
         <Slider {...settings}>
           {courses.map((course, index) => (
-            <CourseCard key={index} course={course} />
+            <CourseCard key={course._id || index} course={course} />
           ))}
         </Slider>
       </div>

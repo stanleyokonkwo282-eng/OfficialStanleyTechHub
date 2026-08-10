@@ -8,16 +8,16 @@ import LoaderSpinner from "../../components/common/LoaderSpinner";
 import useAuth from "../../hooks/useAuth";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
 
-export default function AllCourses() {
+export default function ManageTeachers() {
   const queryClient = useQueryClient();
   const axiosSecure = useAxiosSecure();
   const [currentPage, setCurrentPage] = useState(1);
   const { user } = useAuth();
 
   const { data: coursesData, isLoading } = useQuery({
-    queryKey: ["courses", { page: currentPage }],
+    queryKey: ["admin-teachers", { page: currentPage }],
     queryFn: async () => {
-      const res = await axiosSecure.get(`/courses/all`, {
+      const res = await axiosSecure.get("/courses/all", {
         params: { page: currentPage, limit: 10 },
       });
       return res.data;
@@ -31,7 +31,7 @@ export default function AllCourses() {
     },
     onSuccess: () => {
       toast.success("Status updated");
-      queryClient.invalidateQueries(["courses"]);
+      queryClient.invalidateQueries(["admin-teachers"]);
     },
     onError: () => {
       toast.error("Failed to update status");
@@ -101,7 +101,7 @@ export default function AllCourses() {
                 <td>
                   <img
                     src={course.image}
-                    alt="Course"
+                    alt={`${course.title} course thumbnail`}
                     className="w-16 h-12 rounded"
                   />
                 </td>

@@ -1,14 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
-import { Link } from "react-router";
+import useAxiosSecure from "../../hooks/useAxiosSecure";
 
 export default function PlatformStats() {
+  const axiosSecure = useAxiosSecure();
   const { data: statistics } = useQuery({
     queryKey: ["statistics"],
     queryFn: async () => {
-      const response = await axios.get(
-        `${import.meta.env.VITE_BASE_URL}/statistics`
-      );
+      const response = await axiosSecure.get("/statistics");
       return response.data.data;
     },
   });
@@ -85,12 +83,12 @@ export default function PlatformStats() {
             <span className="text-yellow-400 font-bold text-lg">CREATOR</span>{" "}
             to enroll in any course at no cost.
           </p>
-          <Link
-            to="/courses"
+          <a
+            href="/courses"
             className="bg-yellow-400 text-black px-8 py-4 rounded-xl font-bold text-lg hover:bg-yellow-500 transition inline-block"
           >
             Browse All Courses
-          </Link>
+          </a>
         </div>
       </div>
     </section>

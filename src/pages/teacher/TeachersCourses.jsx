@@ -29,8 +29,6 @@ export default function TeachersCourses() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id) => {
-      console.log(id);
-
       const res = await axiosSecure.delete(`/courses/${id}`);
       return res.data;
     },
@@ -82,7 +80,12 @@ export default function TeachersCourses() {
         <h2 className="text-2xl font-bold mb-4">My Courses</h2>
 
         {data.courses?.length === 0 ? (
-          <p>You haven't added any courses yet.</p>
+          <div className="text-center py-20">
+            <div className="text-6xl mb-4">📚</div>
+            <h2 className="text-2xl font-bold text-white mb-2">No Courses Yet</h2>
+            <p className="text-gray-400 mb-6">You haven't added any courses yet.</p>
+            <Link to="/dashboard/courses/add" className="bg-yellow-400 text-black px-6 py-3 rounded-lg font-bold hover:bg-yellow-500">Add Your First Course</Link>
+          </div>
         ) : (
           <div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -93,7 +96,7 @@ export default function TeachersCourses() {
                 >
                   <img
                     src={course.image}
-                    alt="Course"
+                    alt={course.title}
                     className="w-full h-40 object-cover rounded"
                   />
                   <div className="mt-3">

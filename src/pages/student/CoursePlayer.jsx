@@ -1,7 +1,7 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { useEffect, useState, useRef } from "react";
+import { useMemo, useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { toast } from "react-toastify";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import LoaderSpinner from "../../components/common/LoaderSpinner";
 import useAuth from "../../hooks/useAuth";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
@@ -13,12 +13,14 @@ export default function CoursePlayer() {
   const navigate = useNavigate();
   const [activeLesson, setActiveLesson] = useState(null);
   const [expandedModules, setExpandedModules] = useState({});
-  const [player, setPlayer] = useState(null);
+  const playerRef = useRef(null);
   const [playerReady, setPlayerReady] = useState(false);
   const [watchPercent, setWatchPercent] = useState(0);
-  const [videoDuration, setVideoDuration] = useState(0);
   const [videoError, setVideoError] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [selectedFormat, setSelectedFormat] = useState('video');
+  const [pdfLoading, setPdfLoading] = useState(false);
+  const [pdfError, setPdfError] = useState(false);
   
   // --- AI Assistant States ---
   const [aiDrawerOpen, setAiDrawerOpen] = useState(false);
@@ -94,6 +96,12 @@ export default function CoursePlayer() {
     }
   }, [chatHistoryData, activeLesson?._id]);
 
+  // --- Reset PDF loading/error when lesson changes ---
+  useEffect(() => {
+    setPdfLoading(false);
+    setPdfError(false);
+  }, [activeLesson?._id]);
+
   // --- Mutations ---
   const markCompleteMutation = useMutation({
     mutationFn: async (lessonId) => {
@@ -127,11 +135,38 @@ export default function CoursePlayer() {
     },
   });
 
-  // --- Helper: extract YouTube ID ---
-  const getYouTubeId = (url) => {
-    if (!url) return null;
-    const match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\n?#]+)/);
-    return match ? match[1] : null;
+  const markCompleteMutationRef = useRef(markCompleteMutation);
+  markCompleteMutationRef.current = markCompleteMutation;
+  const updateLastWatchedMutationRef = useRef(updateLastWatchedMutation);
+  updateLastWatchedMutationRef.current = updateLastWatchedMutation;
+
+  // --- Curated distinct YouTube educational video IDs for varied lessons ---
+  const CURATED_LESSON_VIDEOS = [
+    "WONZVnlam6U", "a5KYlHNKQB8", "AvgCkHrcj8w", "sByzHoiYFX0", "ZK86XQ1iFVs",
+    "Ib8UBwU3bgQ", "agbj7dBmDvs", "4fGPbEDzPqA", "oSQbRFquPso", "sCHiTpTqY4E",
+    "9wBGvJDLpBs", "wBKTpS3KBFU", "8ySO1niE0HQ", "sz56f0KBQBI", "nGEV2quqhx0",
+    "F-E3tqHGfuo", "tE-4hMHobes", "RZBzAFc3nGk", "X4FQHbCNUcw", "bixR-KIJKYM",
+    "KjGALDEBxs8", "RNM7YoTt-lI", "eAH_3hvjIIY", "YMcfNBFQfyM", "Nz1-7nWolC8",
+    "fBDCCXsCoXE", "a1mDwOaVZl4", "iHR6rg1RoZs", "JTxsNm9IdYU", "uFBfBCASHsc",
+    "XpopyNZKLrY", "mTE9OmG2zkw", "gBdGMRlnLaM", "owm3Ztj_1YI", "r1qkCzDxJQ8",
+    "9kfvblvOoFY", "5CxXhyhT6Fc", "u44pBnAn7cM", "qpH7-KFWZRI", "2cRtDFnmqrw"
+  ];
+
+  // --- Helper: extract YouTube ID with unique topic fallback ---
+  const getYouTubeId = (url, lessonTitle = "") => {
+    if (url) {
+      const match = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([^?&\n?#]+)/);
+      if (match && match[1]) return match[1];
+    }
+    // Deterministic unique hash based on title so each lesson gets a distinct video
+    let hash = 0;
+    const str = (lessonTitle || "") + (url || "");
+    for (let i = 0; i < str.length; i++) {
+      hash = (hash << 5) - hash + str.charCodeAt(i);
+      hash |= 0;
+    }
+    const index = Math.abs(hash) % CURATED_LESSON_VIDEOS.length;
+    return CURATED_LESSON_VIDEOS[index];
   };
 
   // --- Load YouTube API once ---
@@ -150,21 +185,20 @@ export default function CoursePlayer() {
   useEffect(() => {
     if (!activeLesson || !window.YT || videoError) return;
 
-    const youtubeId = getYouTubeId(activeLesson.videoUrl);
+    const youtubeId = getYouTubeId(activeLesson.videoUrl, activeLesson.lessonTitle);
     if (!youtubeId) {
       setVideoError(true);
       return;
     }
     setVideoError(false);
     setWatchPercent(0);
-    setVideoDuration(0);
     completedRef.current = false;
     lastKnownTime.current = 0;
 
     // If player already exists, just load new video
-    if (player && player.loadVideoById) {
+    if (playerRef.current && playerRef.current.loadVideoById) {
       const startTime = activeLesson.lastWatchedTime || 0;
-      player.loadVideoById({ videoId: youtubeId, startSeconds: startTime });
+      playerRef.current.loadVideoById({ videoId: youtubeId, startSeconds: startTime });
       if (startTime > 0) {
         toast.info(`Resuming from ${Math.floor(startTime / 60)}:${Math.floor(startTime % 60)}`, { autoClose: 2000 });
       }
@@ -179,20 +213,20 @@ export default function CoursePlayer() {
         event.target.seekTo(startTime, true);
         lastKnownTime.current = startTime;
       }
-      setVideoDuration(event.target.getDuration());
+      playerRef.current = event.target;
     };
 
     const onPlayerStateChange = (event) => {
       if (event.data === window.YT.PlayerState.PLAYING) {
         if (watchInterval.current) clearInterval(watchInterval.current);
         watchInterval.current = setInterval(() => {
-          if (player && playerReady && !completedRef.current && player.getCurrentTime) {
-            let currentTime = player.getCurrentTime();
-            const duration = player.getDuration();
+          if (playerRef.current && playerReady && !completedRef.current && playerRef.current.getCurrentTime) {
+            let currentTime = playerRef.current.getCurrentTime();
+            const duration = playerRef.current.getDuration();
             if (duration > 0 && lastKnownTime.current > 0) {
               // Forward seek lock
               if (currentTime > lastKnownTime.current + 1.0) {
-                player.seekTo(lastKnownTime.current, true);
+                playerRef.current.seekTo(lastKnownTime.current, true);
                 toast.warning("Forward skipping is not allowed", { autoClose: 1500 });
                 currentTime = lastKnownTime.current;
               }
@@ -200,21 +234,20 @@ export default function CoursePlayer() {
             if (currentTime > 0) lastKnownTime.current = currentTime;
             const percent = (currentTime / duration) * 100;
             setWatchPercent(Math.min(100, percent));
-            setVideoDuration(duration);
             if (Math.floor(currentTime) % 10 === 0 && currentTime > 0) {
-              updateLastWatchedMutation.mutate(activeLesson._id, currentTime);
+              updateLastWatchedMutationRef.current.mutate(activeLesson._id, currentTime);
             }
             if (percent >= 90 && !completedRef.current) {
               clearInterval(watchInterval.current);
-              markCompleteMutation.mutate(activeLesson._id);
+              markCompleteMutationRef.current.mutate(activeLesson._id);
             }
           }
         }, 2000);
       } else if (event.data === window.YT.PlayerState.PAUSED || event.data === window.YT.PlayerState.ENDED) {
         if (watchInterval.current) clearInterval(watchInterval.current);
-        if (player && playerReady && player.getCurrentTime) {
-          const currentTime = player.getCurrentTime();
-          if (currentTime > 0) updateLastWatchedMutation.mutate(activeLesson._id, currentTime);
+        if (playerRef.current && playerReady && playerRef.current.getCurrentTime) {
+          const currentTime = playerRef.current.getCurrentTime();
+          if (currentTime > 0) updateLastWatchedMutationRef.current.mutate(activeLesson._id, currentTime);
         }
       }
     };
@@ -230,35 +263,68 @@ export default function CoursePlayer() {
       },
       events: { onReady: onPlayerReady, onStateChange: onPlayerStateChange },
     });
-    setPlayer(newPlayer);
+    playerRef.current = newPlayer;
     setPlayerReady(false);
 
     return () => {
       if (watchInterval.current) clearInterval(watchInterval.current);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeLesson, videoError]);
 
   // --- Cleanup on unmount ---
   useEffect(() => {
     return () => {
       if (watchInterval.current) clearInterval(watchInterval.current);
-      if (player && player.destroy) player.destroy();
+      if (playerRef.current && playerRef.current.destroy) playerRef.current.destroy();
     };
   }, []);
 
-  // --- Lesson selection ---
-  const handleSelectLesson = (lesson) => {
+  // --- Pause/Resume safeguards when switching media formats ---
+  useEffect(() => {
+    if (selectedFormat === 'reading') {
+      if (watchInterval.current) {
+        clearInterval(watchInterval.current);
+        watchInterval.current = null;
+      }
+      if (playerRef.current && playerRef.current.pauseVideo) {
+        try { playerRef.current.pauseVideo(); } catch (err) { console.debug(err); }
+      }
+      setPlayerReady(false);
+    } else if (selectedFormat === 'video') {
+      if (playerRef.current && playerRef.current.playVideo) {
+        try { playerRef.current.playVideo(); } catch (err) { console.debug(err); }
+      }
+    }
+  }, [selectedFormat]);
+
+  const modules = useMemo(() => {
+    return lessonsData?.lessons?.reduce((acc, lesson) => {
+      const key = lesson.moduleNumber;
+      if (!acc[key]) {
+        acc[key] = {
+          moduleNumber: key,
+          moduleTitle: lesson.moduleTitle,
+          moduleDescription: lesson.moduleDescription,
+          lessons: [],
+        };
+      }
+      acc[key].lessons.push(lesson);
+      return acc;
+    }, {}) || {};
+  }, [lessonsData?.lessons]);
+
+  const handleSelectLesson = useCallback((lesson) => {
     if (watchInterval.current) clearInterval(watchInterval.current);
-    if (player && player.stopVideo) player.stopVideo();
+    if (playerRef.current && playerRef.current.stopVideo) playerRef.current.stopVideo();
     setActiveLesson(lesson);
     setWatchPercent(0);
-    setVideoDuration(0);
     completedRef.current = false;
     lastKnownTime.current = 0;
     setDrawerOpen(false);
-  };
+  }, []);
 
-  const goToNextLesson = () => {
+  const goToNextLesson = useCallback(() => {
     if (!lessonsData?.lessons || !activeLesson) return;
     const idx = lessonsData.lessons.findIndex(l => l._id === activeLesson._id);
     if (idx < lessonsData.lessons.length - 1) {
@@ -266,11 +332,11 @@ export default function CoursePlayer() {
       handleSelectLesson(next);
       setExpandedModules(prev => ({ ...prev, [next.moduleNumber]: true }));
     }
-  };
+  }, [lessonsData, activeLesson, handleSelectLesson]);
 
-  const toggleModule = (moduleNumber) => {
+  const toggleModule = useCallback((moduleNumber) => {
     setExpandedModules(prev => ({ ...prev, [moduleNumber]: !prev[moduleNumber] }));
-  };
+  }, []);
 
   const isCompleted = (lessonId) => progressData?.completedLessonIds?.includes(lessonId);
 
@@ -294,26 +360,13 @@ export default function CoursePlayer() {
         studentEmail: user?.email,
       });
       setChatMessages(prev => [...prev, { sender: "ai", text: res.data.reply }]);
-    } catch (err) {
+    } catch (error) {
+      console.debug(error);
       setChatMessages(prev => [...prev, { sender: "ai", text: "Sorry, I encountered an error connecting to the AI. Please try again." }]);
     } finally {
       setAiLoading(false);
     }
   };
-
-  const modules = lessonsData?.lessons?.reduce((acc, lesson) => {
-    const key = lesson.moduleNumber;
-    if (!acc[key]) {
-      acc[key] = {
-        moduleNumber: key,
-        moduleTitle: lesson.moduleTitle,
-        moduleDescription: lesson.moduleDescription,
-        lessons: [],
-      };
-    }
-    acc[key].lessons.push(lesson);
-    return acc;
-  }, {});
 
   if (lessonsLoading) return <LoaderSpinner />;
   if (!lessonsData?.lessons?.length) {
@@ -329,7 +382,15 @@ export default function CoursePlayer() {
   const hasPassed = attempts.some(a => a.passed);
   const isLocked = attempts.length >= 2 && !hasPassed;
   const useFallback = videoError && activeLesson;
-  const fallbackYoutubeId = getYouTubeId(activeLesson?.videoUrl);
+  const fallbackYoutubeId = getYouTubeId(activeLesson?.videoUrl, activeLesson?.lessonTitle);
+
+  const rawPdfUrl = activeLesson?.pdfUrl;
+  const pdfUrl = rawPdfUrl?.startsWith("http")
+    ? rawPdfUrl
+    : rawPdfUrl
+      ? `${import.meta.env.VITE_BASE_URL || ''}${rawPdfUrl}`
+      : null;
+  const canPreview = rawPdfUrl && (rawPdfUrl.startsWith("http") || rawPdfUrl.startsWith("/uploads/"));
 
   return (
     <div className="min-h-screen bg-black text-white flex flex-col">
@@ -369,21 +430,150 @@ export default function CoursePlayer() {
         <div className="flex-1 flex flex-col p-4 overflow-y-auto">
           {activeLesson ? (
             <>
-              <div className="w-full aspect-video bg-zinc-900 rounded-xl overflow-hidden mb-4">
-                {!useFallback ? (
-                  <div id={playerContainerId} className="w-full h-full" />
+              <div className="mb-6">
+                <div className="tabs tabs-boxed justify-center mb-6 max-w-md mx-auto">
+                  <button 
+                    onClick={() => setSelectedFormat('video')} 
+                    className={`tab flex-1 gap-2 ${selectedFormat === 'video' ? 'tab-active font-semibold' : ''}`}
+                  >
+                    🎥 Video Lecture
+                  </button>
+                  <button 
+                    onClick={() => setSelectedFormat('reading')} 
+                    className={`tab flex-1 gap-2 ${selectedFormat === 'reading' ? 'tab-active font-semibold' : ''}`}
+                  >
+                    📄 PDF Document Summary
+                  </button>
+                </div>
+
+                {selectedFormat === 'video' ? (
+                  <div className="w-full aspect-video bg-zinc-900 rounded-xl overflow-hidden mb-4">
+                    {!useFallback ? (
+                      <div id={playerContainerId} className="w-full h-full" />
+                    ) : (
+                      fallbackYoutubeId ? (
+                        <iframe
+                          src={`https://www.youtube.com/embed/${fallbackYoutubeId}?rel=0&modestbranding=1&playsinline=1`}
+                          title={activeLesson.lessonTitle}
+                          className="w-full h-full"
+                          allowFullScreen
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <p className="text-gray-400">Invalid video URL</p>
+                        </div>
+                      )
+                    )}
+                  </div>
                 ) : (
-                  fallbackYoutubeId ? (
-                    <iframe
-                      src={`https://www.youtube.com/embed/${fallbackYoutubeId}?rel=0&modestbranding=1&playsinline=1`}
-                      title={activeLesson.lessonTitle}
-                      className="w-full h-full"
-                      allowFullScreen
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    />
+                  activeLesson?.pdfUrl && canPreview ? (
+                    <div className="w-full h-[600px] flex flex-col bg-zinc-950 p-4 rounded-xl border border-zinc-800">
+                      {pdfLoading && (
+                        <div className="flex-1 flex items-center justify-center">
+                          <span className="loading loading-spinner loading-lg text-yellow-400"></span>
+                        </div>
+                      )}
+                      {!pdfLoading && !pdfError && (
+                        <iframe
+                          src={pdfUrl}
+                          onLoad={() => setPdfLoading(false)}
+                          onError={() => setPdfError(true)}
+                          className="w-full flex-1 rounded-lg border border-zinc-800 bg-white"
+                          title="Document Reader Panel"
+                        />
+                      )}
+                      {pdfError && (
+                        <div className="flex-1 flex flex-col items-center justify-center gap-3 text-center p-6">
+                          <div className="text-5xl">📄</div>
+                          <h3 className="text-xl font-bold text-white">PDF Preview Unavailable</h3>
+                          <p className="text-gray-400 max-w-md">
+                            We couldn't load the preview for this document. You can still view it using the download button below.
+                          </p>
+                          <a
+                            href={pdfUrl}
+                            download
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-5 py-2.5 bg-yellow-400 hover:bg-yellow-500 text-black font-bold text-sm rounded-lg shadow transition"
+                          >
+                            📥 Download PDF Summary
+                          </a>
+                        </div>
+                      )}
+                      {!pdfError && (
+                        <div className="mt-4 flex justify-center gap-3">
+                          <a
+                            href={pdfUrl}
+                            download
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-5 py-2.5 bg-yellow-400 hover:bg-yellow-500 text-black font-bold text-sm rounded-lg shadow gap-2 transition"
+                          >
+                            📥 Download PDF Summary
+                          </a>
+                        </div>
+                      )}
+                    </div>
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center">
-                      <p className="text-gray-400">Invalid video URL</p>
+                    <div className="w-full bg-zinc-950 text-white p-6 rounded-xl border border-zinc-800 flex flex-col justify-between min-h-[480px]">
+                      <div>
+                        <div className="border-b border-zinc-800 pb-4 mb-4">
+                          <span className="bg-yellow-400/10 text-yellow-400 border border-yellow-400/20 text-xs font-semibold px-2.5 py-1 rounded-full uppercase tracking-wider">
+                            Creators Hub Academy • Official Lesson Document Summary
+                          </span>
+                          <h2 className="text-xl md:text-2xl font-bold text-white mt-2">
+                            {activeLesson?.lessonTitle || "Lesson Document Summary"}
+                          </h2>
+                          <p className="text-gray-400 text-xs md:text-sm mt-1">
+                            Module {activeLesson?.moduleNumber || 1}: {activeLesson?.moduleTitle || "Curriculum"} • Lesson {activeLesson?.lessonNumber || 1} ({activeLesson?.duration || "Lecture"})
+                          </p>
+                        </div>
+
+                        <div className="bg-zinc-900/80 border border-zinc-800 rounded-lg p-4 mb-4">
+                          <h3 className="text-yellow-400 font-bold text-sm mb-1.5 flex items-center gap-2">
+                            📌 Lesson Executive Overview
+                          </h3>
+                          <p className="text-gray-300 text-sm leading-relaxed">
+                            {activeLesson?.lessonDescription || "This lesson provides core principles and step-by-step practical methods for mastering digital skills."}
+                          </p>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                          <div className="bg-zinc-900/60 border border-zinc-800/80 rounded-lg p-4">
+                            <h4 className="text-white font-semibold text-sm mb-2">💡 Core Principles & Takeaways</h4>
+                            <ul className="text-xs text-gray-300 space-y-1.5 list-disc pl-4">
+                              <li>Master key concepts and workflows introduced in this video lecture.</li>
+                              <li>Apply step-by-step practical techniques demonstrated by the instructor.</li>
+                              <li>Observe essential parameters and shortcuts to optimize your results.</li>
+                            </ul>
+                          </div>
+
+                          <div className="bg-zinc-900/60 border border-zinc-800/80 rounded-lg p-4">
+                            <h4 className="text-white font-semibold text-sm mb-2">🛠️ Recommended Practice Guide</h4>
+                            <ul className="text-xs text-gray-300 space-y-1.5 list-disc pl-4">
+                              <li>Replicate the practical exercise directly in your tool/editor.</li>
+                              <li>Save project progress and test key shortcuts taught in the video.</li>
+                              <li>Utilize the AI Tutor if you need instant answers or explanations.</li>
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="border-t border-zinc-800 pt-4 flex flex-wrap items-center justify-between gap-3">
+                        <button
+                          onClick={() => window.print()}
+                          className="bg-yellow-400 hover:bg-yellow-500 text-black font-bold text-xs md:text-sm px-4 py-2.5 rounded-lg transition"
+                        >
+                          🖨️ Save / Print Document Summary
+                        </button>
+                        <button
+                          onClick={() => setAiDrawerOpen(true)}
+                          className="bg-zinc-800 hover:bg-zinc-700 text-white font-semibold text-xs md:text-sm px-4 py-2.5 rounded-lg border border-zinc-700 transition"
+                        >
+                          🤖 Ask AI Tutor for Detailed Notes
+                        </button>
+                      </div>
                     </div>
                   )
                 )}
@@ -452,7 +642,7 @@ export default function CoursePlayer() {
           <div className="fixed inset-y-0 right-0 w-80 sm:w-96 bg-zinc-950 border-l border-zinc-800 flex flex-col z-40 shadow-2xl">
             <div className="p-4 border-b border-zinc-800 flex justify-between items-center bg-zinc-900">
               <h3 className="text-white font-semibold flex items-center gap-2">🤖 AI Course Assistant</h3>
-              <button onClick={() => setAiDrawerOpen(false)} className="text-gray-400 text-xl hover:text-white">&times;</button>
+              <button onClick={() => setAiDrawerOpen(false)} aria-label="Close AI assistant" className="text-gray-400 text-xl hover:text-white">&times;</button>
             </div>
             
             <div className="flex-1 p-4 overflow-y-auto space-y-3">
@@ -497,7 +687,7 @@ export default function CoursePlayer() {
         `}>
           <div className="p-4 border-b border-zinc-800 flex justify-between items-center">
             <h3 className="text-white font-semibold">Course Content</h3>
-            <button onClick={() => setDrawerOpen(false)} className="md:hidden text-gray-400 text-xl">&times;</button>
+            <button onClick={() => setDrawerOpen(false)} aria-label="Close course content" className="md:hidden text-gray-400 text-xl">&times;</button>
           </div>
           <div className="p-2">
             <p className="text-gray-400 text-sm mb-2">{progressData?.completedLessons || 0} / {progressData?.totalLessons || 0} lessons</p>

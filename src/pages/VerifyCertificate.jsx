@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { useParams, useNavigate } from "react-router";
-import axios from "axios";
+import { useNavigate, useParams } from "react-router";
 import LoaderSpinner from "../components/common/LoaderSpinner";
+import useAxiosSecure from "../hooks/useAxiosSecure";
 
 export default function VerifyCertificate() {
   const { certificateId: paramId } = useParams();
   const navigate = useNavigate();
+  const axiosSecure = useAxiosSecure();
   const [searchId, setSearchId] = useState(paramId || "");
   const [certificate, setCertificate] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -18,9 +19,9 @@ export default function VerifyCertificate() {
     setError("");
     setCertificate(null);
     try {
-      const res = await axios.get(`${import.meta.env.VITE_BASE_URL}/certificates/verify/${id}`);
+      const res = await axiosSecure.get(`/certificates/verify/${id}`);
       setCertificate(res.data.certificate);
-    } catch (err) {
+    } catch {
       setError("Certificate not found. Please check the ID and try again.");
     } finally {
       setLoading(false);

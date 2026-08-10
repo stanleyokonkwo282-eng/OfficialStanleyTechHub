@@ -5,7 +5,7 @@ import { Link } from "react-router";
 import ContentNotFound from "../components/common/ContentNotFound";
 import HeadTag from "../components/common/HeadTag";
 import LoaderDotted from "../components/common/LoaderDotted";
-import renderStars from "../utils/renderStarts";
+import renderStars from "../utils/renderStars";
 
 const fetchCourses = async ({ queryKey }) => {
   const [, { page, searchTerm }] = queryKey;

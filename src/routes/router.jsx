@@ -19,6 +19,7 @@ import NotFound from "../pages/NotFound";
 import Signup from "../pages/Signup";
 import Unauthorized from "../pages/Unauthorized";
 import VerifyCertificate from "../pages/VerifyCertificate";
+import RouteErrorPage from "../pages/common/RouteErrorPage";
 import CourseAssignments from "../pages/student/CourseAssignments";
 import Certificate from "../pages/student/Certificate";
 import CourseDetails from "../pages/student/CourseDetails";
@@ -34,6 +35,7 @@ const router = createBrowserRouter([
   {
     path: "/",
     element: <App />,
+    errorElement: <RouteErrorPage />,
     children: [
       { index: true, element: <Home /> },
       { path: "/about", element: <About /> },

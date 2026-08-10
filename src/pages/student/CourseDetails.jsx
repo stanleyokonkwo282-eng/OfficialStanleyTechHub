@@ -1,11 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import axios from "axios";
 import { useNavigate, useParams } from "react-router";
 import { toast } from "react-toastify";
 import LoaderSpinner from "../../components/common/LoaderSpinner";
 import useAuth from "../../hooks/useAuth";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
-import renderStars from "../../utils/renderStarts";
+import renderStars from "../../utils/renderStars";
 
 const CourseDetails = () => {
   const { id } = useParams();
@@ -17,9 +16,7 @@ const CourseDetails = () => {
   const { data: course, isLoading: courseLoading } = useQuery({
     queryKey: ["course", id],
     queryFn: async () => {
-      const response = await axios.get(
-        `${import.meta.env.VITE_BASE_URL}/courses/${id}`
-      );
+      const response = await axiosSecure.get(`/courses/${id}`);
       return response.data.course;
     },
   });
@@ -52,12 +49,12 @@ const CourseDetails = () => {
     onSuccess: () => {
       toast.success("🎉 You are now enrolled! Start learning for free!");
       queryClient.invalidateQueries(["enrollment", id, user?.email]);
-      navigate(`/dashboard/learn/${id}`);
+      navigate(`/dashboard/learn/${id}`, { replace: true });
     },
     onError: (err) => {
       const message = err?.response?.data?.message;
       if (message === "Already enrolled in this course") {
-        navigate(`/dashboard/learn/${id}`);
+        navigate(`/dashboard/learn/${id}`, { replace: true });
       } else {
         toast.error("Enrollment failed. Please try again.");
       }
@@ -70,7 +67,7 @@ const CourseDetails = () => {
       return;
     }
     if (isEnrolled) {
-      navigate(`/dashboard/learn/${id}`);
+      navigate(`/dashboard/learn/${id}`, { replace: true });
       return;
     }
     enrollMutation.mutate();
@@ -104,6 +101,8 @@ const CourseDetails = () => {
           <img
             src={course.image}
             alt={course.title}
+            loading="lazy"
+            decoding="async"
             className="w-full h-full object-cover"
           />
         </div>
@@ -160,7 +159,7 @@ const CourseDetails = () => {
                 <div className="flex items-center gap-3">
                   <p className="text-3xl font-bold text-green-400">FREE</p>
                   <p className="text-gray-500 line-through text-xl">
-                    ${course.price}
+                    ${Number(course.price || 0).toFixed(2)}
                   </p>
                 </div>
                 <p className="text-gray-400 text-sm mt-1">

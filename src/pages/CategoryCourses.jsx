@@ -4,7 +4,7 @@ import { Link, useParams } from "react-router";
 import ContentNotFound from "../components/common/ContentNotFound";
 import LoaderDotted from "../components/common/LoaderDotted";
 import HeadTag from "../components/common/HeadTag";
-import renderStars from "../utils/renderStarts";
+import renderStars from "../utils/renderStars";
 
 export default function CategoryCourses() {
   const { category } = useParams();

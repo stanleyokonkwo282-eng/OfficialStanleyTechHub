@@ -16,6 +16,8 @@ export default function Certificate() {
   const [proofUrl, setProofUrl] = useState("");
   const [showPaymentForm, setShowPaymentForm] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
+  const [proofError, setProofError] = useState("");
+  const [proofImageError, setProofImageError] = useState(false);
   const paystackReference = searchParams.get("reference");
 
   const { data: courseData, isLoading: courseLoading } = useQuery({
@@ -114,6 +116,31 @@ export default function Certificate() {
       setSearchParams(nextParams, { replace: true });
     },
   });
+
+  const validateProofUrl = (url) => {
+    if (!url) {
+      setProofError("");
+      return false;
+    }
+    try {
+      const parsed = new URL(url);
+      if (!["http:", "https:"].includes(parsed.protocol)) {
+        setProofError("Only HTTP/HTTPS URLs are allowed");
+        return false;
+      }
+      const allowedDomains = ["postimg.cc", "i.postimg.cc", "imgur.com", "i.imgur.com"];
+      if (!allowedDomains.some(d => parsed.hostname.includes(d))) {
+        setProofError("Please use postimages.org or imgur.com for image hosting");
+        return false;
+      }
+      setProofError("");
+      setProofImageError(false);
+      return true;
+    } catch {
+      setProofError("Please enter a valid URL");
+      return false;
+    }
+  };
 
   useEffect(() => {
     if (paystackReference && !paystackVerifyMutation.isPending && !paystackVerifyMutation.isSuccess) {
@@ -336,8 +363,8 @@ export default function Certificate() {
           </div>
           <div>
             <p className="text-gray-400 text-sm">Payment Proof Submitted:</p>
-            {certificate.paymentProof && (
-              <img src={certificate.paymentProof} alt="Payment proof" className="w-full max-h-32 object-contain rounded mt-1 border border-zinc-700" onError={(e) => e.target.style.display = "none"} />
+            {certificate.paymentProof && !proofImageError && (
+              <img src={certificate.paymentProof} alt={`Payment proof for ${studentName}`} className="w-full max-h-32 object-contain rounded mt-1 border border-zinc-700" onError={() => setProofImageError(true)} />
             )}
           </div>
         </div>
@@ -449,21 +476,34 @@ export default function Certificate() {
             <input
               type="url"
               value={proofUrl}
-              onChange={(e) => setProofUrl(e.target.value)}
+              onChange={(e) => {
+                setProofUrl(e.target.value);
+                if (proofError) validateProofUrl(e.target.value);
+              }}
+              onBlur={() => validateProofUrl(proofUrl)}
               placeholder="https://i.postimg.cc/your-image-link.jpg"
-              className="w-full bg-zinc-900 border border-zinc-700 text-white placeholder-zinc-500 rounded-lg px-4 py-3 focus:outline-none focus:border-yellow-400 mb-4"
+              className={`w-full bg-zinc-900 border rounded-lg px-4 py-3 focus:outline-none focus:border-yellow-400 mb-1 ${proofError ? "border-red-500" : "border-zinc-700 text-white placeholder-zinc-500"}`}
             />
-            {proofUrl && (
+            {proofError && <p className="text-red-400 text-sm mb-3">{proofError}</p>}
+            {proofUrl && !proofError && (
               <div className="mb-4 rounded-lg overflow-hidden border border-zinc-700">
-                <img src={proofUrl} alt="Payment proof preview" className="w-full max-h-48 object-contain bg-zinc-900" onError={(e) => e.target.style.display = "none"} />
+                {!proofImageError ? (
+                  <img src={proofUrl} alt={`Payment proof preview for ${studentName}`} className="w-full max-h-48 object-contain bg-zinc-900" onError={() => setProofImageError(true)} />
+                ) : (
+                  <p className="text-gray-500 text-sm p-4">Unable to load image preview. Please check the URL.</p>
+                )}
               </div>
             )}
             <div className="flex gap-3">
-              <button onClick={() => setShowPaymentForm(false)} className="flex-1 py-3 bg-zinc-800 border border-zinc-700 text-white rounded-lg hover:bg-zinc-700 font-semibold">
+              <button onClick={() => { setShowPaymentForm(false); setProofError(""); setProofImageError(false); }} className="flex-1 py-3 bg-zinc-800 border border-zinc-700 text-white rounded-lg hover:bg-zinc-700 font-semibold">
                 Cancel
               </button>
               <button
-                onClick={() => requestCertMutation.mutate()}
+                onClick={() => {
+                  if (validateProofUrl(proofUrl)) {
+                    requestCertMutation.mutate();
+                  }
+                }}
                 disabled={!proofUrl || requestCertMutation.isPending}
                 className="flex-1 py-3 bg-yellow-400 text-black rounded-lg font-bold hover:bg-yellow-500 disabled:opacity-50"
               >

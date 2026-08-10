@@ -94,7 +94,7 @@ export default function ExamPage() {
           <p className="text-gray-400 text-sm mb-6">
             Your best score was{" "}
             <span className="text-white font-bold">
-              {Math.max(...attempts.map((a) => a.score))}%
+              {attempts.length > 0 ? Math.max(...attempts.map((a) => a.score)) : 0}%
             </span>
             . Please contact admin to reset your exam.
           </p>
@@ -307,10 +307,12 @@ export default function ExamPage() {
               <span className="text-yellow-400 mr-2">{i + 1}.</span>
               {q.question}
             </p>
-            <div className="space-y-3">
+            <div role="radiogroup" aria-label={`Question ${i + 1}`}>
               {q.options.map((option, j) => (
                 <button
                   key={j}
+                  role="radio"
+                  aria-checked={answers[q._id] === option}
                   onClick={() => handleAnswer(q._id, option)}
                   className={`w-full text-left px-4 py-3 rounded-lg border transition ${
                     answers[q._id] === option

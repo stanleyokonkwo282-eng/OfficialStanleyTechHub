@@ -1,5 +1,5 @@
 import { Link } from "react-router";
-import renderStars from "../../utils/renderStarts";
+import renderStars from "../../utils/renderStars";
 
 export default function CourseCard({ course }) {
   return (
@@ -45,7 +45,7 @@ export default function CourseCard({ course }) {
           <div>
             <p className="text-green-400 font-bold text-lg">FREE</p>
             <p className="text-gray-600 line-through text-xs">
-              ${Number(course.price).toFixed(2)}
+              ${Number(course.price || 0).toFixed(2)}
             </p>
           </div>
           <Link
