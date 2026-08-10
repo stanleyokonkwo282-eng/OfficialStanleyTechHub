@@ -36,6 +36,20 @@ export default function CoursePlayer() {
   const lastKnownTime = useRef(0);
   const playerContainerId = "youtube-player-container";
   const apiLoadedRef = useRef(false);
+  const isPlayingRef = useRef(false);
+
+  // --- Warn when leaving page while video is playing ---
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      if (isPlayingRef.current) {
+        e.preventDefault();
+        e.returnValue = "Your video is still playing. Are you sure you want to leave?";
+        return e.returnValue;
+      }
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, []);
 
   // --- Scroll chat to bottom ---
   useEffect(() => {
@@ -218,6 +232,7 @@ export default function CoursePlayer() {
 
     const onPlayerStateChange = (event) => {
       if (event.data === window.YT.PlayerState.PLAYING) {
+        isPlayingRef.current = true;
         if (watchInterval.current) clearInterval(watchInterval.current);
         watchInterval.current = setInterval(() => {
           if (playerRef.current && playerReady && !completedRef.current && playerRef.current.getCurrentTime) {
@@ -244,6 +259,7 @@ export default function CoursePlayer() {
           }
         }, 2000);
       } else if (event.data === window.YT.PlayerState.PAUSED || event.data === window.YT.PlayerState.ENDED) {
+        isPlayingRef.current = false;
         if (watchInterval.current) clearInterval(watchInterval.current);
         if (playerRef.current && playerReady && playerRef.current.getCurrentTime) {
           const currentTime = playerRef.current.getCurrentTime();
@@ -260,6 +276,7 @@ export default function CoursePlayer() {
         start: activeLesson.lastWatchedTime || 0,
         playsinline: 1,
         controls: 1,
+        disablekb: 1,
       },
       events: { onReady: onPlayerReady, onStateChange: onPlayerStateChange },
     });
@@ -317,12 +334,25 @@ export default function CoursePlayer() {
   const handleSelectLesson = useCallback((lesson) => {
     if (watchInterval.current) clearInterval(watchInterval.current);
     if (playerRef.current && playerRef.current.stopVideo) playerRef.current.stopVideo();
+    
+    // Explicitly save current position before switching
+    if (playerRef.current && playerReady && activeLesson && playerRef.current.getCurrentTime) {
+      try {
+        const currentTime = playerRef.current.getCurrentTime();
+        if (currentTime > 0) {
+          updateLastWatchedMutationRef.current.mutate(activeLesson._id, currentTime);
+        }
+      } catch (err) {
+        console.debug("Error saving watch time on lesson switch:", err);
+      }
+    }
+    
     setActiveLesson(lesson);
     setWatchPercent(0);
     completedRef.current = false;
     lastKnownTime.current = 0;
     setDrawerOpen(false);
-  }, []);
+  }, [activeLesson, playerReady]);
 
   const goToNextLesson = useCallback(() => {
     if (!lessonsData?.lessons || !activeLesson) return;
@@ -446,14 +476,14 @@ export default function CoursePlayer() {
                   </button>
                 </div>
 
-                {selectedFormat === 'video' ? (
-                  <div className="w-full aspect-video bg-zinc-900 rounded-xl overflow-hidden mb-4">
+                 {selectedFormat === 'video' ? (
+                  <div className="w-full aspect-video bg-zinc-900 rounded-xl overflow-hidden mb-4" onContextMenu={(e) => e.preventDefault()}>
                     {!useFallback ? (
                       <div id={playerContainerId} className="w-full h-full" />
                     ) : (
                       fallbackYoutubeId ? (
                         <iframe
-                          src={`https://www.youtube.com/embed/${fallbackYoutubeId}?rel=0&modestbranding=1&playsinline=1`}
+                          src={`https://www.youtube-nocookie.com/embed/${fallbackYoutubeId}?rel=0&modestbranding=1&playsinline=1`}
                           title={activeLesson.lessonTitle}
                           className="w-full h-full"
                           allowFullScreen
@@ -516,56 +546,109 @@ export default function CoursePlayer() {
                       )}
                     </div>
                   ) : (
-                    <div className="w-full bg-zinc-950 text-white p-6 rounded-xl border border-zinc-800 flex flex-col justify-between min-h-[480px]">
-                      <div>
-                        <div className="border-b border-zinc-800 pb-4 mb-4">
-                          <span className="bg-yellow-400/10 text-yellow-400 border border-yellow-400/20 text-xs font-semibold px-2.5 py-1 rounded-full uppercase tracking-wider">
-                            Creators Hub Academy • Official Lesson Document Summary
+                    <div className="w-full bg-zinc-950 text-white rounded-xl border border-zinc-800 overflow-hidden">
+                      {/* Lesson Brief Header */}
+                      <div className="bg-gradient-to-r from-yellow-400/10 to-yellow-400/5 border-b border-zinc-800 p-6">
+                        <div className="flex items-center gap-2 mb-3">
+                          <span className="bg-yellow-400/10 text-yellow-400 border border-yellow-400/20 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider">
+                            Creators Hub Academy
                           </span>
-                          <h2 className="text-xl md:text-2xl font-bold text-white mt-2">
-                            {activeLesson?.lessonTitle || "Lesson Document Summary"}
-                          </h2>
-                          <p className="text-gray-400 text-xs md:text-sm mt-1">
-                            Module {activeLesson?.moduleNumber || 1}: {activeLesson?.moduleTitle || "Curriculum"} • Lesson {activeLesson?.lessonNumber || 1} ({activeLesson?.duration || "Lecture"})
-                          </p>
+                          <span className="bg-zinc-800 text-gray-300 text-xs font-semibold px-3 py-1 rounded-full">
+                            Lesson Document Summary
+                          </span>
                         </div>
+                        <h2 className="text-xl md:text-2xl font-bold text-white mb-2">
+                          {activeLesson?.lessonTitle || "Lesson Document Summary"}
+                        </h2>
+                        <p className="text-gray-400 text-sm">
+                          Module {activeLesson?.moduleNumber || 1}: {activeLesson?.moduleTitle || "Curriculum"} • Lesson {activeLesson?.lessonNumber || 1} ({activeLesson?.duration || "Lecture"})
+                        </p>
+                      </div>
 
-                        <div className="bg-zinc-900/80 border border-zinc-800 rounded-lg p-4 mb-4">
-                          <h3 className="text-yellow-400 font-bold text-sm mb-1.5 flex items-center gap-2">
-                            📌 Lesson Executive Overview
+                      <div className="p-6">
+                        {/* Course Brief */}
+                        <div className="bg-zinc-900/80 border border-zinc-800 rounded-xl p-5 mb-6">
+                          <h3 className="text-yellow-400 font-bold text-base mb-3 flex items-center gap-2">
+                            📌 About This Lesson
                           </h3>
-                          <p className="text-gray-300 text-sm leading-relaxed">
-                            {activeLesson?.lessonDescription || "This lesson provides core principles and step-by-step practical methods for mastering digital skills."}
+                          <p className="text-gray-300 leading-relaxed">
+                            {activeLesson?.lessonDescription || "This lesson provides core principles and step-by-step practical methods for mastering digital skills. Follow along with the video lecture and apply these techniques to build real-world proficiency."}
                           </p>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                          <div className="bg-zinc-900/60 border border-zinc-800/80 rounded-lg p-4">
-                            <h4 className="text-white font-semibold text-sm mb-2">💡 Core Principles & Takeaways</h4>
-                            <ul className="text-xs text-gray-300 space-y-1.5 list-disc pl-4">
-                              <li>Master key concepts and workflows introduced in this video lecture.</li>
-                              <li>Apply step-by-step practical techniques demonstrated by the instructor.</li>
-                              <li>Observe essential parameters and shortcuts to optimize your results.</li>
+                        {/* What You'll Learn */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                          <div className="bg-zinc-900/60 border border-zinc-800/80 rounded-xl p-5">
+                            <h4 className="text-white font-semibold text-sm mb-3 flex items-center gap-2">
+                              <span className="w-6 h-6 bg-yellow-400/20 text-yellow-400 rounded-full flex items-center justify-center text-xs">🎯</span>
+                              Core Principles
+                            </h4>
+                            <ul className="text-xs text-gray-300 space-y-2">
+                              <li className="flex items-start gap-2">
+                                <span className="text-yellow-400 mt-0.5">▸</span>
+                                Master key concepts and workflows introduced in this video lecture.
+                              </li>
+                              <li className="flex items-start gap-2">
+                                <span className="text-yellow-400 mt-0.5">▸</span>
+                                Apply step-by-step practical techniques demonstrated by the instructor.
+                              </li>
+                              <li className="flex items-start gap-2">
+                                <span className="text-yellow-400 mt-0.5">▸</span>
+                                Observe essential parameters and shortcuts to optimize your results.
+                              </li>
                             </ul>
                           </div>
 
-                          <div className="bg-zinc-900/60 border border-zinc-800/80 rounded-lg p-4">
-                            <h4 className="text-white font-semibold text-sm mb-2">🛠️ Recommended Practice Guide</h4>
-                            <ul className="text-xs text-gray-300 space-y-1.5 list-disc pl-4">
-                              <li>Replicate the practical exercise directly in your tool/editor.</li>
-                              <li>Save project progress and test key shortcuts taught in the video.</li>
-                              <li>Utilize the AI Tutor if you need instant answers or explanations.</li>
+                          <div className="bg-zinc-900/60 border border-zinc-800/80 rounded-xl p-5">
+                            <h4 className="text-white font-semibold text-sm mb-3 flex items-center gap-2">
+                              <span className="w-6 h-6 bg-yellow-400/20 text-yellow-400 rounded-full flex items-center justify-center text-xs">🛠️</span>
+                              Practice Guide
+                            </h4>
+                            <ul className="text-xs text-gray-300 space-y-2">
+                              <li className="flex items-start gap-2">
+                                <span className="text-yellow-400 mt-0.5">▸</span>
+                                Replicate the practical exercise directly in your tool/editor.
+                              </li>
+                              <li className="flex items-start gap-2">
+                                <span className="text-yellow-400 mt-0.5">▸</span>
+                                Save project progress and test key shortcuts taught in the video.
+                              </li>
+                              <li className="flex items-start gap-2">
+                                <span className="text-yellow-400 mt-0.5">▸</span>
+                                Utilize the AI Tutor if you need instant answers or explanations.
+                              </li>
                             </ul>
+                          </div>
+                        </div>
+
+                        {/* Lesson Metadata */}
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+                          <div className="bg-zinc-900/40 border border-zinc-800/60 rounded-lg p-3 text-center">
+                            <p className="text-gray-500 text-[10px] uppercase tracking-wider mb-1">Module</p>
+                            <p className="text-white font-bold text-sm">{activeLesson?.moduleNumber || 1}</p>
+                          </div>
+                          <div className="bg-zinc-900/40 border border-zinc-800/60 rounded-lg p-3 text-center">
+                            <p className="text-gray-500 text-[10px] uppercase tracking-wider mb-1">Lesson</p>
+                            <p className="text-white font-bold text-sm">{activeLesson?.lessonNumber || 1}</p>
+                          </div>
+                          <div className="bg-zinc-900/40 border border-zinc-800/60 rounded-lg p-3 text-center">
+                            <p className="text-gray-500 text-[10px] uppercase tracking-wider mb-1">Duration</p>
+                            <p className="text-white font-bold text-sm">{activeLesson?.duration || "Lecture"}</p>
+                          </div>
+                          <div className="bg-zinc-900/40 border border-zinc-800/60 rounded-lg p-3 text-center">
+                            <p className="text-gray-500 text-[10px] uppercase tracking-wider mb-1">Format</p>
+                            <p className="text-yellow-400 font-bold text-sm">Video + PDF</p>
                           </div>
                         </div>
                       </div>
 
-                      <div className="border-t border-zinc-800 pt-4 flex flex-wrap items-center justify-between gap-3">
+                      {/* Footer Actions */}
+                      <div className="border-t border-zinc-800 p-4 flex flex-wrap items-center justify-between gap-3 bg-zinc-900/30">
                         <button
                           onClick={() => window.print()}
                           className="bg-yellow-400 hover:bg-yellow-500 text-black font-bold text-xs md:text-sm px-4 py-2.5 rounded-lg transition"
                         >
-                          🖨️ Save / Print Document Summary
+                          🖨️ Save / Print Summary
                         </button>
                         <button
                           onClick={() => setAiDrawerOpen(true)}
