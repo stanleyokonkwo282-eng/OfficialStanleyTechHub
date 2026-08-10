@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
 import Slider from "react-slick";
 import ContentNotFound from "../common/ContentNotFound";

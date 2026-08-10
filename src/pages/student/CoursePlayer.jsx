@@ -390,7 +390,7 @@ export default function CoursePlayer() {
       ? rawPdfUrl
       : `${import.meta.env.VITE_BASE_URL || ''}${rawPdfUrl.startsWith("/") ? "" : "/"}${rawPdfUrl}`
     : null;
-  const canPreview = Boolean(normalizedPdfUrl);
+  const canPreview = Boolean(normalizedPdfUrl && (rawPdfUrl.startsWith("http") || rawPdfUrl.startsWith("/uploads/")));
 
   return (
     <div className="min-h-screen bg-black text-white flex flex-col">
