@@ -7,7 +7,7 @@ export default function JoinAsTeacher() {
       <div className="max-w-7xl mx-auto px-6 md:px-10 grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
         <div>
           <img
-            src="https://i.postimg.cc/6pxqKkV6/Whats-App-Image-2026-05-21-at-5-03-29-PM.jpg"
+            src="https://i.postimg.cc/MKkVCDNJ/762719758-5443054415919655-4524288621991209147-n-(1).jpg"
             alt="Stanley Okonkwo - Founder"
             className="w-full h-auto rounded-xl shadow-md shadow-yellow-400/20 border border-zinc-800"
           />
