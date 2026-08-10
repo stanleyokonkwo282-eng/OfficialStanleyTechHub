@@ -100,9 +100,10 @@ export default function ManageCourses() {
               >
                 <td>
                   <img
-                    src={course.image}
+                    src={course.image || course.thumbnail || "/logo.png"}
                     alt={`${course.title} course thumbnail`}
                     className="w-16 h-12 rounded"
+                    onError={(e) => { e.target.src = "/logo.png"; }}
                   />
                 </td>
                 <td className="text-white">{course.title}</td>

@@ -65,7 +65,7 @@ export default function EnrolledCourses() {
 function CourseCard({ course, userEmail, axiosSecure, navigate }) {
   const courseId = course.courseInfo?._id;
   const courseTitle = course.courseInfo?.title || "Course";
-  const courseImage = course.courseInfo?.image;
+  const courseImage = course.courseInfo?.image || course.courseInfo?.thumbnail || "/logo.png";
   const instructor = course.instructor?.[0]?.displayName || "Creators Hub Academy";
 
   // Fetch progress for this course
@@ -118,7 +118,10 @@ function CourseCard({ course, userEmail, axiosSecure, navigate }) {
         <img
           src={courseImage}
           alt={courseTitle}
+          loading="lazy"
+          decoding="async"
           className="w-full h-44 object-cover"
+          onError={(e) => { e.target.src = "/logo.png"; }}
         />
         {isCompleted && (
           <div className="absolute top-3 right-3 bg-green-500 text-white text-xs font-bold px-2 py-1 rounded-full">

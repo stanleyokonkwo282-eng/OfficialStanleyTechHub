@@ -7,9 +7,12 @@ export default function CourseCard({ course }) {
 
       <div className="overflow-hidden rounded-lg mb-3">
         <img
-          src={course.image}
+          src={course.image || course.thumbnail || "/logo.png"}
           alt={course.title}
+          loading="lazy"
+          decoding="async"
           className="w-full h-48 object-cover hover:scale-105 transition duration-300 rounded-lg"
+          onError={(e) => { e.target.src = "/logo.png"; }}
         />
       </div>
 

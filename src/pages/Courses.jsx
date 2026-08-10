@@ -82,9 +82,12 @@ const AllCourses = () => {
               className="border border-zinc-800 bg-zinc-950 p-4 rounded-xl shadow hover:shadow-yellow-400/20 hover:border-zinc-600 transition-all duration-200 flex flex-col"
             >
               <img
-                src={course.image}
+                src={course.image || course.thumbnail || "/logo.png"}
                 alt={course.title}
+                loading="lazy"
+                decoding="async"
                 className="h-48 w-full object-cover rounded-lg mb-4"
+                onError={(e) => { e.target.src = "/logo.png"; }}
               />
 
               <div className="flex-1 space-y-2">

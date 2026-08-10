@@ -50,9 +50,12 @@ export default function CategoryCourses() {
                   className="bg-zinc-950 border border-zinc-800 rounded-xl p-4 shadow hover:shadow-yellow-400/20 transition"
                 >
                   <img
-                    src={course.image}
+                    src={course.image || course.thumbnail || "/logo.png"}
                     alt={course.title}
+                    loading="lazy"
+                    decoding="async"
                     className="h-48 w-full object-cover rounded mb-4"
+                    onError={(e) => { e.target.src = "/logo.png"; }}
                   />
                   <h3 className="text-xl font-semibold text-white mb-2">
                     {course.title}

@@ -95,9 +95,10 @@ export default function TeachersCourses() {
                   className="card shadow-lg border border-gray-200 p-4 rounded-lg"
                 >
                   <img
-                    src={course.image}
+                    src={course.image || course.thumbnail || "/logo.png"}
                     alt={course.title}
                     className="w-full h-40 object-cover rounded"
+                    onError={(e) => { e.target.src = "/logo.png"; }}
                   />
                   <div className="mt-3">
                     <h3 className="text-lg font-bold">{course.title}</h3>

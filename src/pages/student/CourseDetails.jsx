@@ -99,11 +99,12 @@ const CourseDetails = () => {
       <div className="max-w-7xl mx-auto py-10 px-4">
         <div className="w-full h-80 rounded-xl overflow-hidden mb-10 border border-zinc-800">
           <img
-            src={course.image}
+            src={course.image || course.thumbnail || "/logo.png"}
             alt={course.title}
             loading="lazy"
             decoding="async"
             className="w-full h-full object-cover"
+            onError={(e) => { e.target.src = "/logo.png"; }}
           />
         </div>
 

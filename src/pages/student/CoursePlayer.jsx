@@ -385,12 +385,12 @@ export default function CoursePlayer() {
   const fallbackYoutubeId = getYouTubeId(activeLesson?.videoUrl, activeLesson?.lessonTitle);
 
   const rawPdfUrl = activeLesson?.pdfUrl;
-  const pdfUrl = rawPdfUrl?.startsWith("http")
-    ? rawPdfUrl
-    : rawPdfUrl
-      ? `${import.meta.env.VITE_BASE_URL || ''}${rawPdfUrl}`
-      : null;
-  const canPreview = rawPdfUrl && (rawPdfUrl.startsWith("http") || rawPdfUrl.startsWith("/uploads/"));
+  const normalizedPdfUrl = rawPdfUrl
+    ? rawPdfUrl.startsWith("http")
+      ? rawPdfUrl
+      : `${import.meta.env.VITE_BASE_URL || ''}${rawPdfUrl.startsWith("/") ? "" : "/"}${rawPdfUrl}`
+    : null;
+  const canPreview = Boolean(normalizedPdfUrl);
 
   return (
     <div className="min-h-screen bg-black text-white flex flex-col">
@@ -476,12 +476,12 @@ export default function CoursePlayer() {
                       )}
                       {!pdfLoading && !pdfError && (
                         <iframe
-                          src={pdfUrl}
-                          onLoad={() => setPdfLoading(false)}
-                          onError={() => setPdfError(true)}
-                          className="w-full flex-1 rounded-lg border border-zinc-800 bg-white"
-                          title="Document Reader Panel"
-                        />
+                            src={normalizedPdfUrl}
+                            onLoad={() => setPdfLoading(false)}
+                            onError={() => setPdfError(true)}
+                            className="w-full flex-1 rounded-lg border border-zinc-800 bg-white"
+                            title="Document Reader Panel"
+                          />
                       )}
                       {pdfError && (
                         <div className="flex-1 flex flex-col items-center justify-center gap-3 text-center p-6">
@@ -490,28 +490,28 @@ export default function CoursePlayer() {
                           <p className="text-gray-400 max-w-md">
                             We couldn't load the preview for this document. You can still view it using the download button below.
                           </p>
-                          <a
-                            href={pdfUrl}
-                            download
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="px-5 py-2.5 bg-yellow-400 hover:bg-yellow-500 text-black font-bold text-sm rounded-lg shadow transition"
-                          >
-                            📥 Download PDF Summary
-                          </a>
+                            <a
+                              href={normalizedPdfUrl}
+                              download
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="px-5 py-2.5 bg-yellow-400 hover:bg-yellow-500 text-black font-bold text-sm rounded-lg shadow transition"
+                            >
+                              📥 Download PDF Summary
+                            </a>
                         </div>
                       )}
                       {!pdfError && (
                         <div className="mt-4 flex justify-center gap-3">
-                          <a
-                            href={pdfUrl}
-                            download
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="px-5 py-2.5 bg-yellow-400 hover:bg-yellow-500 text-black font-bold text-sm rounded-lg shadow gap-2 transition"
-                          >
-                            📥 Download PDF Summary
-                          </a>
+                            <a
+                              href={normalizedPdfUrl}
+                              download
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="px-5 py-2.5 bg-yellow-400 hover:bg-yellow-500 text-black font-bold text-sm rounded-lg shadow gap-2 transition"
+                            >
+                              📥 Download PDF Summary
+                            </a>
                         </div>
                       )}
                     </div>
