@@ -175,20 +175,16 @@ export default function Certificate() {
     );
   }
 
-  // Certificate approved — show the actual certificate
+  // Certificate approved — show the uploaded certificate image or placeholder
   if (certificate?.paymentStatus === "approved" && certificate?.isVerified) {
-    const completionDate = new Date(certificate.completionDate).toLocaleDateString("en-US", {
-      year: "numeric", month: "long", day: "numeric",
-    });
-
     return (
       <div className="min-h-screen bg-black flex flex-col items-center justify-center p-6">
         <style>{`
-          @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800;900&family=Cormorant+Garamond:wght@300;400;500;600;700&family=Great+Vibes&display=swap');
-          .cert-print-colors { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+          @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800&family=Inter:wght@300;400;500;600;700&display=swap');
           @media print {
             body { background: white !important; }
             .print\\:hidden { display: none !important; }
+            .cert-frame { box-shadow: none !important; border: 2px solid #e8d9b5 !important; }
           }
         `}</style>
 
@@ -196,208 +192,57 @@ export default function Certificate() {
           <button onClick={() => navigate(-1)} className="px-4 py-2 bg-zinc-800 border border-zinc-700 text-white rounded-lg hover:bg-zinc-700">
             Back
           </button>
-          <button onClick={() => window.print()} className="px-6 py-2 bg-yellow-400 text-black rounded-lg font-bold hover:bg-yellow-500">
-            Download Certificate
-          </button>
+          {certificate?.certificateImage && (
+            <button onClick={() => window.print()} className="px-6 py-2 bg-yellow-400 text-black rounded-lg font-bold hover:bg-yellow-500">
+              Download Certificate
+            </button>
+          )}
         </div>
 
-        {/* Premium Certificate Frame */}
-        <div
-          ref={certRef}
-          className="cert-print-colors w-full max-w-4xl rounded-3xl shadow-2xl print:shadow-none relative"
-          style={{
-            background: "linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)",
-            padding: "12px",
-          }}
-        >
-          {/* Inner premium card */}
+        {certificate?.certificateImage ? (
           <div
-            className="relative rounded-2xl overflow-hidden"
-            style={{
-              background: "#fdfaf2",
-              backgroundImage: `
-                radial-gradient(circle at 20% 30%, rgba(124,58,237,0.03) 0%, transparent 50%),
-                radial-gradient(circle at 80% 70%, rgba(245,158,11,0.03) 0%, transparent 50%),
-                url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23c99a3f' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")
-              `,
-              border: "3px solid #e8d9b5",
-            }}
+            ref={certRef}
+            className="cert-frame w-full max-w-3xl rounded-2xl shadow-2xl print:shadow-none overflow-hidden"
+            style={{ background: "#fdfaf2", border: "3px solid #e8d9b5", padding: "12px" }}
           >
-            {/* Corner ornaments */}
-            <svg className="absolute top-4 left-4 w-20 h-20 opacity-80" viewBox="0 0 100 100" fill="none">
-              <path d="M10 90 C10 45, 45 10, 90 10" stroke="#c99a3f" strokeWidth="2.5" fill="none" />
-              <path d="M20 90 C20 50, 50 20, 90 20" stroke="#f59e0b" strokeWidth="1" fill="none" opacity="0.5" />
-              <circle cx="25" cy="75" r="4" fill="#f59e0b" />
-              <circle cx="45" cy="50" r="3" fill="#7c3aed" />
-              <circle cx="65" cy="30" r="3" fill="#f59e0b" />
-            </svg>
-            <svg className="absolute top-4 right-4 w-20 h-20 opacity-80" viewBox="0 0 100 100" fill="none" style={{ transform: "scaleX(-1)" }}>
-              <path d="M10 90 C10 45, 45 10, 90 10" stroke="#c99a3f" strokeWidth="2.5" fill="none" />
-              <path d="M20 90 C20 50, 50 20, 90 20" stroke="#f59e0b" strokeWidth="1" fill="none" opacity="0.5" />
-              <circle cx="25" cy="75" r="4" fill="#f59e0b" />
-              <circle cx="45" cy="50" r="3" fill="#7c3aed" />
-              <circle cx="65" cy="30" r="3" fill="#f59e0b" />
-            </svg>
-            <svg className="absolute bottom-4 left-4 w-20 h-20 opacity-80" viewBox="0 0 100 100" fill="none" style={{ transform: "scaleY(-1)" }}>
-              <path d="M10 90 C10 45, 45 10, 90 10" stroke="#c99a3f" strokeWidth="2.5" fill="none" />
-              <path d="M20 90 C20 50, 50 20, 90 20" stroke="#f59e0b" strokeWidth="1" fill="none" opacity="0.5" />
-              <circle cx="25" cy="75" r="4" fill="#f59e0b" />
-              <circle cx="45" cy="50" r="3" fill="#7c3aed" />
-              <circle cx="65" cy="30" r="3" fill="#f59e0b" />
-            </svg>
-            <svg className="absolute bottom-4 right-4 w-20 h-20 opacity-80" viewBox="0 0 100 100" fill="none" style={{ transform: "scale(-1,-1)" }}>
-              <path d="M10 90 C10 45, 45 10, 90 10" stroke="#c99a3f" strokeWidth="2.5" fill="none" />
-              <path d="M20 90 C20 50, 50 20, 90 20" stroke="#f59e0b" strokeWidth="1" fill="none" opacity="0.5" />
-              <circle cx="25" cy="75" r="4" fill="#f59e0b" />
-              <circle cx="45" cy="50" r="3" fill="#7c3aed" />
-              <circle cx="65" cy="30" r="3" fill="#f59e0b" />
-            </svg>
-
-            {/* Watermark */}
-            <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-5">
-              <img src="/logo.png" alt="" className="w-96 h-96 object-contain" />
-            </div>
-
-            <div className="px-8 py-10 sm:px-16 sm:py-14 flex flex-col items-center text-center relative z-10">
-              {/* Logo and Academy Name */}
-              <div className="mb-6">
-                <img src="/logo.png" alt="Creators Hub Academy" className="w-24 h-24 object-contain mx-auto mb-4" />
-                <p
-                  className="text-xs tracking-[0.4em] uppercase font-semibold"
-                  style={{ color: "#7c3aed", fontFamily: "'Cormorant Garamond', serif" }}
-                >
-                  Creators Hub Academy
-                </p>
-              </div>
-
-              {/* Decorative line */}
-              <div className="w-32 h-0.5 bg-gradient-to-r from-transparent via-yellow-500 to-transparent mb-6"></div>
-
-              {/* Certificate Title */}
-              <h1
-                className="text-4xl sm:text-5xl md:text-6xl mb-3"
-                style={{ fontFamily: "'Playfair Display', serif", fontWeight: 800, color: "#1a1a2e" }}
-              >
-                Certificate of Completion
-              </h1>
-
-              {/* Subtitle badge */}
+            <div className="relative rounded-xl overflow-hidden bg-white">
+              <img
+                src={certificate.certificateImage}
+                alt="Your Certificate"
+                className="w-full h-auto object-contain"
+                onError={(e) => {
+                  e.target.style.display = "none";
+                  e.target.nextSibling.style.display = "flex";
+                }}
+              />
               <div
-                className="mb-8 px-10 py-2.5"
-                style={{
-                  background: "linear-gradient(135deg, #7c3aed, #f59e0b)",
-                  borderRadius: "2px",
-                  boxShadow: "0 4px 15px rgba(124,58,237,0.3)",
-                }}
+                className="hidden items-center justify-center p-12 text-center"
+                style={{ display: "none" }}
               >
-                <p className="text-white text-xs sm:text-sm font-bold tracking-[0.2em] uppercase">
-                  This Certificate Is Proudly Presented To
-                </p>
-              </div>
-
-              {/* Recipient Name */}
-              <h2
-                className="text-3xl sm:text-4xl md:text-5xl mb-3"
-                style={{
-                  fontFamily: "'Playfair Display', serif",
-                  fontWeight: 700,
-                  background: "linear-gradient(135deg, #1a1a2e, #7c3aed)",
-                  WebkitBackgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                }}
-              >
-                {studentName}
-              </h2>
-
-              <div className="w-24 h-0.5 bg-gradient-to-r from-transparent via-yellow-600 to-transparent mb-6"></div>
-
-              {/* Course completion text */}
-              <p className="text-gray-700 text-base sm:text-lg mb-2" style={{ fontFamily: "'Cormorant Garamond', serif", fontWeight: 500 }}>
-                For successfully completing the course
-              </p>
-              <h3 className="text-xl sm:text-2xl font-bold mb-8" style={{ color: "#1a1a2e", fontFamily: "'Playfair Display', serif" }}>
-                {courseName}
-              </h3>
-
-              {/* Details grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 mb-10 w-full max-w-2xl">
-                <div className="bg-white bg-opacity-60 border border-yellow-200 rounded-lg p-4">
-                  <p className="text-gray-500 text-xs uppercase tracking-wider mb-1">Issue Date</p>
-                  <p className="text-gray-900 font-bold text-sm" style={{ fontFamily: "'Playfair Display', serif" }}>{completionDate}</p>
-                </div>
-                <div className="bg-white bg-opacity-60 border border-yellow-200 rounded-lg p-4">
-                  <p className="text-gray-500 text-xs uppercase tracking-wider mb-1">Certificate ID</p>
-                  <p className="text-yellow-700 font-bold text-sm font-mono">{certificate.certificateId}</p>
-                </div>
-                <div className="bg-white bg-opacity-60 border border-yellow-200 rounded-lg p-4">
-                  <p className="text-gray-500 text-xs uppercase tracking-wider mb-1">Status</p>
-                  <p className="text-green-700 font-bold text-sm">✓ Verified</p>
-                </div>
-              </div>
-
-              {/* Divider */}
-              <div className="w-full flex items-center gap-4 mb-8">
-                <div className="flex-1 h-px bg-gradient-to-r from-transparent to-yellow-400"></div>
-                <div className="w-2 h-2 rounded-full bg-yellow-500"></div>
-                <div className="flex-1 h-px bg-gradient-to-l from-transparent to-yellow-400"></div>
-              </div>
-
-              {/* Bottom section: Seal + Signature */}
-              <div className="w-full flex flex-col sm:flex-row items-center justify-between gap-10">
-                {/* Official Seal */}
-                <div className="flex flex-col items-center">
-                  <div
-                    className="w-28 h-28 rounded-full flex flex-col items-center justify-center relative"
-                    style={{
-                      background: "linear-gradient(135deg, #7c3aed, #f59e0b, #7c3aed)",
-                      padding: "4px",
-                    }}
-                  >
-                    <div className="w-full h-full rounded-full bg-white flex flex-col items-center justify-center">
-                      <div className="text-3xl mb-1">✦</div>
-                      <div className="text-yellow-600 text-[8px] font-bold tracking-widest uppercase">Verified</div>
-                      <div className="text-gray-400 text-[7px] tracking-wider">OFFICIAL</div>
-                    </div>
-                  </div>
-                  <p className="text-gray-500 text-[10px] tracking-[0.2em] uppercase mt-2 font-semibold">Authorized Seal</p>
-                </div>
-
-                {/* Signature */}
-                <div className="flex flex-col items-center">
-                  <div className="h-16 flex items-center justify-center mb-1">
-                    <img
-                      src="/signature.png"
-                      alt="Stanley Okonkwo Signature"
-                      className="h-16 object-contain"
-                      onError={(e) => { e.target.style.display = 'none'; }}
-                      style={{ display: 'none' }}
-                    />
-                    <p
-                      className="text-4xl"
-                      style={{
-                        fontFamily: "'Great Vibes', cursive",
-                        color: "#1a1a2e",
-                        lineHeight: 1,
-                      }}
-                    >
-                      Stanley Okonkwo
-                    </p>
-                  </div>
-                  <div className="w-56 border-t-2 border-gray-800 mb-2"></div>
-                  <p className="text-gray-700 text-sm font-bold" style={{ fontFamily: "'Playfair Display', serif" }}>Stanley Okonkwo</p>
-                  <p className="text-gray-500 text-xs">Founder & CEO, Creators Hub Academy</p>
-                </div>
-              </div>
-
-              {/* Footer tagline */}
-              <div className="mt-10 pt-6 border-t border-yellow-200 w-full">
-                <p className="text-gray-400 text-[10px] tracking-[0.3em] uppercase font-semibold">
-                  Learn · Grow · Create · Build Your Future Together
-                </p>
+                <p className="text-gray-500 text-lg">Unable to load certificate image. Please contact support.</p>
               </div>
             </div>
           </div>
-        </div>
+        ) : (
+          <div className="max-w-lg w-full bg-zinc-950 border border-zinc-800 rounded-2xl p-8 text-center">
+            <div className="text-6xl mb-4">🎓</div>
+            <h2 className="text-white text-2xl font-bold mb-3" style={{ fontFamily: "'Playfair Display', serif" }}>
+              Certificate Pending
+            </h2>
+            <p className="text-gray-400 mb-6">
+              Your payment has been verified and your certificate is being designed. You will receive it here shortly.
+            </p>
+            <div className="bg-zinc-900 rounded-xl p-4 mb-6">
+              <p className="text-gray-400 text-sm">Certificate ID</p>
+              <p className="text-yellow-400 font-bold font-mono">{certificate.certificateId}</p>
+            </div>
+            <p className="text-gray-500 text-sm">
+              If you have any questions, contact us on{" "}
+              <a href="https://wa.me/2348134438808" className="text-green-400 underline">WhatsApp</a> or{" "}
+              <a href="mailto:creatorshubacademy3@gmail.com" className="text-yellow-400 underline">Email</a>.
+            </p>
+          </div>
+        )}
       </div>
     );
   }

@@ -1,12 +1,15 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 import Swal from "sweetalert2";
+import { useState, useRef } from "react";
+import handleUpload from "../../utils/ImageUploadApi";
 import LoaderSpinner from "../../components/common/LoaderSpinner";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
 
 export default function ManageCertificates() {
   const axiosSecure = useAxiosSecure();
   const queryClient = useQueryClient();
+  const [uploadingId, setUploadingId] = useState(null);
 
   const { data, isLoading } = useQuery({
     queryKey: ["certificates"],
@@ -28,6 +31,23 @@ export default function ManageCertificates() {
     onError: () => toast.error("Failed to update certificate"),
   });
 
+  const uploadMutation = useMutation({
+    mutationFn: async ({ id, file }) => {
+      const url = await handleUpload(file);
+      const res = await axiosSecure.patch(`/certificates/${id}/upload-image`, { certificateImage: url });
+      return res.data;
+    },
+    onSuccess: () => {
+      toast.success("Certificate image uploaded!");
+      queryClient.invalidateQueries(["certificates"]);
+      setUploadingId(null);
+    },
+    onError: () => {
+      toast.error("Failed to upload certificate image");
+      setUploadingId(null);
+    },
+  });
+
   const handleAction = (id, action) => {
     Swal.fire({
       title: `Are you sure to ${action} this certificate?`,
@@ -43,6 +63,12 @@ export default function ManageCertificates() {
         updateMutation.mutate({ id, paymentStatus: action });
       }
     });
+  };
+
+  const handleImageUpload = (certId, file) => {
+    if (!file) return;
+    setUploadingId(certId);
+    uploadMutation.mutate({ id: certId, file });
   };
 
   if (isLoading) return <LoaderSpinner />;
@@ -125,6 +151,40 @@ export default function ManageCertificates() {
                       <p className="text-gray-600 text-xs">No proof uploaded</p>
                     </div>
                   )}
+                </div>
+
+                {/* Certificate Image Upload */}
+                <div className="w-full md:w-48">
+                  <p className="text-gray-400 text-xs mb-2">Certificate Design:</p>
+                  {cert.certificateImage ? (
+                    <div className="relative">
+                      <img
+                        src={cert.certificateImage}
+                        alt="Certificate design"
+                        className="w-full h-32 object-contain rounded-lg border border-green-700 bg-zinc-900"
+                        onError={(e) => { e.target.style.display = "none"; }}
+                      />
+                      <p className="text-green-400 text-xs mt-1">✓ Uploaded</p>
+                    </div>
+                  ) : (
+                    <div className="w-full h-32 bg-zinc-900 rounded-lg border border-zinc-700 flex items-center justify-center">
+                      <p className="text-gray-600 text-xs">No design uploaded</p>
+                    </div>
+                  )}
+                  <input
+                    type="file"
+                    id={`cert-img-${cert._id}`}
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(e) => handleImageUpload(cert._id, e.target.files[0])}
+                  />
+                  <button
+                    onClick={() => document.getElementById(`cert-img-${cert._id}`).click()}
+                    disabled={uploadingId === cert._id}
+                    className="mt-2 w-full px-3 py-1.5 bg-yellow-400 text-black rounded-lg font-bold text-xs hover:bg-yellow-500 disabled:opacity-50"
+                  >
+                    {uploadingId === cert._id ? "Uploading..." : "Upload Design"}
+                  </button>
                 </div>
 
                 {/* Actions */}

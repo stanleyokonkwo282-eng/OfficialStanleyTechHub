@@ -13,7 +13,7 @@ export default function UserProfile() {
       <div className="h-full py-4 px-2 md:p-10 bg-black min-h-screen">
         <div className="flex flex-col items-center gap-4 w-full md:max-w-2xl mx-auto">
           <img
-            src={user.photoURL || user.image || "/default-avatar.png"}
+            src={user.photoURL || user.image || "/logo.png"}
             alt="Profile"
             className="w-32 h-32 rounded-full object-cover border-4 border-yellow-400"
           />
