@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 import Swal from "sweetalert2";
-import { useState, useRef } from "react";
+import { useState } from "react";
 import handleUpload from "../../utils/ImageUploadApi";
 import LoaderSpinner from "../../components/common/LoaderSpinner";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
