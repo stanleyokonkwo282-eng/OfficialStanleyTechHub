@@ -36,20 +36,6 @@ export default function CoursePlayer() {
   const lastKnownTime = useRef(0);
   const playerContainerId = "youtube-player-container";
   const apiLoadedRef = useRef(false);
-  const isPlayingRef = useRef(false);
-
-  // --- Warn when leaving page while video is playing ---
-  useEffect(() => {
-    const handleBeforeUnload = (e) => {
-      if (isPlayingRef.current) {
-        e.preventDefault();
-        e.returnValue = "Your video is still playing. Are you sure you want to leave?";
-        return e.returnValue;
-      }
-    };
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, []);
 
   // --- Scroll chat to bottom ---
   useEffect(() => {
@@ -240,7 +226,6 @@ export default function CoursePlayer() {
 
     const onPlayerStateChange = (event) => {
       if (event.data === window.YT.PlayerState.PLAYING) {
-        isPlayingRef.current = true;
         if (watchInterval.current) clearInterval(watchInterval.current);
         watchInterval.current = setInterval(() => {
           if (playerRef.current && playerReady && !completedRef.current && playerRef.current.getCurrentTime) {
@@ -266,7 +251,6 @@ export default function CoursePlayer() {
           }
         }, 2000);
       } else if (event.data === window.YT.PlayerState.PAUSED || event.data === window.YT.PlayerState.ENDED) {
-        isPlayingRef.current = false;
         if (watchInterval.current) clearInterval(watchInterval.current);
         if (playerRef.current && playerReady && playerRef.current.getCurrentTime) {
           const currentTime = playerRef.current.getCurrentTime();
@@ -291,9 +275,6 @@ export default function CoursePlayer() {
             start: activeLesson.lastWatchedTime || 0,
             playsinline: 1,
             controls: 1,
-            fs: 0,
-            iv_load_policy: 3,
-            enablejsapi: 1,
           },
           events: { onReady: onPlayerReady, onStateChange: onPlayerStateChange, onError: onPlayerError },
         });
@@ -511,16 +492,9 @@ export default function CoursePlayer() {
                 </div>
 
                  {selectedFormat === 'video' ? (
-                  <div className="w-full aspect-video bg-zinc-900 rounded-xl overflow-hidden mb-4 relative" onContextMenu={(e) => e.preventDefault()}>
+                  <div className="w-full aspect-video bg-zinc-900 rounded-xl overflow-hidden mb-4">
                     {!useFallback ? (
-                      <>
-                        <div id={playerContainerId} className="w-full h-full" />
-                        {!playerReady && !videoError && (
-                          <div className="absolute inset-0 flex items-center justify-center bg-zinc-900">
-                            <span className="loading loading-spinner loading-lg text-yellow-400"></span>
-                          </div>
-                        )}
-                      </>
+                      <div id={playerContainerId} className="w-full h-full" />
                     ) : (
                       fallbackYoutubeId ? (
                         <div className="w-full h-full flex flex-col items-center justify-center gap-4 p-6 text-center">
