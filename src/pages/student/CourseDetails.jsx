@@ -1,5 +1,6 @@
+import { useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useNavigate, useParams } from "react-router";
+import { useLocation, useNavigate, useParams } from "react-router";
 import { toast } from "react-toastify";
 import LoaderSpinner from "../../components/common/LoaderSpinner";
 import useAuth from "../../hooks/useAuth";
@@ -9,6 +10,7 @@ import renderStars from "../../utils/renderStars";
 const CourseDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
   const axiosSecure = useAxiosSecure();
   const queryClient = useQueryClient();
@@ -21,7 +23,7 @@ const CourseDetails = () => {
     },
   });
 
-  const { data: enrollmentData } = useQuery({
+  const { data: enrollmentData, isLoading: enrollmentLoading } = useQuery({
     queryKey: ["enrollment", id, user?.email],
     queryFn: async () => {
       const res = await axiosSecure.get(`/enrollments/${id}`);
@@ -61,9 +63,31 @@ const CourseDetails = () => {
     },
   });
 
+  // "Coupon code login pattern": when a guest starts the free-enrollment flow
+  // (course card → login), they return here with an `enrollAfterLogin` flag.
+  // Auto-enroll them with the CREATOR coupon so they never click twice.
+  useEffect(() => {
+    const shouldAutoEnroll = location.state?.enrollAfterLogin;
+    if (!shouldAutoEnroll) return;
+    if (!user) return;
+    if (enrollmentLoading) return;
+    if (enrollMutation.isPending) return;
+
+    if (isEnrolled) {
+      navigate(`/dashboard/learn/${id}`, { replace: true });
+      return;
+    }
+
+    enrollMutation.mutate();
+    navigate(".", { replace: true, state: { enrollAfterLogin: undefined } });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, isEnrolled, enrollmentLoading, location.state?.enrollAfterLogin, enrollMutation.isPending]);
+
   const handleEnrollClick = () => {
     if (!user) {
-      navigate("/login");
+      navigate("/login", {
+        state: { from: `/courses/${id}`, enrollAfterLogin: true },
+      });
       return;
     }
     if (isEnrolled) {

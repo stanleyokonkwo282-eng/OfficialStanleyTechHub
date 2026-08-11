@@ -26,4 +26,14 @@ export default defineConfig([
       'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]|^motion$' }],
     },
   },
+  {
+    // Backend route templates (CommonJS/Express) live alongside the client
+    // and are authored for Node, not the browser.
+    files: ['src/routes/**/*.js'],
+    languageOptions: {
+      ecmaVersion: 'latest',
+      sourceType: 'commonjs',
+      globals: globals.node,
+    },
+  },
 ])

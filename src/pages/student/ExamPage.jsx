@@ -1,6 +1,7 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router";
+import { toast } from "react-toastify";
 import LoaderSpinner from "../../components/common/LoaderSpinner";
 import useAuth from "../../hooks/useAuth";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
@@ -47,7 +48,27 @@ export default function ExamPage() {
       });
       return res.data;
     },
-    onSuccess: (data) => setResult(data),
+    onSuccess: async (data) => {
+      setResult(data);
+      try {
+        await axiosSecure.post("/notifications/exam-completed", {
+          courseId,
+          courseTitle: examData?.exam?.courseTitle,
+          studentEmail: user?.email,
+          studentName: user?.displayName || user?.email,
+          score: data?.score,
+          passed: data?.passed,
+        });
+        toast.info("📧 Admin notified of your exam completion.", {
+          autoClose: 4000,
+        });
+      } catch {
+        toast.warn(
+          "Exam saved, but the completion notification could not be sent to the admin.",
+          { autoClose: 5000 }
+        );
+      }
+    },
     onError: (err) =>
       alert(err?.response?.data?.message || "Submission failed."),
   });

@@ -83,13 +83,14 @@ The certificate is not just a piece of paper—it is a **verified, globally reco
 
 ### Student Features
 - **Course Discovery**: Browse new, popular, and categorized courses (23+ courses)
-- **Free Enrollment**: Use coupon `CREATOR` for 100% free access
+- **Free Enrollment**: Use coupon `CREATOR` for 100% free access. The free-enrollment flow preserves login intent — a guest who clicks "Enroll Now" is redirected to login and, on return, is **auto-enrolled with the `CREATOR` coupon** without clicking again (seamless coupon-code login pattern).
 - **Video Player**: YouTube-powered player with resume-from-last-watched, progress tracking, and forward-seek lock
 - **YouTube Player (Updated)**: Removed beforeunload warning, removed context menu/keyboard restrictions, removed sandbox/iframe restrictions. Player uses standard YouTube embed with clean UI. Loading spinner overlay removed for smoother playback.
 - **PDF Document Summary**: Switch between video lecture and PDF reading mode with loading states and error fallbacks
 - **AI Course Assistant**: Context-aware chatbot powered by Gemini Flash for lesson-specific help
 - **Progress Tracking**: Auto-saved last-watched time, completion percentage, and lesson checkmarks
 - **Exams**: Multiple-choice exams with 2-attempt limit and pass/fail tracking
+- **Exam Completion Alerts**: When a student submits an exam, the admin receives a **WhatsApp + email** notification with the student's name, course, and score (see Backend route template `src/routes/notifications.js`).
 - **Certificates**: Admin-designed certificates uploaded manually through admin portal. Student receives certificate image after admin uploads custom design. Admin notified via WhatsApp and email on every payment.
 - **Payment Integration**: Paystack card payment or manual bank transfer (Opay: 8134438808, Polaris: 3046748449)
 - **Certificate Verification**: Public verification page for employers and institutions
@@ -205,9 +206,12 @@ server/
 
 ### Frontend (.env.local / .env.development)
 ```
-VITE_BASE_URL=https://creators-hub-academy-backend.onrender.com
+VITE_BASE_URL=https://creators-hub-academy-backend.onrender.com/api
 VITE_IMAGEKIT_PUBLIC_KEY=public_D8Ael8MK3U2LxGKzmYwsvaOPzuQ=
 ```
+> A tracked **`.env.example`** is committed at the repo root listing every frontend
+> variable (Firebase config + ImageKit public key). `VITE_IMAGEKIT_PUBLIC_KEY` is
+> **required** — without it, image uploads (certificate designs, course thumbnails) fail.
 
 ### Backend (.env)
 ```
@@ -222,6 +226,19 @@ PAYSTACK_SECRET_KEY=sk_live_...
 SENTRY_DSN=https://...
 ```
 
+### Backend — Admin Notifications (exam completion)
+These live on the server, not in the client:
+```
+ADMIN_EMAIL=hello@creatorshubacademy.com
+ADMIN_WHATSAPP=whatsapp:+2348134438808
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=...
+SMTP_PASS=...
+TWILIO_ACCOUNT_SID=...
+TWILIO_AUTH_TOKEN=...
+TWILIO_WHATSAPP_FROM=whatsapp:+14155238886
+```
 > **Note**: The actual values are stored securely in the deployment platforms (Vercel and Render). The `.env` files in the repo contain placeholder values for local development.
 
 ---
@@ -312,10 +329,15 @@ When a student pays for a certificate, the admin receives:
 ## 13. Image Handling
 
 ### Upload Flow
-1. Teacher selects image in UpdateCourse form
-2. Frontend requests ImageKit signature from `/get-ik-signature`
-3. Frontend uploads directly to ImageKit CDN
-4. ImageKit URL is saved to MongoDB `Course.image` field
+1. Teacher/admin selects image (course thumbnail, certificate design, payment proof preview)
+2. `src/utils/ImageUploadApi.js` (`handleUpload`) runs:
+   - Requests an ImageKit upload signature from `POST /api/get-ik-signature` **with the Firebase ID token** attached (`Authorization: Bearer <token>`) — every other API call already authenticates via `useAxiosSecure`, and the signature endpoint is auth-protected, so unauthenticated requests return `401`.
+   - The signature response may return `publicKey`; otherwise the client falls back to `VITE_IMAGEKIT_PUBLIC_KEY`.
+   - Uploads the file directly to ImageKit (`https://upload.imagekit.io/...`) and returns the CDN URL.
+3. ImageKit URL is saved to MongoDB (e.g. `Course.image`, `Certificate.certificateImage`).
+4. Errors now surface the real status code and body (e.g. `Signature request failed (401): ...`, `Upload failed (400): ...`) so upload failures are diagnosable.
+
+> **Requirement**: `VITE_IMAGEKIT_PUBLIC_KEY` must be set in `.env.local` (see Section 8). It is a public key and safe to expose in the browser.
 
 ### Display
 - All course images use `course.image` with fallback to `course.thumbnail` (legacy) and `/logo.png`
@@ -462,15 +484,28 @@ The PDF summary view provides a professional lesson brief when no actual PDF is 
    - Updated `seedCourses.js` with all 23+ courses
    - Includes duplicate prevention logic
 
----
+6. **Exam Completion Notifications**:
+   - New backend route template `src/routes/notifications.js` (`POST /api/notifications/exam-completed`)
+   - Sends **Gmail** via nodemailer (SMTP) and **WhatsApp** via Twilio when a student finishes an exam
+   - `src/routes/models/Notification.js` Mongoose model logs each event for the admin panel
+   - Frontend: `ExamPage.jsx` POSTs `{ courseId, courseTitle, studentEmail, studentName, score, passed }` on exam submit; best-effort (graceful toast if the route isn't deployed yet)
 
-## 17. Known Limitations & Future Improvements
+### Recent Enhancements (2026-08-11 session)
+1. **Quote Carousel**: `src/components/home/QuotesHero.jsx` now keeps each quote on screen for **10 seconds** (`QUOTE_DISPLAY_MS = 10000`) before cycling to the next, with `AnimatePresence` cross-fade transitions.
+2. **Coupon-Code Login Pattern**: A guest clicking "Enroll Now" (coupon `CREATOR`) is redirected to login and, on return, is **auto-enrolled for free** without re-clicking — implemented in `CourseDetails.jsx` (`enrollAfterLogin` flag), `PrivateRoute.jsx`, `Login.jsx`, and `CourseCard.jsx`.
+3. **Admin Welcome Notifications**: `Login.jsx` now shows a warm welcome toast after sign-in; `Dashboard.jsx` shows a "Welcome to your dashboard" notification on first load after login (session-guarded).
+4. **Portfolio Tracking (About page)**: `src/utils/linkTracker.js` records portfolio-link views and clicks to `localStorage` (+ best-effort Firebase RTDB). The About page fires a view event on scroll-into-view (`IntersectionObserver`) and a welcome toast on portfolio-link click.
+5. **Certificate Image Upload Fix**: `src/utils/ImageUploadApi.js` now (a) attaches the Firebase ID token to the `/get-ik-signature` request — the signature endpoint is auth-protected, so the previous tokenless `fetch` returned `401`, (b) resolves `publicKey` from the signature response or `VITE_IMAGEKIT_PUBLIC_KEY`, and (c) surfaces the real HTTP status + body in errors. `ManageCertificates.jsx` now shows the real error message instead of the generic "Failed to upload certificate image".
+6. **Environment**: Added a tracked `.env.example` and ensured `VITE_IMAGEKIT_PUBLIC_KEY` is present in `.env.local`.
+
+---## 17. Known Limitations & Future Improvements
 
 ### Current Limitations
 1. **PDF Documents**: The PDF reading feature requires actual PDF files hosted on the server. Currently, lessons without PDFs show a text summary instead.
 2. **Image Input in AI**: The AI chatbot is text-only. Do not attempt to send images to Gemini Flash as it does not support multimodal input.
 3. **Course Images**: Some older MongoDB documents may still use `thumbnail` instead of `image`. Run `fixCourseImages.js` to migrate.
 4. **Certificate Design**: Certificates are now manually designed by admin and uploaded via admin portal. There is no auto-generated certificate design anymore.
+5. **Exam Completion Notifications (pending backend deploy)**: The exam-completion WhatsApp/email route (`src/routes/notifications.js`) and model (`Notification.js`) are provided as deploy-ready templates. The **backend server** must mount the router (`app.use("/api/notifications", require("./routes/notifications"))`) and define `ADMIN_EMAIL`, `ADMIN_WHATSAPP`, SMTP and Twilio env vars on Render before messages are actually sent. Until then the frontend degrades gracefully.
 
 ### Recommended Improvements
 1. **PDF Upload**: Add backend endpoint for teachers to upload PDF documents linked to lessons
@@ -506,6 +541,8 @@ The PDF summary view provides a professional lesson brief when no actual PDF is 
 | **YouTube player not loading** | Ensure `window.YT` is available. Check video URL format. Player uses standard YouTube embed without sandbox restrictions |
 | **Certificate not generating** | Check `certificate.paymentStatus === "approved"` and `isVerified === true`. Admin must upload certificate design via `ManageCertificates` → "Upload Design" |
 | **Certificate image not showing** | Admin must upload certificate design via admin portal. Check `certificate.certificateImage` field in database |
+| **Certificate/certificate image upload fails ("Failed to upload certificate image")** | Set `VITE_IMAGEKIT_PUBLIC_KEY` in `.env.local` (see Section 8). The signature request (`/get-ik-signature`) is auth-protected — the client must send the Firebase ID token (now fixed in `ImageUploadApi.js`). Check the toast/console for the real status code. |
+| **ImageKit upload returns 401 on signature request** | Ensure the user is logged in when uploading (token is attached automatically). If it persists, confirm `/get-ik-signature` is registered after the auth middleware on the backend. |
 | **New courses not appearing** | Run `node seedCourses.js` to insert new courses into MongoDB |
 | **Video download needed** | Use `download-all-videos.js` or `export-video-urls.js` in backend folder. Requires `yt-dlp` installed. Backend endpoint `GET /lessons/all-with-videos` returns all lessons with video URLs. |
 

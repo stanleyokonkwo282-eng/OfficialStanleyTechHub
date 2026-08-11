@@ -61,6 +61,7 @@ export default function CourseCard({ course }) {
           <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
             <Link
               to={`/courses/${course._id}`}
+              state={{ enrollAfterLogin: true }}
               className="bg-yellow-400 text-black px-4 py-2 rounded-lg hover:bg-yellow-500 transition font-semibold text-sm"
             >
               Enroll Now

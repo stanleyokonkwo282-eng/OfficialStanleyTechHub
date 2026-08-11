@@ -28,7 +28,10 @@ export default function ManageCertificates() {
       toast.success(`Certificate ${variables.paymentStatus}!`);
       queryClient.invalidateQueries(["certificates"]);
     },
-    onError: () => toast.error("Failed to update certificate"),
+    onError: (error) => {
+      const message = error?.message || "Failed to update certificate";
+      toast.error(message);
+    },
   });
 
   const uploadMutation = useMutation({
@@ -42,8 +45,10 @@ export default function ManageCertificates() {
       queryClient.invalidateQueries(["certificates"]);
       setUploadingId(null);
     },
-    onError: () => {
-      toast.error("Failed to upload certificate image");
+    onError: (error) => {
+      const message =
+        error?.message || "Failed to upload certificate image";
+      toast.error(message);
       setUploadingId(null);
     },
   });

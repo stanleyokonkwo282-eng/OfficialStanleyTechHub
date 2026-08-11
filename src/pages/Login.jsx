@@ -40,11 +40,14 @@ export default function Login() {
     },
     onSuccess: async (user) => {
       setUser(user);
-      toast.success("Login successful!");
+      sessionStorage.setItem("chub_justLoggedIn", "true");
+      toast.success("Welcome back, Stanley! 👋 Your dashboard is ready.", {
+        autoClose: 5000,
+      });
       if (location.state?.from) {
-        navigate(location.state.from);
+        navigate(location.state.from, { state: location.state });
       } else {
-        navigate("/");
+        navigate("/", { state: location.state });
       }
     },
     onError: (error) => {
@@ -64,11 +67,14 @@ export default function Login() {
       await axiosSecure.post(`/users`, {
         email: user.email,
       });
-      toast.success("Login successful!");
+      sessionStorage.setItem("chub_justLoggedIn", "true");
+      toast.success("Welcome back, Stanley! 👋 Your dashboard is ready.", {
+        autoClose: 5000,
+      });
       if (location.state?.from) {
-        navigate(location.state.from);
+        navigate(location.state.from, { state: location.state });
       } else {
-        navigate("/");
+        navigate("/", { state: location.state });
       }
     },
     onError: (error) => {

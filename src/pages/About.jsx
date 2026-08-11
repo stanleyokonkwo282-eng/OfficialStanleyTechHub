@@ -1,8 +1,53 @@
-import { FaLinkedin, FaTwitter, FaInstagram, FaEnvelope, FaPhone } from "react-icons/fa";
+import { FaLinkedin, FaTwitter, FaInstagram, FaEnvelope, FaPhone, FaGithub } from "react-icons/fa";
+import { motion } from "framer-motion";
+import { useEffect, useRef } from "react";
+import { toast } from "react-toastify";
+import { trackLinkView, trackLinkClick } from "../utils/linkTracker";
 
 export default function About() {
   const phone = "+234 813 443 8808";
   const waLink = "https://wa.me/2348134438808";
+  const portfolioLink = "https://github.com/stanleyokonkwo282-eng";
+
+  const fadeUp = {
+    hidden: { opacity: 0, y: 32 },
+    visible: (i) => ({
+      opacity: 1,
+      y: 0,
+      transition: { delay: i * 0.08, duration: 0.65, ease: "easeOut" },
+    }),
+  };
+
+  const portfolioRef = useRef(null);
+
+  useEffect(() => {
+    const node = portfolioRef.current;
+    if (!node) return;
+    let fired = false;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !fired) {
+            fired = true;
+            trackLinkView({ source: "about_page" });
+          }
+        });
+      },
+      { threshold: 0.4 }
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+
+  const handlePortfolioClick = () => {
+    trackLinkClick({ source: "about_page_button" });
+    toast.success(
+      "👋 Welcome! Thanks for stopping by — your visit is recorded. " +
+        "Explore the portfolio and get in touch!",
+      { autoClose: 6000, position: "top-right" }
+    );
+  };
+
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -183,29 +228,191 @@ export default function About() {
               </div>
             </div>
 
-            <div className="md:w-2/3">
-              <div className="space-y-6 text-gray-300 leading-relaxed">
-                <p className="text-lg text-white font-medium">
-                  Stanley Chukwunonso Okonkwo is a visionary technologist, multimedia expert, and lifelong learner who bridges the gap between complex digital tools and human empowerment. With over eight years of cross-industry experience spanning ICT infrastructure, office administration, and financial management, Stanley has cultivated a unique perspective on what it means to lead in the digital age.
-                </p>
-                <p>
-                  He holds a Diploma in Computer Science and has continuously pushed the boundaries of his expertise—from mastering full-stack web development (MERN stack) and database engineering to refining his skills in advanced AI prompt engineering, livestreaming, and professional multimedia production. Yet, for Stanley, technology is never just about code or creative assets; it is a profound tool for service.
-                </p>
-                <p>
-                  Guided by a deep passion for God and a commitment to helping others succeed, Stanley founded the Creators Hub Academy. He believes that digital literacy is a fundamental pillar of modern independence. By demystifying professional tools—like Canva, Photoshop, and AI-driven workflows—he empowers individuals to transform their creative passions into sustainable, monetizable digital careers.
-                </p>
-                <p>
-                  Whether he is architecting robust backend infrastructures for educational platforms or mentoring a new generation of creators, Stanley's mission remains constant: to inspire, teach, and build a future where every learner has the digital fluency to thrive.
-                </p>
-              </div>
+             <div className="md:w-2/3">
+               <div className="space-y-6 text-gray-300 leading-relaxed">
+                 <p className="text-lg text-white font-medium">
+                   Stanley Chukwunonso Okonkwo is a dynamic technologist, ICT Specialist, and Multimedia Expert whose work is defined by the intersection of high-level digital engineering and a commitment to human development. With over eight years of experience managing complex IT infrastructures, financial systems, and multimedia workflows, Stanley has cultivated the technical acumen required to lead in a fast-evolving digital economy.
+                 </p>
+                 <p>
+                   Guided by his faith and a deep-seated desire to uplift others, Stanley founded the{" "}
+                   <a
+                     href="https://creators-hub-academy.vercel.app"
+                     target="_blank"
+                     rel="noopener noreferrer"
+                     className="text-yellow-400 hover:text-yellow-300 font-semibold transition"
+                   >
+                     Creators Hub Academy
+                   </a>
+                   . He engineered the platform's full-stack MERN architecture from the ground up — integrating secure payment gateways (Paystack), automated certificate verification systems, and AI-powered tutors (Google Gemini) to provide students with a modern, frictionless learning environment serving thousands across Nigeria.
+                 </p>
+                 <p>
+                   Whether he is producing high-quality multimedia event coverage, managing corporate ICT systems, or mentoring students in digital skills, Stanley's mission remains constant: to empower individuals with the tools they need to secure their future in the digital age.
+                 </p>
+               </div>
 
-              <div className="mt-10 bg-gradient-to-r from-yellow-400/10 to-yellow-400/5 border border-yellow-400/30 rounded-2xl p-8 text-center">
-                <p className="text-yellow-400 font-bold text-lg mb-2">Explore the vision in action</p>
-                <p className="text-white text-2xl font-black">Creators Hub Academy</p>
-                <p className="text-gray-400 text-sm mt-2">Learn · Grow · Create · Build Your Future Together</p>
-              </div>
-            </div>
+               {/* Academic Foundation & Certifications */}
+               <div className="mt-12">
+                 <p className="text-yellow-400 text-sm font-semibold uppercase tracking-widest mb-4">
+                   Academic Foundation & Certifications
+                 </p>
+                 <div className="grid sm:grid-cols-2 gap-4 text-sm text-gray-300 leading-relaxed space-y-1">
+                   <p className="sm:col-span-2">
+                     <span className="text-white font-medium">Diploma in Computer Science</span> — foundational academic grounding in software engineering and systems design.
+                   </p>
+                   <p>
+                     <span className="text-white font-medium">Executive Diploma in AI</span> — leveraging cutting-edge machine learning and prompt engineering to optimize workflows.
+                   </p>
+                   <p>
+                     <span className="text-white font-medium">Sage 50 Accounting</span> — ensuring high-level competence in financial administration and record-keeping.
+                   </p>
+                   <p>
+                     <span className="text-white font-medium">Modern Beekeeping (Apiculture)</span> — sustainable agricultural practices and skill diversification.
+                   </p>
+                 </div>
+               </div>
+
+               {/* Key Competencies */}
+               <div className="mt-12">
+                 <p className="text-yellow-400 text-sm font-semibold uppercase tracking-widest mb-5">
+                   Key Competencies
+                 </p>
+                 <div className="grid sm:grid-cols-2 gap-x-8 gap-y-5 text-sm">
+                   <div>
+                     <p className="text-white font-medium mb-1.5">Web Development</p>
+                     <p className="text-gray-400">React · Node.js · Express · MongoDB · Firebase · Vite · Docker · PostgreSQL</p>
+                   </div>
+                   <div>
+                     <p className="text-white font-medium mb-1.5">Multimedia & Design</p>
+                     <p className="text-gray-400">Adobe Photoshop · Canva (Expert) · vMix (Livestreaming) · CapCut · CorelDRAW · Shotcut</p>
+                   </div>
+                   <div>
+                     <p className="text-white font-medium mb-1.5">Administration & Finance</p>
+                     <p className="text-gray-400">ICT Infrastructure Management · Sage 50 · Office Administration · Budgeting</p>
+                   </div>
+                   <div>
+                     <p className="text-white font-medium mb-1.5">Languages</p>
+                     <p className="text-gray-400">Fluent in English, Hausa, and Igbo</p>
+                   </div>
+                 </div>
+               </div>
+
+               <div className="mt-10 bg-gradient-to-r from-yellow-400/10 to-yellow-400/5 border border-yellow-400/30 rounded-2xl p-8 text-center">
+                 <p className="text-yellow-400 font-bold text-lg mb-2">Explore the vision in action</p>
+                 <a
+                   href="https://creators-hub-academy.vercel.app"
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   className="text-white text-2xl font-black hover:text-yellow-300 transition"
+                 >
+                   Creators Hub Academy
+                 </a>
+                 <p className="text-gray-400 text-sm mt-2">Learn · Grow · Create · Build Your Future Together</p>
+               </div>
+             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Portfolio Section */}
+      <section ref={portfolioRef} className="relative overflow-hidden py-20 md:py-32 px-6">
+        <div className="absolute inset-0 bg-gradient-to-br from-yellow-400/5 via-transparent to-yellow-400/5" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-yellow-400/10 rounded-full blur-[100px] pointer-events-none animate-pulse" />
+        <div className="relative z-10 max-w-5xl mx-auto text-center">
+          <motion.p
+            custom={0}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.4 }}
+            variants={fadeUp}
+            className="text-yellow-400 text-sm font-semibold uppercase tracking-[0.25em] mb-4"
+          >
+            Portfolio
+          </motion.p>
+
+          <motion.h2
+            custom={1}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.4 }}
+            variants={fadeUp}
+            className="text-3xl md:text-5xl font-black text-white mb-6"
+          >
+            Crafting Digital Experiences <span className="text-yellow-400">That Matter</span>
+          </motion.h2>
+
+          <motion.p
+            custom={2}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.4 }}
+            variants={fadeUp}
+            className="text-gray-400 max-w-2xl mx-auto text-lg md:text-xl mb-10"
+          >
+            From self-hosted learning infrastructure to AI-powered tools, every project
+            is built with the belief that great technology should be both powerful and
+            accessible to everyone.
+          </motion.p>
+
+          <motion.div
+            custom={3}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.4 }}
+            variants={fadeUp}
+            className="flex flex-col sm:flex-row items-center justify-center gap-5 mb-12"
+          >
+            {[
+              { label: "23+ Free Courses Built", value: "🎓" },
+              { label: "Production Deployments", value: "🚀" },
+              { label: "Self-Hosted Platform", value: "🛠️" },
+            ].map((stat) => (
+              <motion.div
+                key={stat.label}
+                whileHover={{ scale: 1.08, y: -4 }}
+                className="bg-zinc-950 border border-zinc-800 hover:border-yellow-400/40 rounded-xl px-5 py-3 flex items-center gap-3 transition-colors"
+              >
+                <span className="text-xl">{stat.value}</span>
+                <span className="text-sm text-gray-300 font-medium">{stat.label}</span>
+              </motion.div>
+            ))}
+          </motion.div>
+
+          <motion.div
+            custom={4}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.4 }}
+            variants={fadeUp}
+            className="flex flex-col sm:flex-row items-center justify-center gap-5"
+          >
+            <motion.a
+              href={portfolioLink}
+              target="_blank"
+              rel="noopener noreferrer"
+              whileHover={{
+                scale: 1.04,
+                boxShadow: "0 0 40px rgba(242,193,76,0.45)",
+                transition: { duration: 0.25 },
+              }}
+              whileTap={{ scale: 0.97 }}
+              onClick={handlePortfolioClick}
+              className="group relative inline-flex items-center justify-center gap-3 bg-gradient-to-r from-yellow-400 to-yellow-500 text-black font-extrabold text-lg px-10 py-4 rounded-2xl shadow-2xl shadow-yellow-400/25 overflow-hidden"
+            >
+              <FaGithub className="text-xl relative z-10" />
+              <span className="relative z-10">View My Portfolio</span>
+              <div className="absolute inset-0 bg-gradient-to-r from-yellow-300 to-yellow-200 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+              <div className="absolute -inset-1 bg-yellow-400/30 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+            </motion.a>
+
+            <motion.a
+              href="mailto:hello@creatorshubacademy.com"
+              whileHover={{ y: -3 }}
+              className="inline-flex items-center gap-2 text-gray-400 hover:text-yellow-400 transition-colors text-sm font-medium"
+            >
+              <FaEnvelope className="text-yellow-400" />
+              hello@creatorshubacademy.com
+            </motion.a>
+          </motion.div>
         </div>
       </section>
 

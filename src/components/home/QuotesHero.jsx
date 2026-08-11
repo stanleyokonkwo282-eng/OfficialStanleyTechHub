@@ -294,6 +294,8 @@ const quotes = [
   { text: "The dogmas of the quiet past are inadequate to the stormy present. The occasion is piled high with difficulty, and we must rise with the occasion.", author: "Abraham Lincoln" },
 ];
 
+const QUOTE_DISPLAY_MS = 10000;
+
 const fadeVariants = {
   enter: { opacity: 0, y: 30 },
   center: { opacity: 1, y: 0 },
@@ -306,7 +308,7 @@ export default function QuotesHero() {
   useEffect(() => {
     const timer = setInterval(() => {
       setIndex((prev) => (prev + 1) % quotes.length);
-    }, 5000);
+               }, QUOTE_DISPLAY_MS);
     return () => clearInterval(timer);
   }, []);
 
