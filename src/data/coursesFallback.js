@@ -15,14 +15,14 @@ const coursesFallback = [
         moduleId: "gd-mod-1",
         moduleTitle: "Introduction to Visual Communication",
         lessons: [
-          { lessonId: "gd-1", title: "Understanding Design Principles & Layouts", videoUrl: "https://youtube.com", pdfUrl: "" },
-          { lessonId: "gd-2", title: "The Power of Visual Hierarchy", videoUrl: "https://youtube.com", pdfUrl: "" },
-          { lessonId: "gd-3", title: "Color Theory for Modern Creators", videoUrl: "https://youtube.com", pdfUrl: "" },
-          { lessonId: "gd-4", title: "Mastering Typography & Font Pairing", videoUrl: "https://youtube.com", pdfUrl: "" },
-          { lessonId: "gd-5", title: "Setting Up Your Canvas & Workspace", videoUrl: "https://youtube.com", pdfUrl: "" },
-          { lessonId: "gd-6", title: "Working with Vector Shapes & Grids", videoUrl: "https://youtube.com", pdfUrl: "" },
-          { lessonId: "gd-7", title: "Introduction to Composition Techniques", videoUrl: "https://youtube.com", pdfUrl: "" },
-          { lessonId: "gd-8", title: "Analyzing Famous Brand Design Assets", videoUrl: "https://youtube.com", pdfUrl: "" }
+          { lessonId: "gd-1", title: "Understanding Design Principles & Layouts", videoUrl: "https://www.youtube.com/watch?v=WONZVnlam6U", pdfUrl: "" },
+          { lessonId: "gd-2", title: "The Power of Visual Hierarchy", videoUrl: "https://www.youtube.com/watch?v=a5KYlHNKQB8", pdfUrl: "" },
+          { lessonId: "gd-3", title: "Color Theory for Modern Creators", videoUrl: "https://www.youtube.com/watch?v=AvgCkHrcj8w", pdfUrl: "" },
+          { lessonId: "gd-4", title: "Mastering Typography & Font Pairing", videoUrl: "https://www.youtube.com/watch?v=sByzHoiYFX0", pdfUrl: "" },
+          { lessonId: "gd-5", title: "Setting Up Your Canvas & Workspace", videoUrl: "https://www.youtube.com/watch?v=ZK86XQ1iFVs", pdfUrl: "" },
+          { lessonId: "gd-6", title: "Working with Vector Shapes & Grids", videoUrl: "https://www.youtube.com/watch?v=Ib8UBwU3bgQ", pdfUrl: "" },
+          { lessonId: "gd-7", title: "Introduction to Composition Techniques", videoUrl: "https://www.youtube.com/watch?v=agbj7dBmDvs", pdfUrl: "" },
+          { lessonId: "gd-8", title: "Analyzing Famous Brand Design Assets", videoUrl: "https://www.youtube.com/watch?v=4fGPbEDzPqA", pdfUrl: "" }
         ]
       },
       {

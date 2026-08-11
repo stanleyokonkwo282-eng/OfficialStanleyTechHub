@@ -187,12 +187,13 @@ export default function CoursePlayer() {
   useEffect(() => {
     if (apiLoadedRef.current) return;
     if (!window.YT) {
+      window.onYouTubeIframeAPIReady = () => {
+        apiLoadedRef.current = true;
+      };
       const tag = document.createElement("script");
       tag.src = "https://www.youtube.com/iframe_api";
-      tag.crossOrigin = "anonymous";
       const firstScriptTag = document.getElementsByTagName("script")[0];
       firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-      apiLoadedRef.current = true;
     }
   }, []);
 
@@ -277,6 +278,11 @@ export default function CoursePlayer() {
     // Small delay to ensure container is ready
     const timer = setTimeout(() => {
       try {
+        if (!window.YT || !window.YT.Player) {
+          console.error("YouTube API not loaded");
+          setVideoError(true);
+          return;
+        }
         const newPlayer = new window.YT.Player(playerContainerId, {
           videoId: youtubeId,
           playerVars: {
@@ -288,7 +294,6 @@ export default function CoursePlayer() {
             fs: 0,
             iv_load_policy: 3,
             enablejsapi: 1,
-            origin: typeof window !== "undefined" ? window.location.origin : undefined,
           },
           events: { onReady: onPlayerReady, onStateChange: onPlayerStateChange, onError: onPlayerError },
         });
@@ -446,6 +451,11 @@ export default function CoursePlayer() {
     : null;
   const canPreview = Boolean(normalizedPdfUrl && (rawPdfUrl.startsWith("http") || rawPdfUrl.startsWith("/uploads/")));
 
+  // YouTube watch link for fallback
+  const youtubeWatchUrl = fallbackYoutubeId
+    ? `https://www.youtube.com/watch?v=${fallbackYoutubeId}`
+    : null;
+
   return (
     <div className="min-h-screen bg-black text-white flex flex-col">
       {/* Top bar */}
@@ -501,19 +511,33 @@ export default function CoursePlayer() {
                 </div>
 
                  {selectedFormat === 'video' ? (
-                  <div className="w-full aspect-video bg-zinc-900 rounded-xl overflow-hidden mb-4" onContextMenu={(e) => e.preventDefault()}>
+                  <div className="w-full aspect-video bg-zinc-900 rounded-xl overflow-hidden mb-4 relative" onContextMenu={(e) => e.preventDefault()}>
                     {!useFallback ? (
-                      <div id={playerContainerId} className="w-full h-full" />
+                      <>
+                        <div id={playerContainerId} className="w-full h-full" />
+                        {!playerReady && !videoError && (
+                          <div className="absolute inset-0 flex items-center justify-center bg-zinc-900">
+                            <span className="loading loading-spinner loading-lg text-yellow-400"></span>
+                          </div>
+                        )}
+                      </>
                     ) : (
                       fallbackYoutubeId ? (
-                        <iframe
-                          src={`https://www.youtube-nocookie.com/embed/${fallbackYoutubeId}?rel=0&modestbranding=1&playsinline=1`}
-                          title={activeLesson.lessonTitle}
-                          className="w-full h-full"
-                          allowFullScreen
-                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                          sandbox="allow-scripts allow-same-origin allow-presentation"
-                        />
+                        <div className="w-full h-full flex flex-col items-center justify-center gap-4 p-6 text-center">
+                          <div className="text-5xl">⚠️</div>
+                          <h3 className="text-xl font-bold text-white">Video Playback Unavailable</h3>
+                          <p className="text-gray-400 max-w-md">
+                            The embedded player could not load this video. You can still watch it directly on YouTube.
+                          </p>
+                          <a
+                            href={youtubeWatchUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition"
+                          >
+                            ▶ Watch on YouTube
+                          </a>
+                        </div>
                       ) : (
                         <div className="w-full h-full flex items-center justify-center">
                           <p className="text-gray-400">Invalid video URL</p>
