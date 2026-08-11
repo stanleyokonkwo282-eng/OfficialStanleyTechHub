@@ -139,7 +139,9 @@ server/
 ├── routes/              # Express routers
 ├── middlewares/          # Auth, role verification, visit tracking
 ├── config/              # Database connection
-└── index.js             # App entry, AI chat endpoint, Sentry, keep-alive
+├── index.js             # App entry, AI chat endpoint, Sentry, keep-alive
+├── download-all-videos.js   # Bulk download all course videos via yt-dlp
+└── export-video-urls.js     # Export all video URLs to JSON/TXT
 ```
 
 ### Database Models
@@ -505,6 +507,7 @@ The PDF summary view provides a professional lesson brief when no actual PDF is 
 | **Certificate not generating** | Check `certificate.paymentStatus === "approved"` and `isVerified === true`. Admin must upload certificate design via `ManageCertificates` → "Upload Design" |
 | **Certificate image not showing** | Admin must upload certificate design via admin portal. Check `certificate.certificateImage` field in database |
 | **New courses not appearing** | Run `node seedCourses.js` to insert new courses into MongoDB |
+| **Video download needed** | Use `download-all-videos.js` or `export-video-urls.js` in backend folder. Requires `yt-dlp` installed. Backend endpoint `GET /lessons/all-with-videos` returns all lessons with video URLs. |
 
 ### Git Workflow
 - **Frontend Repo**: `https://github.com/stanleyokonkwo282-eng/OfficialStanleyTechHub`
