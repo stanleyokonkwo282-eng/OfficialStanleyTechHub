@@ -4,10 +4,11 @@ import { useForm } from "react-hook-form";
 import { FaLock, FaUser } from "react-icons/fa";
 import { Link, Navigate, useLocation, useNavigate } from "react-router";
 import { toast } from "react-toastify";
+import { motion } from "framer-motion";
 import { auth } from "../../firebase.config";
 import GoogleLogo from "../assets/icons/google.svg";
 import HeadTag from "../components/common/HeadTag";
-import LoaderDotted from "../components/common/LoaderDotted";
+import LoaderDotted from "../components/common/LoaderSpinner";
 import useAuth from "../hooks/useAuth";
 import useAxiosSecure from "../hooks/useAxiosSecure";
 
@@ -101,7 +102,12 @@ export default function Login() {
     <>
       <HeadTag title="Creators Hub Academy | Login" />
       <div className="min-h-screen flex items-center justify-center bg-black px-4">
-        <div className="bg-zinc-950 border border-zinc-800 shadow-lg rounded-lg p-8 w-full max-w-md">
+        <motion.div
+          initial={{ opacity: 0, y: 30, scale: 0.96 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          className="bg-zinc-950 border border-zinc-800 shadow-lg rounded-lg p-8 w-full max-w-md"
+        >
           <h2 className="text-3xl font-bold text-center text-white mb-6">
             Welcome Back to{" "}
             <span className="text-yellow-400">Creators Hub Academy</span>
@@ -206,7 +212,7 @@ export default function Login() {
                 : "Login with Google"}
             </span>
           </button>
-        </div>
+          </motion.div>
       </div>
     </>
   );

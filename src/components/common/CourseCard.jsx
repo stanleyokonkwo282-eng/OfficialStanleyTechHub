@@ -1,10 +1,17 @@
 import { Link } from "react-router";
+import { motion } from "framer-motion";
 import renderStars from "../../utils/renderStars";
 
 export default function CourseCard({ course }) {
   return (
-    <div className="p-3 m-2 border border-zinc-800 bg-zinc-950 rounded-xl shadow-md hover:shadow-yellow-400/20 hover:border-zinc-600 transition-all duration-200 flex flex-col">
-
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.3 }}
+      whileHover={{ scale: 1.02, y: -6 }}
+      transition={{ duration: 0.4, ease: "easeOut" }}
+      className="p-3 m-2 border border-zinc-800 bg-zinc-950 rounded-xl shadow-md hover:shadow-yellow-400/20 hover:border-zinc-600 transition-all duration-200 flex flex-col"
+    >
       <div className="overflow-hidden rounded-lg mb-3">
         <img
           src={course.image || course.thumbnail || "/logo.png"}
@@ -51,14 +58,16 @@ export default function CourseCard({ course }) {
               ${Number(course.price || 0).toFixed(2)}
             </p>
           </div>
-          <Link
-            to={`/courses/${course._id}`}
-            className="bg-yellow-400 text-black px-4 py-2 rounded-lg hover:bg-yellow-500 transition font-semibold text-sm"
-          >
-            Enroll Now
-          </Link>
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <Link
+              to={`/courses/${course._id}`}
+              className="bg-yellow-400 text-black px-4 py-2 rounded-lg hover:bg-yellow-500 transition font-semibold text-sm"
+            >
+              Enroll Now
+            </Link>
+          </motion.div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

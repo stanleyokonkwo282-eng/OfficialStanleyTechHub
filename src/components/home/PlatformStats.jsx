@@ -1,5 +1,46 @@
 import { useQuery } from "@tanstack/react-query";
+import { motion, useInView } from "framer-motion";
+import { useRef, useEffect, useState } from "react";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 30 },
+  visible: (i) => ({
+    opacity: 1,
+    y: 0,
+    transition: { delay: i * 0.1, duration: 0.6, ease: "easeOut" },
+  }),
+};
+
+function AnimatedCounter({ value, suffix = "" }) {
+  const [count, setCount] = useState(0);
+  const ref = useRef(null);
+  const inView = useInView(ref, { once: true });
+
+  useEffect(() => {
+    if (!inView) return;
+    const numericPart = String(value).replace(/[^0-9]/g, "");
+    const target = parseInt(numericPart, 10) || 0;
+    const duration = 2000;
+    const startTime = performance.now();
+
+    const step = (currentTime) => {
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setCount(Math.floor(eased * target));
+      if (progress < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }, [inView, value]);
+
+  return (
+    <span ref={ref}>
+      {count}
+      {suffix}
+    </span>
+  );
+}
 
 export default function PlatformStats() {
   const axiosSecure = useAxiosSecure();
@@ -44,37 +85,49 @@ export default function PlatformStats() {
     <section className="bg-zinc-950 border-y border-zinc-800 py-16 md:py-24 px-6">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12">
-          <p className="text-yellow-400 text-sm font-semibold uppercase tracking-widest mb-2">
+          <motion.p custom={0} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="text-yellow-400 text-sm font-semibold uppercase tracking-widest mb-2">
             Our Impact
-          </p>
-          <h2 className="text-4xl font-black text-white mb-4">
+          </motion.p>
+          <motion.h2 custom={1} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="text-4xl font-black text-white mb-4">
             Unlock Your Potential with{" "}
             <span className="text-yellow-400">Creators Hub Academy</span>
-          </h2>
-          <p className="text-gray-400 max-w-xl mx-auto">
+          </motion.h2>
+          <motion.p custom={2} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="text-gray-400 max-w-xl mx-auto">
             Nigeria's fastest growing digital skills platform — empowering
             creators to earn more, do more, and become more.
-          </p>
+          </motion.p>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12">
           {stats.map((stat, i) => (
-            <div
+            <motion.div
               key={i}
+              custom={i + 3}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              variants={fadeUp}
+              whileHover={{ scale: 1.05, y: -8 }}
               className="bg-black border border-zinc-800 rounded-2xl p-6 text-center hover:border-yellow-400/50 transition"
             >
               <div className="text-4xl mb-3">{stat.icon}</div>
               <p className="text-4xl font-black text-yellow-400 mb-1">
-                {stat.value}
+                <AnimatedCounter value={stat.value} />
               </p>
               <p className="text-white font-bold text-sm mb-1">{stat.label}</p>
               <p className="text-gray-500 text-xs">{stat.desc}</p>
-            </div>
+            </motion.div>
           ))}
         </div>
 
         {/* CTA */}
-        <div className="bg-gradient-to-r from-yellow-400/10 to-yellow-400/5 border border-yellow-400/30 rounded-2xl p-8 text-center">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.7, ease: "easeOut" }}
+          className="bg-gradient-to-r from-yellow-400/10 to-yellow-400/5 border border-yellow-400/30 rounded-2xl p-8 text-center"
+        >
           <h3 className="text-2xl font-black text-white mb-2">
             Ready to Start Learning for Free?
           </h3>
@@ -89,7 +142,7 @@ export default function PlatformStats() {
           >
             Browse All Courses
           </a>
-        </div>
+        </motion.div>
       </div>
     </section>
   );

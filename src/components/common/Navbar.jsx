@@ -3,11 +3,15 @@ import { MdArrowRight } from "react-icons/md";
 import { TiThMenu } from "react-icons/ti";
 import { Link, NavLink } from "react-router";
 import { toast } from "react-toastify";
+import { motion, useScroll, useTransform } from "framer-motion";
 import logo from "../../assets/logo.png";
 import useAuth from "../../hooks/useAuth";
 
 export default function Navbar() {
   const { user, isUserLoading, userLogout } = useAuth();
+  const { scrollY } = useScroll();
+  const navBackground = useTransform(scrollY, [0, 100], ["rgba(0,0,0,0.8)", "rgba(0,0,0,0.95)"]);
+  const navBlur = useTransform(scrollY, [0, 100], ["blur(0px)", "blur(12px)"]);
 
   const logoutMutation = useMutation({
     mutationFn: userLogout,
@@ -103,7 +107,10 @@ export default function Navbar() {
   );
 
   return (
-    <nav className="sticky top-0 z-50 bg-black border-b border-zinc-800 shadow-lg px-4">
+    <motion.nav
+      style={{ backgroundColor: navBackground, backdropFilter: navBlur }}
+      className="sticky top-0 z-50 border-b border-zinc-800 shadow-lg px-4"
+    >
       <div className="navbar">
         <div className="navbar-start">
           <div className="dropdown">
@@ -147,7 +154,7 @@ export default function Navbar() {
           />
         </div>
       </div>
-    </nav>
+    </motion.nav>
   );
 }
 

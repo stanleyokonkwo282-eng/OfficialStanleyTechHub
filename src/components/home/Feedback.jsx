@@ -1,3 +1,14 @@
+import { motion } from "framer-motion";
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 30 },
+  visible: (i) => ({
+    opacity: 1,
+    y: 0,
+    transition: { delay: i * 0.1, duration: 0.6, ease: "easeOut" },
+  }),
+};
+
 const testimonials = [
   {
     name: "Chioma Okafor",
@@ -54,22 +65,28 @@ export default function Feedback() {
     <section className="bg-black py-16 md:py-24 px-6">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12">
-          <p className="text-yellow-400 text-sm font-semibold uppercase tracking-widest mb-2">
+          <motion.p custom={0} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="text-yellow-400 text-sm font-semibold uppercase tracking-widest mb-2">
             Student Success Stories
-          </p>
-          <h2 className="text-4xl font-black text-white mb-4">
+          </motion.p>
+          <motion.h2 custom={1} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="text-4xl font-black text-white mb-4">
             What Our Students <span className="text-yellow-400">Say</span>
-          </h2>
-          <p className="text-gray-400 max-w-xl mx-auto">
+          </motion.h2>
+          <motion.p custom={2} initial="hidden" whileInView="visible" viewport={{ once: true }} variants={fadeUp} className="text-gray-400 max-w-xl mx-auto">
             Real results from real Nigerian students who transformed their
             careers with Creators Hub Academy.
-          </p>
+          </motion.p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {testimonials.map((t, i) => (
-            <div
+            <motion.div
               key={i}
+              custom={i + 3}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true, amount: 0.3 }}
+              variants={fadeUp}
+              whileHover={{ scale: 1.03, y: -8 }}
               className="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 hover:border-yellow-400/40 transition flex flex-col"
             >
               {/* Stars */}
@@ -105,19 +122,25 @@ export default function Feedback() {
                   </p>
                 </div>
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
 
         {/* Bottom note */}
-        <div className="text-center mt-10">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          className="text-center mt-10"
+        >
           <p className="text-gray-500 text-sm">
             Join thousands of Nigerian creators already learning at Creators Hub Academy
           </p>
           <p className="text-yellow-400 font-bold mt-1">
             Enroll FREE today — Use coupon code: CREATOR
           </p>
-        </div>
+        </motion.div>
       </div>
     </section>
   );

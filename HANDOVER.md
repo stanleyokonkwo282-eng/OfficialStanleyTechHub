@@ -50,6 +50,7 @@ The certificate is not just a piece of paper—it is a **verified, globally reco
 | **React Toastify** | Toast notifications |
 | **SweetAlert2** | Confirmation dialogs |
 | **Vite** | Build tool and dev server |
+| **Framer Motion** | Professional animations and motion UI |
 | **React-to-print** | Certificate PDF printing |
 | **Lottie Web** | Animations |
 | **Google Fonts** | Typography (Playfair Display, Great Vibes, Cormorant Garamond, Inter) |
@@ -84,11 +85,12 @@ The certificate is not just a piece of paper—it is a **verified, globally reco
 - **Course Discovery**: Browse new, popular, and categorized courses (23+ courses)
 - **Free Enrollment**: Use coupon `CREATOR` for 100% free access
 - **Video Player**: YouTube-powered player with resume-from-last-watched, progress tracking, and forward-seek lock
+- **YouTube Player (Updated)**: Removed beforeunload warning, removed context menu/keyboard restrictions, removed sandbox/iframe restrictions. Player uses standard YouTube embed with clean UI. Loading spinner overlay removed for smoother playback.
 - **PDF Document Summary**: Switch between video lecture and PDF reading mode with loading states and error fallbacks
 - **AI Course Assistant**: Context-aware chatbot powered by Gemini Flash for lesson-specific help
 - **Progress Tracking**: Auto-saved last-watched time, completion percentage, and lesson checkmarks
 - **Exams**: Multiple-choice exams with 2-attempt limit and pass/fail tracking
-- **Certificates**: Professional printable certificates with unique IDs, issued after exam pass and ₦10,000 verification
+- **Certificates**: Admin-designed certificates uploaded manually through admin portal. Student receives certificate image after admin uploads custom design. Admin notified via WhatsApp and email on every payment.
 - **Payment Integration**: Paystack card payment or manual bank transfer (Opay: 8134438808, Polaris: 3046748449)
 - **Certificate Verification**: Public verification page for employers and institutions
 
@@ -104,6 +106,7 @@ The certificate is not just a piece of paper—it is a **verified, globally reco
 - Certificate verification and issuance
 - Platform statistics dashboard
 - Payment proof review
+- Certificate design upload — admin can upload custom certificate image for each approved certificate
 
 ---
 
@@ -270,26 +273,37 @@ The AI Course Assistant uses **Google Gemini Flash** (`gemini-flash-latest`) via
 2. Student takes exam (2 attempts max)
 3. If passed, student can request certificate
 4. Student pays ₦10,000 via Paystack or bank transfer
-5. Admin verifies payment
-6. Certificate is generated with:
-   - Unique certificate ID
-   - Student name and course name
-   - Issue date
-   - Professional printable design
-   - Verification status
+5. **Admin receives instant WhatsApp and email notification** with student details, course name, and certificate ID
+6. Admin designs the certificate in Canva/Photoshop
+7. Admin uploads the certificate design through the admin portal (`ManageCertificates` → "Upload Design" button)
+8. Student sees the uploaded certificate image in their dashboard
 
 ### Certificate Features
-- Premium dark navy frame with gold accents
-- Ivory card with watermark and corner ornaments
-- Professional typography (Playfair Display, Cormorant Garamond)
-- Actual signature image (`/signature.png`) with text fallback
-- Official seal with gradient border
-- Print-ready for PDF download
+- Admin-designed custom certificate image (uploaded via ImageKit)
+- Simple image viewer with download/print option
+- Fallback "Certificate Pending" placeholder while admin designs
+- Unique certificate ID (`CHA-YYYY-NNNNN`)
 - Public verification page
 
+### Certificate Model Fields
+- `certificateId` — unique ID (e.g., `CHA-2026-12345`)
+- `studentEmail` / `studentName`
+- `courseId` / `courseName`
+- `paymentStatus` — `pending` | `approved` | `rejected`
+- `isVerified` — boolean
+- `paymentMethod` — `bank_transfer` | `paystack`
+- `paystackReference` — Paystack transaction reference
+- `certificateImage` — ImageKit URL of uploaded certificate design
+- `paymentProof` — URL of student's payment proof screenshot
+
+### Admin Notification
+When a student pays for a certificate, the admin receives:
+- **WhatsApp message** to `08134438808` with student name, email, course, certificate ID, and payment method
+- **Email** to `creatorshubacademy3@gmail.com` with full details and direct links to WhatsApp/email the student
+
 ### Certificate Assets
-- `public/signature.png` — Founder's actual signature image
 - `public/logo.png` — Academy logo
+- `public/signature.png` — Founder's signature (fallback in certificate design)
 
 ---
 
@@ -307,20 +321,24 @@ The AI Course Assistant uses **Google Gemini Flash** (`gemini-flash-latest`) via
 - Images use `loading="lazy"` and `decoding="async"` for performance
 - Homepage banner uses `public/banner-hero.jpg`
 - Founder photo in "Share Your Knowledge" section uses direct postimg.cc URL
+- Profile pictures fallback to `/logo.png` instead of `/default-avatar.png`
 
 ---
 
 ## 14. YouTube Video Integration
 
 - Lessons use YouTube video URLs via IFrame API
-- Player initialization includes proper cleanup, error handling, and secure parameters
-- `youtube-nocookie.com` used for privacy-friendly embedding
-- Keyboard controls disabled via UI (not invalid API params)
+- Player initialization includes proper cleanup and error handling
+- Standard YouTube embed (`youtube.com/embed`) — no `youtube-nocookie` restriction
+- **No iframe sandbox restrictions** — full YouTube player controls enabled
+- **No keyboard control blocks** — students can use spacebar, arrow keys, etc.
+- **No context menu block** — right-click enabled on video player
+- **No beforeunload warning** — no browser prompt when leaving page
 - Forward seek is locked to ensure students watch full content
 - Auto-completion at 90% watch time
 - Supports standard YouTube URLs, embed URLs, Shorts, and youtu.be links
-- **Leave-page warning**: Browser prompts user if they try to leave while video is playing
-- **Resume memory**: Watch position is explicitly saved before switching lessons and on pause/end
+- Resume memory: Watch position is saved before switching lessons and on pause/end
+- Clean fallback UI with "Watch on YouTube" button if embed fails
 
 ---
 
@@ -356,6 +374,7 @@ The PDF summary view provides a professional lesson brief when no actual PDF is 
    - Fixed `NaN.toFixed()` crash in CourseCard and renderStars
    - Fixed direct DOM manipulation in Certificate.jsx
    - Fixed YouTube playback errors by removing invalid API parameters and adding proper error handling
+   - Fixed unused `useRef` import in ManageCertificates.jsx (lint fix)
 
 2. **Auth & Security**:
    - Replaced raw `axios` with `useAxiosSecure` in VerifyCertificate, PlatformStats, CourseDetails
@@ -367,21 +386,44 @@ The PDF summary view provides a professional lesson brief when no actual PDF is 
    - Added Stanley Chukwunonso Okonkwo biography and contact cards
    - Updated home screen with new banner image in TrustedClients section
    - Updated "Share Your Knowledge" section with new founder photo
-   - Redesigned certificate with premium layout and actual signature image
+   - Simplified certificate design — admin uploads custom image via admin portal
+   - Added certificate image upload button in ManageCertificates admin page
    - Added ErrorBoundary for graceful error handling
    - Improved PDF loading with spinner, error state, and fallback UI
    - Added ARIA labels and roles for accessibility
    - Fixed all course images with fallbacks and error handlers
-   - Redesigned PDF summary with professional lesson brief UI
-   - Added beforeunload warning when video is playing
+    - Redesigned PDF summary with professional lesson brief UI
+    - **Removed beforeunload warning** when video is playing
+    - **Removed YouTube iframe sandbox restrictions** for full player controls
+    - **Removed keyboard control blocks** for natural video interaction
+    - **Removed context menu block** for better UX
+    - **Added professional Framer Motion animations** across homepage, course cards, navbar, login/signup forms, and dashboard components
+    - **Banner**: Staggered entrance animations, floating background blobs, animated stat cards with hover scale
+    - **TrustedClients**: Staggered skill tag animations with hover scale
+    - **PlatformStats**: Animated number counters with eased counting, staggered card entrances, hover lift effects
+    - **WhyChoose**: Staggered feature card animations with scale/lift on hover
+    - **Feedback**: Staggered testimonial cards with hover scale and lift
+    - **CallToAction**: Fade-in overlay animation, animated CTA button with scale on hover/tap
+    - **CourseCard**: Entrance animations, hover scale and lift effects
+    - **Navbar**: Scroll-based background blur and opacity transition
+    - **Login/Signup**: Form entrance animations with scale and fade
 
-4. **Performance**:
+4. **Certificate Workflow (New)**:
+   - Admin receives WhatsApp + email notification when student pays for certificate
+   - Admin designs certificate externally (Canva/Photoshop)
+   - Admin uploads certificate image through admin portal (`ManageCertificates` → "Upload Design")
+   - Student sees uploaded certificate image with download option
+   - Fallback "Certificate Pending" placeholder shown while admin designs
+   - Backend route `PATCH /certificates/:id/upload-image` added
+   - Certificate model updated with `certificateImage` field
+
+5. **Performance**:
    - Memoized module computation and event handlers in CoursePlayer
    - Stabilized useEffect dependencies with useRef
    - Added `loading="lazy"` and `decoding="async"` to images
    - Memoized slider settings in NewCourses and PopularCourses
 
-5. **Course Data**:
+6. **Course Data**:
    - Added 10 new high-income courses for 2026
    - Added 10 youth-focused courses (Personal Branding, AI Automation, etc.)
    - Added Theology & Christian Living course
@@ -392,6 +434,7 @@ The PDF summary view provides a professional lesson brief when no actual PDF is 
 1. **Schema Updates**:
    - Added `pdfUrl` field to Lesson model for PDF document support
    - Renamed `Course.thumbnail` to `Course.image` for frontend consistency
+   - Added `certificateImage` field to Certificate model for admin-uploaded designs
 
 2. **AI Chat Upgrade**:
    - Added comprehensive platform knowledge to system prompt
@@ -406,7 +449,14 @@ The PDF summary view provides a professional lesson brief when no actual PDF is 
    - Truncates long inputs
    - Strips non-text fields to prevent Gemini errors
 
-4. **Seed Data**:
+4. **Certificate Admin Notification**:
+   - New `sendAdminCertificateNotification` function in `emailService.js`
+   - Sends WhatsApp message to `08134438808` on every certificate payment
+   - Sends email to `creatorshubacademy3@gmail.com` with student details
+   - Triggered on both bank transfer and Paystack payments
+   - Includes student name, email, course, certificate ID, payment method, and action buttons
+
+5. **Seed Data**:
    - Updated `seedCourses.js` with all 23+ courses
    - Includes duplicate prevention logic
 
@@ -418,18 +468,20 @@ The PDF summary view provides a professional lesson brief when no actual PDF is 
 1. **PDF Documents**: The PDF reading feature requires actual PDF files hosted on the server. Currently, lessons without PDFs show a text summary instead.
 2. **Image Input in AI**: The AI chatbot is text-only. Do not attempt to send images to Gemini Flash as it does not support multimodal input.
 3. **Course Images**: Some older MongoDB documents may still use `thumbnail` instead of `image`. Run `fixCourseImages.js` to migrate.
+4. **Certificate Design**: Certificates are now manually designed by admin and uploaded via admin portal. There is no auto-generated certificate design anymore.
 
 ### Recommended Improvements
 1. **PDF Upload**: Add backend endpoint for teachers to upload PDF documents linked to lessons
 2. **Video Upload**: Consider direct video upload or Vimeo/Wistia integration instead of YouTube-only
-3. **Notification System**: Add email/in-app notifications for enrollment, exam results, certificate issuance
-4. **Mobile App**: Build React Native or Flutter mobile app for better mobile experience
-5. **Analytics Dashboard**: Add detailed analytics for teachers (watch time, drop-off points, quiz performance)
-6. **Discussion Forum**: Add Q&A or discussion board per course/lesson
-7. **Certificate Verification API**: Public API endpoint for third-party verification
-8. **Bulk Course Import**: Allow teachers to import courses from CSV/JSON
-9. **Multi-language Support**: i18n for international users
-10. **Dark Mode Toggle**: Currently dark-only, but could add theme switcher
+3. **Certificate Template Gallery**: Add pre-made certificate templates in admin portal for faster design
+4. **Bulk Certificate Generation**: Allow admin to generate multiple certificates at once from approved list
+5. **Mobile App**: Build React Native or Flutter mobile app for better mobile experience
+6. **Analytics Dashboard**: Add detailed analytics for teachers (watch time, drop-off points, quiz performance)
+7. **Discussion Forum**: Add Q&A or discussion board per course/lesson
+8. **Certificate Verification API**: Public API endpoint for third-party verification
+9. **Bulk Course Import**: Allow teachers to import courses from CSV/JSON
+10. **Multi-language Support**: i18n for international users
+11. **Dark Mode Toggle**: Currently dark-only, but could add theme switcher
 
 ---
 
@@ -449,8 +501,9 @@ The PDF summary view provides a professional lesson brief when no actual PDF is 
 | **"Model does not support image input"** | Backend sanitization already fixed this. Ensure `/api/ai/chat` only receives text prompts |
 | **PDF not loading** | Check `lesson.pdfUrl` in database. Must be valid HTTP(S) URL or `/uploads/` path |
 | **Course images broken** | Run `node fixCourseImages.js` to migrate old `thumbnail` field to `image` |
-| **YouTube player not loading** | Ensure `window.YT` is available. Check video URL format |
-| **Certificate not generating** | Check `certificate.paymentStatus === "approved"` and `isVerified === true` |
+| **YouTube player not loading** | Ensure `window.YT` is available. Check video URL format. Player uses standard YouTube embed without sandbox restrictions |
+| **Certificate not generating** | Check `certificate.paymentStatus === "approved"` and `isVerified === true`. Admin must upload certificate design via `ManageCertificates` → "Upload Design" |
+| **Certificate image not showing** | Admin must upload certificate design via admin portal. Check `certificate.certificateImage` field in database |
 | **New courses not appearing** | Run `node seedCourses.js` to insert new courses into MongoDB |
 
 ### Git Workflow
@@ -488,6 +541,8 @@ React, Node.js, MongoDB, Firebase, ImageKit, Gemini AI, Paystack, Tailwind CSS, 
 **Founder**: Stanley Chukwunonso Okonkwo
 - **WhatsApp**: +234 813 443 8808
 - **Email**: hello@creatorshubacademy.com
+- **Admin WhatsApp (Certificate Payments)**: 08134438808
+- **Admin Email (Certificate Payments)**: creatorshubacademy3@gmail.com
 - **Opay**: 8134438808 (Nonso Stanley Okonkwo)
 - **Polaris Bank**: 3046748449 (Nonso Stanley Okonkwo)
 - **Support Hours**: 9AM to 6PM WAT

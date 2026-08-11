@@ -1,3 +1,14 @@
+import { motion } from "framer-motion";
+
+const fadeUp = {
+  hidden: { opacity: 0, y: 20 },
+  visible: (i) => ({
+    opacity: 1,
+    y: 0,
+    transition: { delay: i * 0.05, duration: 0.5, ease: "easeOut" },
+  }),
+};
+
 export default function TrustedClients() {
   const skills = [
     { icon: "🎨", name: "Graphic Design" },
@@ -21,13 +32,19 @@ export default function TrustedClients() {
       </div>
       <div className="flex flex-wrap justify-center gap-4 px-6">
         {skills.map((skill, i) => (
-          <div
+          <motion.div
             key={i}
+            custom={i}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.3 }}
+            variants={fadeUp}
+            whileHover={{ scale: 1.08, y: -3 }}
             className="flex items-center gap-2 bg-zinc-900 border border-zinc-700 rounded-full px-5 py-2 hover:border-yellow-400 hover:bg-zinc-800 transition"
           >
             <span className="text-xl">{skill.icon}</span>
             <span className="text-white font-medium text-sm">{skill.name}</span>
-          </div>
+          </motion.div>
         ))}
       </div>
     </section>

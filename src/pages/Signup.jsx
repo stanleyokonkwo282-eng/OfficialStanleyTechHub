@@ -3,8 +3,9 @@ import { useForm } from "react-hook-form";
 import { FaImage, FaLock, FaMailBulk, FaUser } from "react-icons/fa";
 import { Link, useLocation, useNavigate } from "react-router";
 import { toast } from "react-toastify";
+import { motion } from "framer-motion";
 import HeadTag from "../components/common/HeadTag";
-import LoaderDotted from "../components/common/LoaderDotted";
+import LoaderSpinner from "../components/common/LoaderSpinner";
 import useAuth from "../hooks/useAuth";
 import useAxiosSecure from "../hooks/useAxiosSecure";
 
@@ -65,13 +66,18 @@ export default function Signup() {
     signupMutation.mutate(data);
   };
 
-  if (isUserLoading) return <LoaderDotted />;
+  if (isUserLoading) return <LoaderSpinner />;
 
   return (
     <>
       <HeadTag title="Creators Hub Academy | Signup" />
       <div className="min-h-screen flex items-center justify-center bg-black px-4">
-        <div className="bg-zinc-950 border border-zinc-800 shadow-lg rounded-lg p-8 w-full max-w-md">
+        <motion.div
+          initial={{ opacity: 0, y: 30, scale: 0.96 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          className="bg-zinc-950 border border-zinc-800 shadow-lg rounded-lg p-8 w-full max-w-md"
+        >
           <h2 className="text-3xl font-bold text-center text-white mb-6">
             Create an account
           </h2>
@@ -185,7 +191,7 @@ export default function Signup() {
               Log in
             </Link>
           </p>
-        </div>
+        </motion.div>
       </div>
     </>
   );
