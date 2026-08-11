@@ -90,7 +90,7 @@ The certificate is not just a piece of paper—it is a **verified, globally reco
 - **AI Course Assistant**: Context-aware chatbot powered by Gemini Flash for lesson-specific help
 - **Progress Tracking**: Auto-saved last-watched time, completion percentage, and lesson checkmarks
 - **Exams**: Multiple-choice exams with 2-attempt limit and pass/fail tracking
-- **Exam Completion Alerts**: When a student submits an exam, the admin receives a **WhatsApp + email** notification with the student's name, course, and score (see Backend route template `src/routes/notifications.js`).
+- **Exam Completion Alerts**: When a student submits an exam, the admin receives a **WhatsApp + email** notification with the student's name, course, and score. Driven by `POST /api/notifications/exam-completed` (backend `mentora-lms-server/routes/notifications.js`, auth-gated via `verifyToken`).
 - **Certificates**: Admin-designed certificates uploaded manually through admin portal. Student receives certificate image after admin uploads custom design. Admin notified via WhatsApp and email on every payment.
 - **Payment Integration**: Paystack card payment or manual bank transfer (Opay: 8134438808, Polaris: 3046748449)
 - **Certificate Verification**: Public verification page for employers and institutions
@@ -133,16 +133,22 @@ src/
 ```
 
 ### Backend Structure
+The `mentora-lms-server` repo keeps its source flat at the repository root (served on Render). `index.js` mounts `routes/router.js` at `/api`; all sub-routers and handlers are registered there.
 ```
-server/
-├── controllers/         # Route handlers (lessons, courses, exams, certificates, AI chat, utils)
-├── models/              # Mongoose schemas (User, Course, Lesson, Enrollment, Exam, Certificate, etc.)
-├── routes/              # Express routers
-├── middlewares/          # Auth, role verification, visit tracking
-├── config/              # Database connection
-├── index.js             # App entry, AI chat endpoint, Sentry, keep-alive
-├── download-all-videos.js   # Bulk download all course videos via yt-dlp
-└── export-video-urls.js     # Export all video URLs to JSON/TXT
+mentora-lms-server/        (repo root = backend root)
+├── index.js               # App entry: mounts routes/router.js at /api, AI chat, Sentry, keep-alive
+├── package.json
+├── .env                   # local env (gitignored) — see Section 8
+├── controllers/           # Route handlers (lessons, courses, exams, certificates, AI chat, utils, ...)
+├── models/                # Mongoose schemas (User, Course, Lesson, Enrollment, Exam, Certificate, Notification, ...)
+├── routes/
+│   └── router.js          # Main Express router — all routes/sub-routers registered here (incl. notifications)
+├── middlewares/           # verifyToken, verifyRole, trackVisit
+├── config/                # MongoDB connection (dbConnection.js)
+├── firebase/              # Firebase Admin SDK init
+├── utils/                 # emailService.js (nodemailer/Gmail), ...
+├── controllers/           # ...aiChatController, utilsController (getIKSignature)
+└── *.js (root)            # seed/download utilities (seedCourses.js, download-all-videos.js, ...)
 ```
 
 ### Database Models
@@ -157,7 +163,8 @@ server/
 - **AiChatHistory**: Saved AI conversation per lesson per student
 - **Feedback**: Course reviews and ratings
 - **Assignment**: Teacher-assigned tasks
-- **Submission**: Student assignment submissions
+ - **Submission**: Student assignment submissions
+ - **Notification**: Exam-completion events logged for the admin panel (type, course, student, score, passed, delivery status)
 
 ---
 
@@ -331,9 +338,9 @@ When a student pays for a certificate, the admin receives:
 ### Upload Flow
 1. Teacher/admin selects image (course thumbnail, certificate design, payment proof preview)
 2. `src/utils/ImageUploadApi.js` (`handleUpload`) runs:
-   - Requests an ImageKit upload signature from `POST /api/get-ik-signature` **with the Firebase ID token** attached (`Authorization: Bearer <token>`) — every other API call already authenticates via `useAxiosSecure`, and the signature endpoint is auth-protected, so unauthenticated requests return `401`.
-   - The signature response may return `publicKey`; otherwise the client falls back to `VITE_IMAGEKIT_PUBLIC_KEY`.
-   - Uploads the file directly to ImageKit (`https://upload.imagekit.io/...`) and returns the CDN URL.
+   - Requests an ImageKit upload signature from `GET /api/get-ik-signature` (the endpoint is **public** — no auth token required). The backend response now returns `signature`, `token`, `expire`, **and `publicKey`** together.
+   - The client uses the `publicKey` returned by the backend, falling back to `VITE_IMAGEKIT_PUBLIC_KEY` only if absent.
+   - Uploads the file directly to ImageKit (`https://upload.imagekit.io/api/v1/files/upload`) and returns the CDN URL.
 3. ImageKit URL is saved to MongoDB (e.g. `Course.image`, `Certificate.certificateImage`).
 4. Errors now surface the real status code and body (e.g. `Signature request failed (401): ...`, `Upload failed (400): ...`) so upload failures are diagnosable.
 
@@ -484,18 +491,19 @@ The PDF summary view provides a professional lesson brief when no actual PDF is 
    - Updated `seedCourses.js` with all 23+ courses
    - Includes duplicate prevention logic
 
-6. **Exam Completion Notifications**:
-   - New backend route template `src/routes/notifications.js` (`POST /api/notifications/exam-completed`)
-   - Sends **Gmail** via nodemailer (SMTP) and **WhatsApp** via Twilio when a student finishes an exam
-   - `src/routes/models/Notification.js` Mongoose model logs each event for the admin panel
-   - Frontend: `ExamPage.jsx` POSTs `{ courseId, courseTitle, studentEmail, studentName, score, passed }` on exam submit; best-effort (graceful toast if the route isn't deployed yet)
+   6. **Exam Completion Notifications**:
+      - Backend `mentora-lms-server/routes/notifications.js` → `POST /api/notifications/exam-completed`, mounted in `routes/router.js` (`router.use("/notifications", verifyToken, require("./notifications"))`) and deployed to Render.
+      - Sends **Gmail** through the existing `nodemailer` transporter in `mentora-lms-server/utils/emailService.js` (`sendExamCompletionNotification`) and **WhatsApp** via Twilio (`twilio` installed; degrades gracefully if Twilio isn't configured).
+      - `mentora-lms-server/models/Notification.js` (Mongoose) logs each event for the admin panel.
+      - Frontend: `ExamPage.jsx` POSTs `{ courseId, courseTitle, studentEmail, studentName, score, passed }` on exam submit; best-effort (graceful toast if the route is unavailable).
+      - Backend `.env` (gitignored) requires `ADMIN_EMAIL`, `ADMIN_WHATSAPP`, `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_WHATSAPP_FROM` — set these on Render.
 
 ### Recent Enhancements (2026-08-11 session)
 1. **Quote Carousel**: `src/components/home/QuotesHero.jsx` now keeps each quote on screen for **10 seconds** (`QUOTE_DISPLAY_MS = 10000`) before cycling to the next, with `AnimatePresence` cross-fade transitions.
 2. **Coupon-Code Login Pattern**: A guest clicking "Enroll Now" (coupon `CREATOR`) is redirected to login and, on return, is **auto-enrolled for free** without re-clicking — implemented in `CourseDetails.jsx` (`enrollAfterLogin` flag), `PrivateRoute.jsx`, `Login.jsx`, and `CourseCard.jsx`.
 3. **Admin Welcome Notifications**: `Login.jsx` now shows a warm welcome toast after sign-in; `Dashboard.jsx` shows a "Welcome to your dashboard" notification on first load after login (session-guarded).
 4. **Portfolio Tracking (About page)**: `src/utils/linkTracker.js` records portfolio-link views and clicks to `localStorage` (+ best-effort Firebase RTDB). The About page fires a view event on scroll-into-view (`IntersectionObserver`) and a welcome toast on portfolio-link click.
-5. **Certificate Image Upload Fix**: `src/utils/ImageUploadApi.js` now (a) attaches the Firebase ID token to the `/get-ik-signature` request — the signature endpoint is auth-protected, so the previous tokenless `fetch` returned `401`, (b) resolves `publicKey` from the signature response or `VITE_IMAGEKIT_PUBLIC_KEY`, and (c) surfaces the real HTTP status + body in errors. `ManageCertificates.jsx` now shows the real error message instead of the generic "Failed to upload certificate image".
+   5. **Certificate Image Upload Fix**: `src/utils/ImageUploadApi.js` was rewritten so the signature fetch uses `GET /get-ik-signature` (the endpoint is public and was incorrectly called as `POST`, which returned `404`), resolves `publicKey` from the signature response (falling back to `VITE_IMAGEKIT_PUBLIC_KEY`), and surfaces the real HTTP status + body in errors. On the backend, `mentora-lms-server/controllers/utilsController.js` (`getIKSignature`) now echoes `IMAGEKIT_PUBLIC_KEY` back in the signature response (alongside `signature`/`token`/`expire`) so client uploads work even when the frontend env var is missing. `ManageCertificates.jsx` now shows the real error message instead of the generic "Failed to upload certificate image".
 6. **Environment**: Added a tracked `.env.example` and ensured `VITE_IMAGEKIT_PUBLIC_KEY` is present in `.env.local`.
 
 ---## 17. Known Limitations & Future Improvements
@@ -505,7 +513,7 @@ The PDF summary view provides a professional lesson brief when no actual PDF is 
 2. **Image Input in AI**: The AI chatbot is text-only. Do not attempt to send images to Gemini Flash as it does not support multimodal input.
 3. **Course Images**: Some older MongoDB documents may still use `thumbnail` instead of `image`. Run `fixCourseImages.js` to migrate.
 4. **Certificate Design**: Certificates are now manually designed by admin and uploaded via admin portal. There is no auto-generated certificate design anymore.
-5. **Exam Completion Notifications (pending backend deploy)**: The exam-completion WhatsApp/email route (`src/routes/notifications.js`) and model (`Notification.js`) are provided as deploy-ready templates. The **backend server** must mount the router (`app.use("/api/notifications", require("./routes/notifications"))`) and define `ADMIN_EMAIL`, `ADMIN_WHATSAPP`, SMTP and Twilio env vars on Render before messages are actually sent. Until then the frontend degrades gracefully.
+   5. **Exam Completion Notifications**: The exam-completion WhatsApp/email route is **deployed and live**. `mentora-lms-server/routes/notifications.js` is mounted in `mentora-lms-server/routes/router.js` as `router.use("/notifications", verifyToken, require("./notifications"))` (i.e. `POST /api/notifications/exam-completed`, auth-gated) and `twilio` is installed as a backend dependency. The backend `.env` (gitignored) requires `ADMIN_EMAIL`, `ADMIN_WHATSAPP`, `TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_WHATSAPP_FROM` — set these on Render. The frontend degrades gracefully if the route is unavailable.
 
 ### Recommended Improvements
 1. **PDF Upload**: Add backend endpoint for teachers to upload PDF documents linked to lessons
@@ -541,8 +549,8 @@ The PDF summary view provides a professional lesson brief when no actual PDF is 
 | **YouTube player not loading** | Ensure `window.YT` is available. Check video URL format. Player uses standard YouTube embed without sandbox restrictions |
 | **Certificate not generating** | Check `certificate.paymentStatus === "approved"` and `isVerified === true`. Admin must upload certificate design via `ManageCertificates` → "Upload Design" |
 | **Certificate image not showing** | Admin must upload certificate design via admin portal. Check `certificate.certificateImage` field in database |
-| **Certificate/certificate image upload fails ("Failed to upload certificate image")** | Set `VITE_IMAGEKIT_PUBLIC_KEY` in `.env.local` (see Section 8). The signature request (`/get-ik-signature`) is auth-protected — the client must send the Firebase ID token (now fixed in `ImageUploadApi.js`). Check the toast/console for the real status code. |
-| **ImageKit upload returns 401 on signature request** | Ensure the user is logged in when uploading (token is attached automatically). If it persists, confirm `/get-ik-signature` is registered after the auth middleware on the backend. |
+| **Certificate/certificate image upload fails ("Failed to upload certificate image")** | Set `VITE_IMAGEKIT_PUBLIC_KEY` in `.env.local` (see Section 8) as a fallback. The signature request is `GET /get-ik-signature` (public); the backend now returns `publicKey`, so confirm `IMAGEKIT_PUBLIC_KEY` is set in the backend `.env`. Check the toast/console for the real status code. |
+| **ImageKit upload returns 401 on signature request** | `/get-ik-signature` is public (no auth required). A 401/403 from ImageKit means the upload signature or `publicKey` was rejected — verify `IMAGEKIT_PUBLIC_KEY`/`IMAGEKIT_PRIVATE_KEY` are set in the backend `.env` and that the client uses the returned `publicKey`. |
 | **New courses not appearing** | Run `node seedCourses.js` to insert new courses into MongoDB |
 | **Video download needed** | Use `download-all-videos.js` or `export-video-urls.js` in backend folder. Requires `yt-dlp` installed. Backend endpoint `GET /lessons/all-with-videos` returns all lessons with video URLs. |
 
