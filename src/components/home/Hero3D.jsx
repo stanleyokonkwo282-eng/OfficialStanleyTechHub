@@ -16,10 +16,10 @@ const skills = [
 ];
 
 const metrics = [
-  { icon: FiBookOpen, value: "25+", label: "Digital Courses", sub: "All completely FREE", hero: true },
-  { icon: FiPlay, value: "90+", label: "Video Lessons", sub: "Step-by-step tutorials" },
-  { icon: FiFileText, value: "₦10K", label: "Certificate", sub: "Verified worldwide" },
-  { icon: FiGift, value: "100%", label: "Free Access", sub: "Use code: CREATOR" },
+  { icon: FiBookOpen, value: "25+", label: "Digital Courses", sub: "All completely FREE", hero: true, span: "sm:col-span-2" },
+  { icon: FiPlay, value: "90+", label: "Video Lessons", sub: "Step-by-step tutorials", span: "" },
+  { icon: FiFileText, value: "₦10K", label: "Certificate", sub: "Verified worldwide", span: "" },
+  { icon: FiGift, value: "100%", label: "Free Access", sub: "Use code: CREATOR", span: "sm:col-span-2 sm:col-start-2" },
 ];
 
 function useMousePosition() {
@@ -45,7 +45,7 @@ const CursorSpotlight = () => {
   );
 };
 
-const TiltCard = ({ icon, value, label, sub, hero, delay = 0 }) => {
+const TiltCard = ({ icon, value, label, sub, hero, span, delay = 0 }) => {
   const Comp = icon;
   const cardRef = useRef(null);
   const [tilt, setTilt] = useState({ rx: 0, ry: 0 });
@@ -73,11 +73,11 @@ const TiltCard = ({ icon, value, label, sub, hero, delay = 0 }) => {
   const transform = `rotateX(${tilt.rx}deg) rotateY(${tilt.ry}deg) translateZ(${hero ? 28 : 18}px) scale(${hero ? 1.03 : 1.015})`;
 
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ delay, duration: 0.5, ease: [0.22, 1, 0.35, 1] }}
-      className="h-full"
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay, duration: 0.5, ease: [0.22, 1, 0.35, 1] }}
+        className={`${span} h-full`}
     >
       <div
         ref={cardRef}
@@ -86,7 +86,7 @@ const TiltCard = ({ icon, value, label, sub, hero, delay = 0 }) => {
         style={{ transform, transformStyle: "preserve-3d" }}
         className={`
           group relative flex flex-col justify-between
-          ${hero ? "p-8" : "p-6"}
+          ${hero ? "p-8 ring-1 ring-amber-400/15" : "p-6"}
           bg-[#0A0A0A] border border-[#1F1F1F] rounded-[1.25rem]
           hover:border-amber-400/40
           hover:shadow-[0_25px_60px_rgba(255,199,0,0.08)]
@@ -290,7 +290,7 @@ export default function Hero3D() {
 
           <div className="lg:col-span-5">
             <div
-              className="grid grid-cols-1 sm:grid-cols-3 gap-4"
+              className="grid grid-cols-1 sm:grid-cols-3 gap-6 items-stretch"
               style={{ perspective: "1200px" }}
             >
               {metrics.map((m, i) => (
@@ -301,6 +301,7 @@ export default function Hero3D() {
                   label={m.label}
                   sub={m.sub}
                   hero={m.hero}
+                  span={m.span}
                   delay={i * 0.1}
                 />
               ))}
