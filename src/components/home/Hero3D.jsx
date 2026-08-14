@@ -1,0 +1,313 @@
+import { useState, useRef, useEffect } from "react";
+import { motion } from "framer-motion";
+import {
+  FiBookOpen,
+  FiPlay,
+  FiFileText,
+  FiAward,
+  FiGift,
+  FiArrowRight,
+} from "react-icons/fi";
+
+const AMBER = "#FFC700";
+const skills = [
+  "Canva", "CapCut", "Photoshop", "Digital Marketing",
+  "AI Tools", "SEO", "Copywriting",
+];
+
+const metrics = [
+  { icon: FiBookOpen, value: "25+", label: "Digital Courses", sub: "All completely FREE", hero: true },
+  { icon: FiPlay, value: "90+", label: "Video Lessons", sub: "Step-by-step tutorials" },
+  { icon: FiFileText, value: "₦10K", label: "Certificate", sub: "Verified worldwide" },
+  { icon: FiGift, value: "100%", label: "Free Access", sub: "Use code: CREATOR" },
+];
+
+function useMousePosition() {
+  const [pos, setPos] = useState({ x: 0, y: 0 });
+  useEffect(() => {
+    const onMove = (e) => setPos({ x: e.clientX, y: e.clientY });
+    window.addEventListener("mousemove", onMove);
+    return () => window.removeEventListener("mousemove", onMove);
+  }, []);
+  return pos;
+}
+
+const CursorSpotlight = () => {
+  const { x, y } = useMousePosition();
+  return (
+    <div
+      aria-hidden
+      className="pointer-events-none fixed inset-0 z-0"
+      style={{
+        background: `radial-gradient(680px circle at ${x}px ${y}px, rgba(255,199,0,0.07), transparent 60%)`,
+      }}
+    />
+  );
+};
+
+const TiltCard = ({ icon, value, label, sub, hero, delay = 0 }) => {
+  const Comp = icon;
+  const cardRef = useRef(null);
+  const [tilt, setTilt] = useState({ rx: 0, ry: 0 });
+  const [glare, setGlare] = useState({ x: 0, y: 0, show: false });
+
+  const onMove = (e) => {
+    const el = cardRef.current;
+    if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const px = (e.clientX - rect.left) / rect.width - 0.5;
+    const py = (e.clientY - rect.top) / rect.height - 0.5;
+    setTilt({ rx: -py * 14, ry: px * 14 });
+    setGlare({
+      x: ((e.clientX - rect.left) / rect.width) * 100,
+      y: ((e.clientY - rect.top) / rect.height) * 100,
+      show: true,
+    });
+  };
+
+  const onLeave = () => {
+    setTilt({ rx: 0, ry: 0 });
+    setGlare({ x: 0, y: 0, show: false });
+  };
+
+  const transform = `rotateX(${tilt.rx}deg) rotateY(${tilt.ry}deg) translateZ(${hero ? 28 : 18}px) scale(${hero ? 1.03 : 1.015})`;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ delay, duration: 0.5, ease: [0.22, 1, 0.35, 1] }}
+      className="h-full"
+    >
+      <div
+        ref={cardRef}
+        onMouseMove={onMove}
+        onMouseLeave={onLeave}
+        style={{ transform, transformStyle: "preserve-3d" }}
+        className={`
+          group relative flex flex-col justify-between
+          ${hero ? "p-8" : "p-6"}
+          bg-[#0A0A0A] border border-[#1F1F1F] rounded-[1.25rem]
+          hover:border-amber-400/40
+          hover:shadow-[0_25px_60px_rgba(255,199,0,0.08)]
+          transition-[border-color_0.3s_cubic-bezier(0.22,1,0.35,1),box-shadow_0.3s_cubic-bezier(0.22,1,0.35,1)]
+        `}
+      >
+        <div style={{ transform: "translateZ(40px)" }} className="flex items-center justify-center mb-6">
+          <div className="p-3 rounded-xl bg-amber-400/10 border border-amber-400/25">
+            <Comp className="text-amber-300" size={30} />
+          </div>
+          {hero && (
+            <div
+              aria-hidden
+              className="absolute inset-0 rounded-[1.25rem] bg-gradient-radial from-amber-300/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
+            />
+          )}
+        </div>
+
+        <div style={{ transform: "translateZ(30px)" }}>
+          <h3 className={`font-black ${hero ? "text-5xl" : "text-3xl"} text-[#FFC700] tracking-tight`}>
+            {value}
+          </h3>
+          <p className="mt-1 text-neutral-200 font-semibold text-base">{label}</p>
+          <p className="text-neutral-500 text-sm font-medium">{sub}</p>
+        </div>
+
+        <div
+          aria-hidden
+          className={`absolute -inset-px rounded-[1.25rem] pointer-events-none overflow-hidden ${
+            glare.show ? "opacity-100" : "opacity-0"
+          } transition-opacity`}
+        >
+          <div
+            className="absolute -translate-x-1/2 -translate-y-1/2 w-[140px] h-[140px] bg-white/25 blur-[3px] rounded-full"
+            style={{ left: `${glare.x}%`, top: `${glare.y}%` }}
+          />
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
+const Ring = ({ size, duration, direction }) => (
+  <motion.div
+    animate={{ rotate: direction * 360 }}
+    transition={{ duration, repeat: Infinity, ease: "linear" }}
+    className="absolute left-1/2 top-1/2 rounded-full"
+    style={{
+      width: size,
+      height: size,
+      marginLeft: `-${size / 2}px`,
+      marginTop: `-${size / 2}px`,
+      border: `5px solid rgba(255,199,0,0.06)`,
+      borderTopColor: AMBER,
+      transformStyle: "preserve-3d",
+    }}
+  >
+    <motion.div
+      animate={{ rotate: direction * -360 }}
+      transition={{ duration: duration * 0.7, repeat: Infinity, ease: "linear" }}
+      className="absolute inset-2 rounded-full"
+      style={{
+        border: `1px solid rgba(255,199,0,0.05)`,
+        borderTopColor: "rgba(255,199,0,0.18)",
+      }}
+    />
+  </motion.div>
+);
+
+const Orb = ({ size, delay, x, y }) => (
+  <motion.div
+    initial={{ opacity: 0, scale: 0.8 }}
+    animate={{
+      opacity: [0.25, 0.45, 0.25],
+      scale: [1, 1.15, 1],
+      y: [0, -14, 0],
+    }}
+    transition={{ duration: 14, delay, repeat: Infinity, ease: "easeInOut" }}
+    className="absolute rounded-full"
+    style={{
+      width: size,
+      height: size,
+      left: `${x}%`,
+      top: `${y}%`,
+      background: `radial-gradient(circle, #FFC70070 0%, #FFC70000 65%)`,
+      boxShadow: "0 0 22px 6px rgba(255,199,0,0.18)",
+    }}
+  />
+);
+
+const FloatingRingGroup = () => (
+  <div className="absolute inset-0 z-0 overflow-hidden">
+    <Ring size={420} duration={110} direction={1} />
+    <Ring size={620} duration={170} direction={-1} />
+    <Ring size={820} duration={230} direction={1} />
+    {Array.from({ length: 6 }).map((_, i) => (
+      <Orb
+        key={i}
+        size={i % 2 === 0 ? 22 : 14}
+        delay={i * 1.3}
+        x={12 + (i * 15) % 78}
+        y={18 + (i * 23) % 62}
+      />
+    ))}
+  </div>
+);
+
+export default function Hero3D() {
+  const headline = "Learn. Create. Lead.".split(" ");
+
+  const handlePrimaryClick = () => {
+    window.location.assign("/courses");
+  };
+
+  return (
+    <div className="relative min-h-screen bg-[#000000] text-white overflow-hidden">
+      <CursorSpotlight />
+      <FloatingRingGroup />
+
+      <div className="relative z-10 max-w-7xl mx-auto pt-32 pb-20 px-6 lg:px-12">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
+          <div className="lg:col-span-7 space-y-10">
+            <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black tracking-tighter leading-[1.02] select-none">
+              {headline.map((word, i) => (
+                <motion.span
+                  key={word}
+                  initial={{ opacity: 0, y: 24 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.12, duration: 0.7, ease: [0.22, 1, 0.35, 1] }}
+                  className="inline-block"
+                >
+                  {word === "Create." || word === "Lead." ? (
+                    <span className="text-[#FFC700]">{word}</span>
+                  ) : (
+                    word
+                  )}{" "}
+                </motion.span>
+              ))}
+            </h1>
+
+            <p className="text-neutral-300 text-lg md:text-xl max-w-xl leading-relaxed">
+              Master profitable digital skills — Graphic Design, Video Editing,
+              Digital Marketing, AI Tools, and more. Enroll free and earn a
+              verified certificate.
+            </p>
+
+            <div className="flex flex-wrap gap-2 max-w-xl">
+              {skills.map((skill) => (
+                <span
+                  key={skill}
+                  className="px-4 py-2 text-xs font-semibold bg-[#0A0A0A] border border-[#1F1F1F] text-neutral-400 rounded-full cursor-default hover:border-amber-400/40 hover:text-neutral-100 transition-all duration-300 hover:scale-[1.03]"
+                >
+                  {skill}
+                </span>
+              ))}
+            </div>
+
+            <div className="flex flex-wrap items-center gap-4 pt-2">
+              <motion.button
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={handlePrimaryClick}
+                className="group relative overflow-hidden bg-[#FFC700] text-black text-lg font-black px-8 py-4 rounded-xl flex items-center gap-3 hover:shadow-[0_0_35px_rgba(255,199,0,0.35)] transition-shadow"
+              >
+                <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/25 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 pointer-events-none" />
+                <span className="relative z-10">Explore Courses — FREE</span>
+                <FiArrowRight className="relative z-10 w-5 h-5 group-hover:translate-x-0.5 transition-transform" />
+              </motion.button>
+
+              <motion.button
+                whileHover={{ scale: 1.03 }}
+                onClick={() => window.location.assign("/about")}
+                className="relative overflow-hidden border border-[#1F1F1F] hover:border-amber-400/40 text-neutral-200 hover:text-white font-semibold px-8 py-4 rounded-xl transition-all"
+                style={{
+                  background:
+                    "linear-gradient(135deg, rgba(255,199,0,0.05), rgba(255,199,0,0.02))",
+                }}
+              >
+                <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/0 hover:via-white/5 to-transparent transition-all" />
+                Learn More
+              </motion.button>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <div className="flex -space-x-3">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <img
+                    key={i}
+                    src={`https://randomuser.me/api/portraits/${i % 2 ? "men" : "women"}/${30 + i}.jpg`}
+                    alt="student"
+                    className="w-10 h-10 rounded-full border-2 border-[#0A0A0A]"
+                  />
+                ))}
+              </div>
+              <div>
+                <p className="text-white font-bold text-lg">3,000+ Students</p>
+                <p className="text-neutral-500 text-sm">Already enrolled for free</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="lg:col-span-5">
+            <div
+              className="grid grid-cols-1 sm:grid-cols-3 gap-4"
+              style={{ perspective: "1200px" }}
+            >
+              {metrics.map((m, i) => (
+                <TiltCard
+                  key={m.label}
+                  icon={m.icon}
+                  value={m.value}
+                  label={m.label}
+                  sub={m.sub}
+                  hero={m.hero}
+                  delay={i * 0.1}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
