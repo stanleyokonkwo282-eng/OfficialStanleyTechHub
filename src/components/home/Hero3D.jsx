@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useNavigate } from "react-router";
 import { motion } from "framer-motion";
 import {
   FiBookOpen,
@@ -25,9 +26,28 @@ const metrics = [
 function useMousePosition() {
   const [pos, setPos] = useState({ x: 0, y: 0 });
   useEffect(() => {
-    const onMove = (e) => setPos({ x: e.clientX, y: e.clientY });
+    let frame = 0;
+    let latest = { x: 0, y: 0 };
+    const onMove = (e) => {
+      latest = { x: e.clientX, y: e.clientY };
+      if (!frame) {
+        frame = requestAnimationFrame(() => {
+          setPos(latest);
+          frame = 0;
+        });
+      }
+    };
+    const onLeave = () => {
+      latest = { x: 0, y: 0 };
+      setPos({ x: 0, y: 0 });
+    };
     window.addEventListener("mousemove", onMove);
-    return () => window.removeEventListener("mousemove", onMove);
+    window.addEventListener("mouseleave", onLeave);
+    return () => {
+      window.removeEventListener("mousemove", onMove);
+      window.removeEventListener("mouseleave", onLeave);
+      if (frame) cancelAnimationFrame(frame);
+    };
   }, []);
   return pos;
 }
@@ -197,9 +217,8 @@ const FloatingRingGroup = () => (
 export default function Hero3D() {
   const headline = "Learn. Create. Lead.".split(" ");
 
-  const handlePrimaryClick = () => {
-    window.location.assign("/courses");
-  };
+  const navigate = useNavigate();
+  const handlePrimaryClick = () => navigate("/courses");
 
   return (
     <div className="relative min-h-screen bg-[#000000] text-white overflow-hidden">
@@ -258,7 +277,7 @@ export default function Hero3D() {
 
               <motion.button
                 whileHover={{ scale: 1.03 }}
-                onClick={() => window.location.assign("/about")}
+                onClick={() => navigate("/about")}
                 className="relative overflow-hidden border border-[#1F1F1F] hover:border-amber-400/40 text-neutral-200 hover:text-white font-semibold px-8 py-4 rounded-xl transition-all"
                 style={{
                   background:
