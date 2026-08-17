@@ -1,4 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
@@ -6,12 +7,15 @@ import handleUpload from "../../utils/ImageUploadApi";
 
 const UpdateCourse = ({ isOpen, setIsOpen, course, refetch }) => {
   const axiosSecure = useAxiosSecure();
+  const [customCategory, setCustomCategory] = useState("");
   const {
     register,
     handleSubmit,
     formState: { errors },
     reset,
+    watch,
   } = useForm();
+  const selectedCategory = watch("category");
 
   // Mutation to upload image to imagekit
   const uploadImageMutation = useMutation({
@@ -46,6 +50,9 @@ const UpdateCourse = ({ isOpen, setIsOpen, course, refetch }) => {
       updateData.image = imageUrl;
     } else {
       updateData.image = course.image;
+    }
+    if (updateData.category === "Others") {
+      updateData.category = customCategory;
     }
     updateCourseMutation.mutate(updateData);
   };
@@ -108,6 +115,49 @@ const UpdateCourse = ({ isOpen, setIsOpen, course, refetch }) => {
                 Description is required
               </span>
             )}
+          </div>
+
+          <div>
+            <label className="block mb-1 font-medium">Category</label>
+            <select
+              {...register("category", { required: true })}
+              className="w-full select select-bordered"
+              defaultValue={course.category || ""}
+            >
+              <option value="" disabled>
+                Select a category
+              </option>
+              <option value="Digital Marketing">Digital Marketing</option>
+              <option value="Web Development">Web Development</option>
+              <option value="Graphic Design">Graphic Design</option>
+              <option value="App Development">Mobile App Development</option>
+              <option value="Data Science">Data Science</option>
+              <option value="Others">Others</option>
+            </select>
+            {errors.category && (
+              <span className="text-red-500 text-sm">Category is required</span>
+            )}
+
+            {selectedCategory === "Others" && (
+              <input
+                type="text"
+                placeholder="Enter custom category"
+                value={customCategory}
+                onChange={(e) => setCustomCategory(e.target.value)}
+                className="w-full input input-bordered mt-2"
+              />
+            )}
+          </div>
+
+          <div>
+            <label className="block mb-1 font-medium">Promotional Video URL (YouTube)</label>
+            <input
+              type="url"
+              {...register("videoUrl")}
+              defaultValue={course.videoUrl || ""}
+              placeholder="https://www.youtube.com/watch?v=..."
+              className="w-full input input-bordered"
+            />
           </div>
 
           <div>

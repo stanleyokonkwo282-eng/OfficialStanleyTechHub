@@ -1,4 +1,5 @@
 import { useMutation } from "@tanstack/react-query";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
 import { toast } from "react-toastify";
@@ -8,14 +9,17 @@ import handleUpload from "../../utils/ImageUploadApi";
 
 export default function AddCourse() {
   const { user } = useAuth();
+  const [customCategory, setCustomCategory] = useState("");
   const {
     register,
     handleSubmit,
     reset,
     formState: { errors },
+    watch,
   } = useForm();
   const navigate = useNavigate();
   const axiosSecure = useAxiosSecure();
+  const selectedCategory = watch("category");
 
   const uploadImageMutation = useMutation({
     mutationFn: handleUpload,
@@ -43,6 +47,9 @@ export default function AddCourse() {
     data.image = imageUrl;
     data.rating = Math.floor(Math.random() * 5) + 1;
     delete data.name;
+    if (data.category === "Others") {
+      data.category = customCategory;
+    }
     saveCourseMutation.mutate(data);
   };
 
@@ -147,6 +154,58 @@ export default function AddCourse() {
                 Description is required
               </span>
             )}
+          </div>
+
+          {/* Category */}
+          <div>
+            <label className="block mb-2 text-sm font-semibold text-gray-300 uppercase tracking-wide">
+              Category
+            </label>
+            <select
+              {...register("category", { required: true })}
+              className="w-full bg-zinc-900 border border-zinc-700 text-white rounded-lg px-4 py-3 focus:outline-none focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400 transition-colors"
+            >
+              <option value="" disabled>
+                Select a category
+              </option>
+              <option value="Digital Marketing">Digital Marketing</option>
+              <option value="Web Development">Web Development</option>
+              <option value="Graphic Design">Graphic Design</option>
+              <option value="App Development">Mobile App Development</option>
+              <option value="Data Science">Data Science</option>
+              <option value="Others">Others</option>
+            </select>
+            {errors.category && (
+              <span className="text-red-400 text-sm mt-1 block">
+                Category is required
+              </span>
+            )}
+
+            {selectedCategory === "Others" && (
+              <input
+                type="text"
+                placeholder="Enter custom category"
+                value={customCategory}
+                onChange={(e) => setCustomCategory(e.target.value)}
+                className="w-full bg-zinc-900 border border-zinc-700 text-white placeholder-zinc-500 rounded-lg px-4 py-3 mt-3 focus:outline-none focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400 transition-colors"
+              />
+            )}
+          </div>
+
+          {/* Video URL */}
+          <div>
+            <label className="block mb-2 text-sm font-semibold text-gray-300 uppercase tracking-wide">
+              Promotional Video URL (YouTube)
+            </label>
+            <input
+              type="url"
+              {...register("videoUrl")}
+              placeholder="https://www.youtube.com/watch?v=..."
+              className="w-full bg-zinc-900 border border-zinc-700 text-white placeholder-zinc-500 rounded-lg px-4 py-3 focus:outline-none focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400 transition-colors"
+            />
+            <p className="text-zinc-500 text-xs mt-2">
+              Paste a YouTube video link (e.g. https://youtube.com/watch?v=... or https://youtu.be/...)
+            </p>
           </div>
 
           {/* Image Upload */}
