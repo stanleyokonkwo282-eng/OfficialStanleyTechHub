@@ -39,7 +39,7 @@ The certificate is not just a piece of paper—it is a **verified, globally reco
 ### Frontend
 | Technology | Purpose |
 |------------|---------|
-| **React 18** | UI framework |
+| **React 19** | UI framework |
 | **React Router v7** | Client-side routing |
 | **TanStack Query (React Query)** | Server state management, caching, background refetching |
 | **Axios** | HTTP client |
@@ -429,6 +429,8 @@ The PDF summary view provides a professional lesson brief when no actual PDF is 
     - **Removed keyboard control blocks** for natural video interaction
     - **Removed context menu block** for better UX
     - **Added professional Framer Motion animations** across homepage, course cards, navbar, login/signup forms, and dashboard components
+    - **Fixed white-screen crash**: `src/pages/teacher/AddCourse.jsx` and `src/pages/teacher/UpdateCourse.jsx` were importing `useState` from `@tanstack/react-query` instead of `react`. This caused a module-resolution error that prevented the entire SPA from mounting. Fixed by importing `useState` from `react` and `useMutation` from `@tanstack/react-query`.
+    - **Teacher course form enhancements**: Added `category` dropdown (with custom "Others" option) and `promotionalVideoUrl` (YouTube) fields to both `AddCourse` and `UpdateCourse`.
     - **Banner**: Staggered entrance animations, floating background blobs, animated stat cards with hover scale
     - **TrustedClients**: Staggered skill tag animations with hover scale
     - **PlatformStats**: Animated number counters with eased counting, staggered card entrances, hover lift effects
