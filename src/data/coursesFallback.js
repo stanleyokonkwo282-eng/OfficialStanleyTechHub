@@ -15,56 +15,56 @@ const coursesFallback = [
         moduleId: "gd-mod-1",
         moduleTitle: "Introduction to Visual Communication",
         lessons: [
-          { lessonId: "gd-1", title: "Understanding Design Principles & Layouts", videoUrl: "https://www.youtube.com/watch?v=WONZVnlam6U", pdfUrl: "" },
-          { lessonId: "gd-2", title: "The Power of Visual Hierarchy", videoUrl: "https://www.youtube.com/watch?v=a5KYlHNKQB8", pdfUrl: "" },
-          { lessonId: "gd-3", title: "Color Theory for Modern Creators", videoUrl: "https://www.youtube.com/watch?v=AvgCkHrcj8w", pdfUrl: "" },
-          { lessonId: "gd-4", title: "Mastering Typography & Font Pairing", videoUrl: "https://www.youtube.com/watch?v=sByzHoiYFX0", pdfUrl: "" },
-          { lessonId: "gd-5", title: "Setting Up Your Canvas & Workspace", videoUrl: "https://www.youtube.com/watch?v=ZK86XQ1iFVs", pdfUrl: "" },
-          { lessonId: "gd-6", title: "Working with Vector Shapes & Grids", videoUrl: "https://www.youtube.com/watch?v=Ib8UBwU3bgQ", pdfUrl: "" },
-          { lessonId: "gd-7", title: "Introduction to Composition Techniques", videoUrl: "https://www.youtube.com/watch?v=agbj7dBmDvs", pdfUrl: "" },
-          { lessonId: "gd-8", title: "Analyzing Famous Brand Design Assets", videoUrl: "https://www.youtube.com/watch?v=4fGPbEDzPqA", pdfUrl: "" }
+          { lessonId: "gd-1", title: "Understanding Design Principles & Layouts", videoUrl: "https://www.youtube.com/watch?v=0wY741qw0Ys", pdfUrl: "" },
+          { lessonId: "gd-2", title: "The Power of Visual Hierarchy", videoUrl: "https://www.youtube.com/watch?v=1v01_a18UzM", pdfUrl: "" },
+          { lessonId: "gd-3", title: "Color Theory for Modern Creators", videoUrl: "https://www.youtube.com/watch?v=68KNzsmBarM", pdfUrl: "" },
+          { lessonId: "gd-4", title: "Mastering Typography & Font Pairing", videoUrl: "https://www.youtube.com/watch?v=6CGtpZj5sLQ", pdfUrl: "" },
+          { lessonId: "gd-5", title: "Setting Up Your Canvas & Workspace", videoUrl: "https://www.youtube.com/watch?v=6JOM6QTFxXA", pdfUrl: "" },
+          { lessonId: "gd-6", title: "Working with Vector Shapes & Grids", videoUrl: "https://www.youtube.com/watch?v=9EPTM91TBDU", pdfUrl: "" },
+          { lessonId: "gd-7", title: "Introduction to Composition Techniques", videoUrl: "https://www.youtube.com/watch?v=AXpxZMRM1EY", pdfUrl: "" },
+          { lessonId: "gd-8", title: "Analyzing Famous Brand Design Assets", videoUrl: "https://www.youtube.com/watch?v=CC_-V5qjhaY", pdfUrl: "" }
         ]
       },
       {
         moduleId: "gd-mod-2",
         moduleTitle: "Digital Assets & Layout Systems",
         lessons: [
-          { lessonId: "gd-9", title: "Designing Social Media Carousels", videoUrl: "https://youtube.com", pdfUrl: "" },
-          { lessonId: "gd-10", title: "Thumbnails That Drive High CTR", videoUrl: "https://youtube.com", pdfUrl: "" },
-          { lessonId: "gd-11", title: "Creating Pitch Decks and Presentation Slides", videoUrl: "https://youtube.com", pdfUrl: "" },
-          { lessonId: "gd-12", title: "UI Components for Landing Pages", videoUrl: "https://youtube.com", pdfUrl: "" },
-          { lessonId: "gd-13", title: "Building Consistency with Style Guides", videoUrl: "https://youtube.com", pdfUrl: "" },
-          { lessonId: "gd-14", title: "Using Masking and Layer Blend Modes", videoUrl: "https://youtube.com", pdfUrl: "" },
-          { lessonId: "gd-15", title: "Vector Pen Tool Techniques Explained", videoUrl: "https://youtube.com", pdfUrl: "" },
-          { lessonId: "gd-16", title: "Adding Realism via Drop Shadows & Textures", videoUrl: "https://youtube.com", pdfUrl: "" }
+          { lessonId: "gd-9", title: "Designing Social Media Carousels", videoUrl: "https://www.youtube.com/watch?v=E0rGKWLMd2Y", pdfUrl: "" },
+          { lessonId: "gd-10", title: "Thumbnails That Drive High CTR", videoUrl: "https://www.youtube.com/watch?v=FXhs-2Z8akI", pdfUrl: "" },
+          { lessonId: "gd-11", title: "Creating Pitch Decks and Presentation Slides", videoUrl: "https://www.youtube.com/watch?v=G3e-cpL7ofc", pdfUrl: "" },
+          { lessonId: "gd-12", title: "UI Components for Landing Pages", videoUrl: "https://www.youtube.com/watch?v=HZuk6Wkx_Eg", pdfUrl: "" },
+          { lessonId: "gd-13", title: "Building Consistency with Style Guides", videoUrl: "https://www.youtube.com/watch?v=KQgvjoI_SFY", pdfUrl: "" },
+          { lessonId: "gd-14", title: "Using Masking and Layer Blend Modes", videoUrl: "https://www.youtube.com/watch?v=MCDVcQIA3UM", pdfUrl: "" },
+          { lessonId: "gd-15", title: "Vector Pen Tool Techniques Explained", videoUrl: "https://www.youtube.com/watch?v=MZ9Y9yvqV1c", pdfUrl: "" },
+          { lessonId: "gd-16", title: "Adding Realism via Drop Shadows & Textures", videoUrl: "https://www.youtube.com/watch?v=PKfZ1gnVJ44", pdfUrl: "" }
         ]
       },
       {
         moduleId: "gd-mod-3",
         moduleTitle: "Advanced Typography & Brand Identity",
         lessons: [
-          { lessonId: "gd-17", title: "Custom Typographic Treatments", videoUrl: "https://youtube.com", pdfUrl: "" },
-          { lessonId: "gd-18", title: "Logo Concept Generation Workflows", videoUrl: "https://youtube.com", pdfUrl: "" },
-          { lessonId: "gd-19", title: "Designing Scaleable Vector Icons", videoUrl: "https://youtube.com", pdfUrl: "" },
-          { lessonId: "gd-20", title: "Preparing Print vs Digital Artboards", videoUrl: "https://youtube.com", pdfUrl: "" },
-          { lessonId: "gd-21", title: "Applying Global Swatches for Fluid Rebrands", videoUrl: "https://youtube.com", pdfUrl: "" },
-          { lessonId: "gd-22", title: "Exporting High-Fidelity Design Assets", videoUrl: "https://youtube.com", pdfUrl: "" },
-          { lessonId: "gd-23", title: "Designing Interactive Digital Magazines", videoUrl: "https://youtube.com", pdfUrl: "" },
-          { lessonId: "gd-24", title: "Advanced Moodboards & Creative Direction", videoUrl: "https://youtube.com", pdfUrl: "" }
+          { lessonId: "gd-17", title: "Custom Typographic Treatments", videoUrl: "https://www.youtube.com/watch?v=Ryv4Q1qmxHs", pdfUrl: "" },
+          { lessonId: "gd-18", title: "Logo Concept Generation Workflows", videoUrl: "https://www.youtube.com/watch?v=YSFvTTa7_Pw", pdfUrl: "" },
+          { lessonId: "gd-19", title: "Designing Scaleable Vector Icons", videoUrl: "https://www.youtube.com/watch?v=a_iQb1lnAEQ", pdfUrl: "" },
+          { lessonId: "gd-20", title: "Preparing Print vs Digital Artboards", videoUrl: "https://www.youtube.com/watch?v=ayahatonLXU", pdfUrl: "" },
+          { lessonId: "gd-21", title: "Applying Global Swatches for Fluid Rebrands", videoUrl: "https://www.youtube.com/watch?v=e_dv7GBHka8", pdfUrl: "" },
+          { lessonId: "gd-22", title: "Exporting High-Fidelity Design Assets", videoUrl: "https://www.youtube.com/watch?v=guCizDFyZh0", pdfUrl: "" },
+          { lessonId: "gd-23", title: "Designing Interactive Digital Magazines", videoUrl: "https://www.youtube.com/watch?v=h7komjsQq50", pdfUrl: "" },
+          { lessonId: "gd-24", title: "Advanced Moodboards & Creative Direction", videoUrl: "https://www.youtube.com/watch?v=iwmz1sL5r9g", pdfUrl: "" }
         ]
       },
       {
         moduleId: "gd-mod-4",
         moduleTitle: "Commercial Projects & Portfolios",
         lessons: [
-          { lessonId: "gd-25", title: "Packaging Design Systems Fundamentals", videoUrl: "https://youtube.com", pdfUrl: "" },
-          { lessonId: "gd-26", title: "Mocking Up Products Realistically", videoUrl: "https://youtube.com", pdfUrl: "" },
-          { lessonId: "gd-27", title: "Freelance Client Brief Walkthroughs", videoUrl: "https://youtube.com", pdfUrl: "" },
-          { lessonId: "gd-28", title: "Organizing Your Behance Portfolio", videoUrl: "https://youtube.com", pdfUrl: "" },
-          { lessonId: "gd-29", title: "Pricing Creative Graphic Assets", videoUrl: "https://youtube.com", pdfUrl: "" },
-          { lessonId: "gd-30", title: "Handling Critical Feedback Revisions", videoUrl: "https://youtube.com", pdfUrl: "" },
-          { lessonId: "gd-31", title: "Design Ethics & Copyright Infringement", videoUrl: "https://youtube.com", pdfUrl: "" },
-          { lessonId: "gd-32", title: "Graphic Design Final Exam Prep", videoUrl: "https://youtube.com", pdfUrl: "" }
+          { lessonId: "gd-25", title: "Packaging Design Systems Fundamentals", videoUrl: "https://www.youtube.com/watch?v=uorQJ_ucDhg", pdfUrl: "" },
+          { lessonId: "gd-26", title: "Mocking Up Products Realistically", videoUrl: "https://www.youtube.com/watch?v=Oluix1It7Xg", pdfUrl: "" },
+          { lessonId: "gd-27", title: "Freelance Client Brief Walkthroughs", videoUrl: "https://www.youtube.com/watch?v=YhRfgYH_AoU", pdfUrl: "" },
+          { lessonId: "gd-28", title: "Organizing Your Behance Portfolio", videoUrl: "https://www.youtube.com/watch?v=Rfa6b3PG41U", pdfUrl: "" },
+          { lessonId: "gd-29", title: "Pricing Creative Graphic Assets", videoUrl: "https://www.youtube.com/watch?v=9REJ66cRlCM", pdfUrl: "" },
+          { lessonId: "gd-30", title: "Handling Critical Feedback Revisions", videoUrl: "https://www.youtube.com/watch?v=i_LwzRVP7bg", pdfUrl: "" },
+          { lessonId: "gd-31", title: "Design Ethics & Copyright Infringement", videoUrl: "https://www.youtube.com/watch?v=2tagcO5v9aw", pdfUrl: "" },
+          { lessonId: "gd-32", title: "Graphic Design Final Exam Prep", videoUrl: "https://www.youtube.com/watch?v=zjkBMFhNj_g", pdfUrl: "" }
         ]
       }
     ]
@@ -85,25 +85,25 @@ const coursesFallback = [
         moduleId: "ai-mod-1",
         moduleTitle: "Prompt Engineering Essentials",
         lessons: [
-          { lessonId: "ai-1", title: "Core Foundations of LLM Models", videoUrl: "https://youtube.com", pdfUrl: "" },
-          { lessonId: "ai-2", title: "Structuring System Prompts Efficiently", videoUrl: "https://youtube.com", pdfUrl: "" },
-          { lessonId: "ai-3", title: "Few-Shot Prompting and Context Windows", videoUrl: "https://youtube.com", pdfUrl: "" },
-          { lessonId: "ai-4", title: "Preventing Hallucinations in Output Data", videoUrl: "https://youtube.com", pdfUrl: "" },
-          { lessonId: "ai-5", title: "Chain of Thought Framework Mechanics", videoUrl: "https://youtube.com", pdfUrl: "" },
-          { lessonId: "ai-6", title: "Automating Multi-Step Code Scripts", videoUrl: "https://youtube.com", pdfUrl: "" },
-          { lessonId: "ai-7", title: "Extracting Structured JSON Tables", videoUrl: "https://youtube.com", pdfUrl: "" },
-          { lessonId: "ai-8", title: "Prompt Libraries for Content Creators", videoUrl: "https://youtube.com", pdfUrl: "" }
+          { lessonId: "ai-1", title: "Core Foundations of LLM Models", videoUrl: "https://www.youtube.com/watch?v=xDLK1xWEPpM", pdfUrl: "" },
+          { lessonId: "ai-2", title: "Structuring System Prompts Efficiently", videoUrl: "https://www.youtube.com/watch?v=UmQnenLf_Cs", pdfUrl: "" },
+          { lessonId: "ai-3", title: "Few-Shot Prompting and Context Windows", videoUrl: "https://www.youtube.com/watch?v=hbeLqL6sjKA", pdfUrl: "" },
+          { lessonId: "ai-4", title: "Preventing Hallucinations in Output Data", videoUrl: "https://www.youtube.com/watch?v=vrA-xvPkL34", pdfUrl: "" },
+          { lessonId: "ai-5", title: "Chain of Thought Framework Mechanics", videoUrl: "https://www.youtube.com/watch?v=aodE4be2t-g", pdfUrl: "" },
+          { lessonId: "ai-6", title: "Automating Multi-Step Code Scripts", videoUrl: "https://www.youtube.com/watch?v=f9v1qVruVGY", pdfUrl: "" },
+          { lessonId: "ai-7", title: "Extracting Structured JSON Tables", videoUrl: "https://www.youtube.com/watch?v=o1fjWjReodE", pdfUrl: "" },
+          { lessonId: "ai-8", title: "Prompt Libraries for Content Creators", videoUrl: "https://www.youtube.com/watch?v=4olWKC_2CNo", pdfUrl: "" }
         ]
       },
       {
         moduleId: "ai-mod-2",
         moduleTitle: "Workflow Automation Engines",
         lessons: [
-          { lessonId: "ai-9", title: "Configuring Automated Zapier Tasks", videoUrl: "https://youtube.com", pdfUrl: "" },
-          { lessonId: "ai-10", title: "Connecting Notion Databases via Webhooks", videoUrl: "https://youtube.com", pdfUrl: "" },
-          { lessonId: "ai-11", title: "AI Calendar Scheduling Optimizations", videoUrl: "https://youtube.com", pdfUrl: "" },
-          { lessonId: "ai-12", title: "Automated Transcripts & Summaries", videoUrl: "https://youtube.com", pdfUrl: "" },
-          { lessonId: "ai-13", title: "Scraping Data with Intelligent Parsing", videoUrl: "https://youtube.com", pdfUrl: "" }
+          { lessonId: "ai-9", title: "Configuring Automated Zapier Tasks", videoUrl: "https://www.youtube.com/watch?v=D_WPZP5MRoE", pdfUrl: "" },
+          { lessonId: "ai-10", title: "Connecting Notion Databases via Webhooks", videoUrl: "https://www.youtube.com/watch?v=HU58N5fz7B8", pdfUrl: "" },
+          { lessonId: "ai-11", title: "AI Calendar Scheduling Optimizations", videoUrl: "https://www.youtube.com/watch?v=oEkb4TSrVuY", pdfUrl: "" },
+          { lessonId: "ai-12", title: "Automated Transcripts & Summaries", videoUrl: "https://www.youtube.com/watch?v=vT60kh5b0Gc", pdfUrl: "" },
+          { lessonId: "ai-13", title: "Scraping Data with Intelligent Parsing", videoUrl: "https://www.youtube.com/watch?v=LqoP3BylPXs", pdfUrl: "" }
         ]
       }
     ]
@@ -119,7 +119,22 @@ const coursesFallback = [
     instructor: [{ displayName: 'Creators Hub Academy' }],
     rating: 4.7,
     totalEnrollments: 84,
-    modules: []
+    modules: [
+      {
+        moduleId: "ve-mod-1",
+        moduleTitle: "Video Editing Mastery",
+        lessons: [
+          { lessonId: "ve-1", title: "Video Editing Fundamentals", videoUrl: "https://www.youtube.com/watch?v=FlkRpHlDg1w", pdfUrl: "" },
+          { lessonId: "ve-2", title: "Advanced Cutting Techniques", videoUrl: "https://www.youtube.com/watch?v=xkXaPOb9Qxo", pdfUrl: "" },
+          { lessonId: "ve-3", title: "Color Grading & Correction", videoUrl: "https://www.youtube.com/watch?v=zFsgDZfgzSc", pdfUrl: "" },
+          { lessonId: "ve-4", title: "Audio Mixing & Sound Design", videoUrl: "https://www.youtube.com/watch?v=16HQyH7mlgc", pdfUrl: "" },
+          { lessonId: "ve-5", title: "Motion Graphics & Transitions", videoUrl: "https://www.youtube.com/watch?v=w8rfTNCer2A", pdfUrl: "" },
+          { lessonId: "ve-6", title: "Exporting for Social Media", videoUrl: "https://www.youtube.com/watch?v=Tq0vZU7Hp_M", pdfUrl: "" },
+          { lessonId: "ve-7", title: "YouTube Creator Playlist", videoUrl: "https://www.youtube.com/playlist?list=PLSpc0Sm245ewC6vguw0haYtlNd-XlkyvP", pdfUrl: "" },
+          { lessonId: "ve-8", title: "Advanced Editing Playlist", videoUrl: "https://youtube.com/playlist?cbrd=1&list=PLU1aP_Y9qGOwmlOeO-IdTcc8P_r5x0gn8", pdfUrl: "" }
+        ]
+      }
+    ]
   },
   {
     _id: 'fallback-4',
