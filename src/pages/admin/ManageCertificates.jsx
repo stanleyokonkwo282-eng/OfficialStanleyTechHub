@@ -37,7 +37,7 @@ export default function ManageCertificates() {
   const uploadMutation = useMutation({
     mutationFn: async ({ id, file }) => {
       const url = await handleUpload(file);
-      const res = await axiosSecure.patch(`/certificates/${id}/upload-image`, { certificateImage: url });
+      const res = await axiosSecure.post(`/certificates/${id}/upload-image`, { certificateImage: url });
       return res.data;
     },
     onSuccess: () => {
