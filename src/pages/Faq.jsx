@@ -6,52 +6,57 @@ const faqs = [
   {
     question: "How do I create an account on Creators Hub Academy?",
     answer:
-      "Sign up with your email and password, verify your email, and start exploring our courses immediately.",
+      "You can sign up with your email and password, or use Google login. Verify your email and start exploring 25+ free digital skills courses immediately.",
   },
   {
-    question: "Can I access courses for free?",
+    question: "Are the courses really free?",
     answer:
-      "Yes! Creators Hub Academy provides free courses for learners. Some advanced courses may require enrollment fees for certification.",
+      "Yes! All courses are free to learn. Use coupon code CREATOR during enrollment to access any course at no cost. A ₦10,000 verification fee only applies if you want a shareable certificate after passing the exam.",
   },
   {
-    question: "What payment methods do you accept?",
+    question: "What payment methods are supported?",
     answer:
-      "We accept credit/debit cards and Stripe payments securely for paid courses and certification fees.",
+      "For certificate verification, we accept Paystack (card payment) or direct bank transfer: Opay — 8134438808, Polaris — 3046748449. Course enrollment is free with the CREATOR coupon.",
   },
   {
     question: "How do I reset my password?",
     answer:
-      "Click on 'Forgot Password' at login, enter your email, and follow the instructions to reset your password securely.",
+      "Click 'Forgot Password' on the login page, enter your registered email, and follow the reset link sent to your inbox.",
   },
   {
     question: "Are the courses self-paced?",
     answer:
-      "Yes, all Creators Hub Academy courses are self-paced so you can learn at your own speed without deadlines.",
+      "Yes, all courses are self-paced. Learn at your own speed, track progress, and resume exactly where you left off across devices.",
   },
   {
-    question: "Do I get a certificate after completion?",
+    question: "How do I get a certificate?",
     answer:
-      "Yes! Completing paid courses successfully will grant you a verifiable certificate you can share with employers.",
+      "Pass the course exam (minimum 60%), pay the ₦10,000 verification fee via Paystack or bank transfer, and our team will issue your verifiable certificate within 24–48 hours.",
   },
   {
-    question: "Can I switch roles between student and teacher?",
+    question: "How can I become a teacher on the platform?",
     answer:
-      "Currently, roles are fixed upon registration. Contact support if you need a role change request.",
+      "Go to 'Teach on Creators Hub' in the dashboard, fill in your experience, title, and category, then submit your request. An admin will review and approve it.",
   },
   {
-    question: "How do I contact support for issues?",
+    question: "Can I edit my profile?",
     answer:
-      "Use the 'Contact Us' form or email our support team. We respond within 24 hours.",
+      "Yes. Go to Dashboard → My Profile → Edit Profile to update your name, phone number, and profile picture URL.",
   },
   {
-    question: "Can I delete my account?",
+    question: "How do I contact support?",
     answer:
-      "Yes, you can request account deletion from your profile settings. All data will be permanently removed.",
+      "Chat us on WhatsApp at +234 813 443 8808 or email hello@creatorshubacademy.com. We typically respond within a few hours.",
   },
   {
-    question: "Is my data safe on Creators Hub Academy?",
+    question: "Is my data safe?",
     answer:
-      "Absolutely! We use Firebase and MongoDB with secure authentication and encryption to protect your data.",
+      "Yes. We use Firebase Authentication for secure login and MongoDB for encrypted data storage. Your personal information is never shared with third parties.",
+  },
+  {
+    question: "How do I track my learning progress?",
+    answer:
+      "Your dashboard shows enrolled courses, completed lessons, exam attempts, and certificate status automatically as you learn.",
   },
 ];
 
