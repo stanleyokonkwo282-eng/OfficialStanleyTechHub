@@ -29,7 +29,7 @@ export default function ProfileEdit() {
   const onSubmit = async (data) => {
     setIsSubmitting(true);
     try {
-      const res = await axiosSecure.patch(`/users/${user?.email}`, {
+      const res = await axiosSecure.patch(`/users/${encodeURIComponent(user?.email)}`, {
         name: data.name,
         phone: data.phone,
         photoURL: data.photoURL,
@@ -45,7 +45,11 @@ export default function ProfileEdit() {
       }
     } catch (error) {
       console.error("Profile update error:", error);
-      toast.error("Failed to update profile. Please try again.");
+      const message =
+        error?.response?.data?.message ||
+        error.message ||
+        "Failed to update profile. Please try again.";
+      toast.error(message);
     } finally {
       setIsSubmitting(false);
     }
