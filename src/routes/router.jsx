@@ -3,6 +3,7 @@ import App from "../App";
 import About from "../pages/About";
 import ManageCertificates from "../pages/admin/ManageCertificates";
 import ManageCourses from "../pages/admin/ManageCourses";
+import AdminNotifications from "../pages/admin/AdminNotifications";
 import ManageTeachers from "../pages/admin/ManageTeachers";
 import ManageUsers from "../pages/admin/ManageUsers";
 import ManageVisits from "../pages/admin/ManageVisits";  // ✅ ADDED
@@ -11,6 +12,7 @@ import CategoryCourses from "../pages/CategoryCourses";
 import CourseDash from "../pages/common/CourseDash";
 import DashBoard from "../pages/common/Dashboard";
 import Profile from "../pages/common/Profile";
+import ProfileEdit from "../pages/common/ProfileEdit";
 import Courses from "../pages/Courses";
 import FAQ from "../pages/Faq";
 import Home from "../pages/Home";
@@ -127,6 +129,22 @@ const router = createBrowserRouter([
               <RoleBasedRoute allowedRoles={["admin"]}>
                 <ManageVisits />
               </RoleBasedRoute>
+            ),
+          },
+          {
+            path: "notifications",
+            element: (
+              <RoleBasedRoute allowedRoles={["admin"]}>
+                <AdminNotifications />
+              </RoleBasedRoute>
+            ),
+          },
+          {
+            path: "profile/edit",
+            element: (
+              <PrivateRoute>
+                <ProfileEdit />
+              </PrivateRoute>
             ),
           },
         ],

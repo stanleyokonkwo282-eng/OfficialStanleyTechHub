@@ -1,4 +1,5 @@
 import { FaEnvelope, FaPhone, FaUser, FaUserShield } from "react-icons/fa";
+import { Link } from "react-router";
 import HeadTag from "../../components/common/HeadTag";
 import useAuth from "../../hooks/useAuth";
 
@@ -18,6 +19,13 @@ export default function UserProfile() {
             className="w-32 h-32 rounded-full object-cover border-4 border-yellow-400"
           />
           <h2 className="text-2xl font-bold text-white">User Profile</h2>
+
+          <Link
+            to="/dashboard/profile/edit"
+            className="px-6 py-2 bg-yellow-400 text-black font-medium rounded-md hover:bg-yellow-500 transition duration-300"
+          >
+            Edit Profile
+          </Link>
 
           <div className="w-full mt-2 space-y-3">
             <div className="flex items-center gap-3 mx-10 my-5 px-4 py-4 rounded bg-zinc-950 border border-zinc-800 shadow-lg">

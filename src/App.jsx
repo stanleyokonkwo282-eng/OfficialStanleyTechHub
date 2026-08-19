@@ -9,16 +9,19 @@ import GoToTopButton from "./components/common/GoToTopButton";
 import Navbar from "./components/common/Navbar";
 import ErrorBoundary from "./components/common/ErrorBoundary";
 import { AuthProvider } from "./providers/AuthProvider";
+import { NotificationProvider } from "./providers/NotificationContext";
 
 function App() {
   return (
     <ErrorBoundary>
       <AuthProvider>
-        <Navbar />
-        <Outlet />
-        <Footer />
-        <ToastContainer position="top-right" autoClose={3000} />
-        <GoToTopButton />
+        <NotificationProvider>
+          <Navbar />
+          <Outlet />
+          <Footer />
+          <ToastContainer position="top-right" autoClose={3000} />
+          <GoToTopButton />
+        </NotificationProvider>
       </AuthProvider>
     </ErrorBoundary>
   );
