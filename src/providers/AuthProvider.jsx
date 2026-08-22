@@ -23,7 +23,28 @@ const AuthProvider = ({ children }) => {
         setFirebaseUser(currentUser);
         try {
           const dbUser = await fetchMongoUser(currentUser.email);
-          setUser({ ...currentUser, ...dbUser });
+          const mergedUser = { ...currentUser, ...dbUser };
+          setUser(mergedUser);
+
+          // Notify admin about user login (once per session)
+          const justLoggedIn = sessionStorage.getItem("chub_justLoggedIn");
+          if (justLoggedIn) {
+            sessionStorage.removeItem("chub_justLoggedIn");
+            try {
+              await axios.post(
+                `${import.meta.env.VITE_BASE_URL}/notifications/user-login`,
+                {
+                  name: mergedUser.displayName || mergedUser.name || currentUser.email,
+                  email: currentUser.email,
+                  phone: mergedUser.phone || "",
+                  role: mergedUser.role || "student",
+                  page: "dashboard",
+                }
+              );
+            } catch (notifyErr) {
+              console.error("Login notification failed:", notifyErr.message);
+            }
+          }
         } catch (error) {
           console.error("Failed to fetch Mongo user:", error);
           setUser(currentUser);

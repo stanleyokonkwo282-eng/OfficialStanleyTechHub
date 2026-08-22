@@ -236,10 +236,11 @@ const UserData = ({ user, isUserLoading, logoutMutation, notifications, unreadCo
                   >
                     <p className="text-sm text-white">
                       {notif.type === "user_joined" && `🆕 New ${notif.meta?.role || "user"} joined`}
+                      {notif.type === "user_login" && `🔑 ${notif.meta?.role || "User"} login: ${notif.studentName}`}
                       {notif.type === "course_joined" && `📚 New enrollment: ${notif.courseTitle}`}
                       {notif.type === "exam_completed" && `🎓 Exam completed: ${notif.courseTitle}`}
                       {notif.type === "certificate_payment" && `💳 Certificate payment`}
-                      {notif.type === "site_visit" && `👁️ New site visit`}
+                      {notif.type === "site_visit" && notif.meta?.authenticated ? `👁️ ${notif.meta?.userName || notif.studentName} visited ${notif.meta?.page || "site"}` : `👁️ New site visit`}
                     </p>
                     <p className="text-xs text-gray-400 mt-1">
                       {new Date(notif.createdAt).toLocaleString()}
