@@ -1,4 +1,4 @@
-import { FaBookOpen, FaCertificate, FaBell, FaMoneyBillWave } from "react-icons/fa";
+import { FaBookOpen, FaCertificate, FaBell, FaMoneyBillWave, FaChartBar } from "react-icons/fa";
 import { IoIosPerson } from "react-icons/io";
 import { IoDocumentsSharp } from "react-icons/io5";
 import { LuBookUser } from "react-icons/lu";
@@ -60,6 +60,13 @@ export default function DashboardSidebar() {
           <NavLink to="/dashboard/payouts" className={linkStyle}>
             <LinkTile title="Teacher Payouts">
               <FaMoneyBillWave />
+            </LinkTile>
+          </NavLink>
+        )}
+        {user?.role === "admin" && (
+          <NavLink to="/dashboard/daily-summary" className={linkStyle}>
+            <LinkTile title="Daily Summary">
+              <FaChartBar />
             </LinkTile>
           </NavLink>
         )}
