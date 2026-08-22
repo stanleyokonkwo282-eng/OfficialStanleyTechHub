@@ -2,6 +2,7 @@ import { createBrowserRouter } from "react-router";
 import App from "../App";
 import About from "../pages/About";
 import ManageCertificates from "../pages/admin/ManageCertificates";
+import AdminManagePayouts from "../pages/admin/AdminManagePayouts";
 import ManageCourses from "../pages/admin/ManageCourses";
 import AdminNotifications from "../pages/admin/AdminNotifications";
 import ManageTeachers from "../pages/admin/ManageTeachers";
@@ -122,6 +123,14 @@ const router = createBrowserRouter([
             element: (
               <RoleBasedRoute allowedRoles={["admin"]}>
                 <ManageCertificates />
+              </RoleBasedRoute>
+            ),
+          },
+          {
+            path: "payouts",
+            element: (
+              <RoleBasedRoute allowedRoles={["admin"]}>
+                <AdminManagePayouts />
               </RoleBasedRoute>
             ),
           },
