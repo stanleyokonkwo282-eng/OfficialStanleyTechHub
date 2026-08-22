@@ -106,9 +106,12 @@ const BeTeacher = () => {
     },
     onError: (error) => {
       console.error("Subscription error:", error);
+      const backendMessage = error?.response?.data?.message;
+      const fullError = error?.message || "Unknown error";
+      
       Swal.fire({
         title: "Payment failed",
-        text: error?.response?.data?.message || "Please try again later.",
+        text: backendMessage || fullError || "Please try again later.",
         icon: "error",
         background: "#18181b",
         color: "#fff",
