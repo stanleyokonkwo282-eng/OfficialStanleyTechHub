@@ -40,7 +40,8 @@
 ### Backend (Render)
 | Variable | Purpose |
 |----------|---------|
-| `PAYSTACK_SECRET_KEY` | Paystack payments for subscriptions and course enrollment |
+| `PAYSTACK_SECRET_KEY` | Paystack payments for subscriptions and course enrollment (LIVE mode: `sk_live_...`) |
+| `PAYSTACK_PUBLIC_KEY` | Paystack public key (LIVE mode: `pk_live_...`) |
 | `IMAGEKIT_PUBLIC_KEY` | ImageKit uploads |
 | `IMAGEKIT_PRIVATE_KEY` | ImageKit signature generation |
 | `IMAGEKIT_URL_ENDPOINT` | ImageKit CDN URL |
