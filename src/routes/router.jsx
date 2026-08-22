@@ -30,6 +30,8 @@ import ExamPage from "../pages/student/ExamPage";
 import StripeWrapper from "../pages/student/StripeWrapper";
 import AddCourse from "../pages/teacher/AddCourse";
 import CourseSummery from "../pages/teacher/CourseSummery";
+import TeacherPayout from "../pages/teacher/TeacherPayout";
+import TeacherSubscription from "../pages/teacher/TeacherSubscription";
 import PrivateRoute from "./PrivateRoute";
 import RoleBasedRoute from "./RoleBasedRoute";
 
@@ -139,12 +141,27 @@ const router = createBrowserRouter([
               </RoleBasedRoute>
             ),
           },
-          {
-            path: "profile/edit",
+          { path: "profile/edit",
             element: (
               <PrivateRoute>
                 <ProfileEdit />
               </PrivateRoute>
+            ),
+          },
+          {
+            path: "teacher/payout",
+            element: (
+              <RoleBasedRoute allowedRoles={["teacher"]}>
+                <TeacherPayout />
+              </RoleBasedRoute>
+            ),
+          },
+          {
+            path: "teacher/subscription",
+            element: (
+              <RoleBasedRoute allowedRoles={["teacher"]}>
+                <TeacherSubscription />
+              </RoleBasedRoute>
             ),
           },
         ],

@@ -1,4 +1,4 @@
-import { FaBookOpen, FaCertificate, FaBell } from "react-icons/fa";
+import { FaBookOpen, FaCertificate, FaBell, FaMoneyBillWave } from "react-icons/fa";
 import { IoIosPerson } from "react-icons/io";
 import { IoDocumentsSharp } from "react-icons/io5";
 import { LuBookUser } from "react-icons/lu";
@@ -78,6 +78,20 @@ export default function DashboardSidebar() {
           <NavLink to="/dashboard/courses/add" className={linkStyle}>
             <LinkTile title="Add Course">
               <MdAddToPhotos />
+            </LinkTile>
+          </NavLink>
+        )}
+        {user?.role === "teacher" && (
+          <NavLink to="/dashboard/teacher/payout" className={linkStyle}>
+            <LinkTile title="Payout & Earnings">
+              <FaMoneyBillWave />
+            </LinkTile>
+          </NavLink>
+        )}
+        {user?.role === "teacher" && (
+          <NavLink to="/dashboard/teacher/subscription" className={linkStyle}>
+            <LinkTile title="My Subscription">
+              <FaCertificate />
             </LinkTile>
           </NavLink>
         )}

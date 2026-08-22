@@ -6,12 +6,47 @@ import LoaderDotted from "../components/common/LoaderDotted";
 import useAuth from "../hooks/useAuth";
 import useAxiosSecure from "../hooks/useAxiosSecure";
 import NoticeBoard from "./common/NoticeBoard";
+import { useState, useEffect } from "react";
+
+const PLANS = {
+  monthly: { label: "Monthly", price: 12500, originalPrice: 12500, discount: 0, period: "1 month", popular: false },
+  quarterly: { label: "Quarterly", price: 33750, originalPrice: 37500, discount: 3750, period: "3 months", popular: true },
+  yearly: { label: "Yearly", price: 135000, originalPrice: 150000, discount: 15000, period: "12 months", popular: false },
+};
 
 const BeTeacher = () => {
-  const { user } = useAuth();
+  const { user, setUser } = useAuth();
   const axiosSecure = useAxiosSecure();
+  const [selectedPlan, setSelectedPlan] = useState(null);
+  const [subscription, setSubscription] = useState(null);
 
-  const becomeTeacherMutation = useMutation({
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm({
+    defaultValues: {
+      experience: user?.experience || "",
+      title: user?.title || "",
+      category: user?.category || "",
+      bio: user?.bio || "",
+    },
+  });
+
+  useEffect(() => {
+    const fetchSubscription = async () => {
+      if (!user?.email) return;
+      try {
+        const res = await axiosSecure.get("/subscriptions/my-subscription");
+        setSubscription(res.data?.subscription || null);
+      } catch (err) {
+        console.error("Failed to fetch subscription:", err);
+      }
+    };
+    fetchSubscription();
+  }, [user?.email, axiosSecure]);
+
+  const saveProfileMutation = useMutation({
     mutationFn: async (data) => {
       const result = await axiosSecure.post(
         `${import.meta.env.VITE_BASE_URL}/be-teacher/${user.email}`,
@@ -19,20 +54,19 @@ const BeTeacher = () => {
       );
       return result.data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      if (data?.data) {
+        setUser((prev) => ({ ...prev, ...data.data }));
+      }
       Swal.fire({
-        title: "Your request has been sent",
-        text: "Please wait for approval. Thank you!",
+        title: "Profile saved!",
+        text: "Now choose a subscription plan to activate your teacher account.",
         icon: "success",
         showConfirmButton: true,
-        confirmButtonText: "OK",
+        confirmButtonText: "Choose Plan",
         background: "#18181b",
         color: "#fff",
         confirmButtonColor: "#facc15",
-      }).then((result) => {
-        if (result.isConfirmed) {
-          window.location.reload();
-        }
       });
     },
     onError: (error) => {
@@ -48,162 +82,227 @@ const BeTeacher = () => {
     },
   });
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-  } = useForm();
+  const subscribeMutation = useMutation({
+    mutationFn: async (plan) => {
+      const res = await axiosSecure.post("/subscriptions/initialize", {
+        email: user.email,
+        plan,
+      });
+      return res.data;
+    },
+    onSuccess: (data) => {
+      if (data?.authorizationUrl) {
+        window.location.href = data.authorizationUrl;
+      } else {
+        Swal.fire({
+          title: "Payment initialization failed",
+          text: "Please try again.",
+          icon: "error",
+          background: "#18181b",
+          color: "#fff",
+          confirmButtonColor: "#facc15",
+        });
+      }
+    },
+    onError: (error) => {
+      console.error("Subscription error:", error);
+      Swal.fire({
+        title: "Payment failed",
+        text: error?.response?.data?.message || "Please try again later.",
+        icon: "error",
+        background: "#18181b",
+        color: "#fff",
+        confirmButtonColor: "#facc15",
+      });
+    },
+  });
+
+  const onSaveProfile = (data) => {
+    saveProfileMutation.mutate(data);
+  };
+
+  const onSubscribe = (plan) => {
+    setSelectedPlan(plan);
+    subscribeMutation.mutate(plan);
+  };
 
   if (!user) return <LoaderDotted />;
+
+  const isApprovedTeacher = user?.status === "approved" && user?.role === "teacher";
+  const isPendingTeacher = user?.status === "pending" && user?.role === "teacher";
+  const hasActiveSubscription = subscription?.status === "active";
+  const showPlans = !hasActiveSubscription && !isApprovedTeacher;
+
   return (
     <>
       <HeadTag title="Become a Teacher | Creators Hub Academy" />
-      <div className="min-h-screen bg-black py-10">
-        <div className="max-w-2xl mx-auto bg-zinc-950 border border-zinc-800 shadow-lg p-6 rounded-2xl">
-          <h2 className="text-2xl font-semibold mb-8 text-center text-white">
-            Become a Teacher
+      <div className="min-h-screen bg-black py-10 px-4">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-3xl font-bold text-center text-white mb-8">
+            Become a <span className="text-yellow-400">Teacher</span>
           </h2>
-          <form
-            onSubmit={handleSubmit(becomeTeacherMutation.mutate)}
-            className="space-y-4"
-          >
-            {/* Image (preview only) */}
-            <div className="flex flex-col items-center">
-              <img
-                src={user?.photoURL}
-                alt="Profile"
-                className="w-20 h-20 rounded-full border-2 border-yellow-400 object-cover"
-              />
-              <label className="mt-1 font-medium text-gray-300">
-                Profile Picture
-              </label>
-            </div>
 
-            {/* Already Teacher */}
-            {user?.status === "approved" && user?.role === "teacher" && (
-              <NoticeBoard title="You are already a teacher" />
-            )}
-
-            {/* Teacher Request Pending */}
-            {user?.status === "pending" && user?.role === "teacher" && (
-              <NoticeBoard title="Your request is pending" />
-            )}
-
-            {/* Teacher Request Rejected */}
-            {user?.status === "rejected" && user?.role === "teacher" && (
-              <NoticeBoard title="Your request has been rejected" />
-            )}
-
-            {/* Name (read-only) */}
-            <div>
-              <label className="block font-medium text-gray-300">Name</label>
-              <input
-                type="text"
-                value={user?.displayName || ""}
-                readOnly
-                className="input input-bordered w-full bg-zinc-900 border-zinc-700 text-white"
-              />
-            </div>
-
-            {/* Email (read-only) */}
-            <div>
-              <label className="block font-medium text-gray-300">Email</label>
-              <input
-                type="email"
-                value={user?.email || ""}
-                readOnly
-                className="input input-bordered w-full bg-zinc-900 border-zinc-700 text-white"
-              />
-            </div>
-
-            {/* Experience */}
-            <div>
-              <label className="block font-medium text-gray-300">
-                Experience Level
-              </label>
-              <select
-                {...register("experience", { required: true })}
-                className="select select-bordered w-full bg-zinc-900 border-zinc-700 text-white"
+          {/* Already approved teacher */}
+          {isApprovedTeacher && (
+            <div className="bg-zinc-950 border border-green-700 rounded-2xl p-8 text-center">
+              <div className="text-5xl mb-4">🎓</div>
+              <h3 className="text-2xl font-bold text-white mb-2">You are already a teacher!</h3>
+              <p className="text-gray-400 mb-6">Go to your dashboard to manage courses and track earnings.</p>
+              <a
+                href="/dashboard/courses"
+                className="inline-block bg-yellow-400 text-black px-6 py-3 rounded-lg font-bold hover:bg-yellow-500 transition"
               >
-                <option value="" disabled>
-                  Select your experience
-                </option>
-                <option value="beginner">Beginner</option>
-                <option value="mid-level">Mid-Level</option>
-                <option value="experienced">Experienced</option>
-              </select>
-              {errors.experience && (
-                <p className="text-red-400 text-sm">
-                  {errors.experience.message}
-                </p>
-              )}
+                Go to Teacher Dashboard
+              </a>
             </div>
+          )}
 
-            {/* Title */}
-            <div>
-              <label className="block font-medium text-gray-300">Title</label>
-              <input
-                type="text"
-                name="title"
-                readOnly={
-                  user?.status === "approved" ||
-                  user?.status === "pending" ||
-                  user?.status === "rejected"
-                }
-                defaultValue={user?.title || ""}
-                placeholder="e.g. MERN Stack Instructor"
-                {...register("title", { required: true })}
-                className="input input-bordered w-full bg-zinc-900 border-zinc-700 text-white placeholder-gray-500"
-              />
-              {errors.title && (
-                <p className="text-red-400 text-sm">{errors.title.message}</p>
-              )}
-            </div>
+          {/* Pending teacher with subscription */}
+          {isPendingTeacher && hasActiveSubscription && (
+            <NoticeBoard title="Your teacher account is pending admin approval" type="warning" />
+          )}
 
-            {/* Category */}
-            <div>
-              <label className="block font-medium text-gray-300">
-                Category
-              </label>
-              <select
-                defaultValue={user?.category || ""}
-                {...register("category", { required: true })}
-                className="select select-bordered w-full bg-zinc-900 border-zinc-700 text-white"
-              >
-                <option value="" disabled>
-                  Select a category
-                </option>
-                <option value="Digital Marketing">Digital Marketing</option>
-                <option value="Web Development">Web Development</option>
-                <option value="Graphic Design">Graphic Design</option>
-                <option value="App Development">Mobile App Development</option>
-                <option value="Data Science">Data Science</option>
-              </select>
-              {errors.category && (
-                <p className="text-red-400 text-sm">
-                  {errors.category.message}
-                </p>
-              )}
-            </div>
+          {/* Rejected teacher */}
+          {user?.status === "rejected" && user?.role === "teacher" && (
+            <NoticeBoard title="Your teacher request has been rejected. Please contact support." type="error" />
+          )}
 
-            {/* Submit Button */}
-            <div className="text-center">
-              <button
-                disabled={
-                  becomeTeacherMutation.isPending ||
-                  user?.status === "approved" ||
-                  user?.status === "pending" ||
-                  user?.status === "rejected"
-                }
-                type="submit"
-                className="btn btn-primary mt-4 px-6 bg-yellow-400 text-black border-none hover:bg-yellow-500"
-              >
-                {becomeTeacherMutation.isPending
-                  ? "Submitting..."
-                  : "Submit Request"}
-              </button>
+          {/* Teacher Profile Form + Plans */}
+          {showPlans && (
+            <div className="grid md:grid-cols-2 gap-8">
+              {/* Profile Form */}
+              <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-6">
+                <h3 className="text-xl font-bold text-white mb-4">1. Teacher Profile</h3>
+                <form onSubmit={handleSubmit(onSaveProfile)} className="space-y-4">
+                  <div className="flex flex-col items-center mb-4">
+                    <img
+                      src={user?.photoURL}
+                      alt="Profile"
+                      className="w-20 h-20 rounded-full border-2 border-yellow-400 object-cover"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-medium text-gray-300 mb-1">Experience Level</label>
+                    <select
+                      {...register("experience", { required: "Experience is required" })}
+                      className="select select-bordered w-full bg-zinc-900 border-zinc-700 text-white"
+                    >
+                      <option value="">Select experience</option>
+                      <option value="beginner">Beginner</option>
+                      <option value="mid-level">Mid-Level</option>
+                      <option value="experienced">Experienced</option>
+                    </select>
+                    {errors.experience && <p className="text-red-400 text-sm">{errors.experience.message}</p>}
+                  </div>
+
+                  <div>
+                    <label className="block font-medium text-gray-300 mb-1">Title / Expertise</label>
+                    <input
+                      type="text"
+                      {...register("title", { required: "Title is required" })}
+                      placeholder="e.g. MERN Stack Instructor"
+                      className="input input-bordered w-full bg-zinc-900 border-zinc-700 text-white placeholder-gray-500"
+                    />
+                    {errors.title && <p className="text-red-400 text-sm">{errors.title.message}</p>}
+                  </div>
+
+                  <div>
+                    <label className="block font-medium text-gray-300 mb-1">Category</label>
+                    <select
+                      {...register("category", { required: "Category is required" })}
+                      className="select select-bordered w-full bg-zinc-900 border-zinc-700 text-white"
+                    >
+                      <option value="">Select category</option>
+                      <option value="Digital Marketing">Digital Marketing</option>
+                      <option value="Web Development">Web Development</option>
+                      <option value="Graphic Design">Graphic Design</option>
+                      <option value="App Development">Mobile App Development</option>
+                      <option value="Data Science">Data Science</option>
+                      <option value="Video Editing">Video Editing</option>
+                      <option value="Content Creation">Content Creation</option>
+                    </select>
+                    {errors.category && <p className="text-red-400 text-sm">{errors.category.message}</p>}
+                  </div>
+
+                  <div>
+                    <label className="block font-medium text-gray-300 mb-1">Bio (optional)</label>
+                    <textarea
+                      {...register("bio")}
+                      rows={3}
+                      placeholder="Tell students about yourself..."
+                      className="textarea textarea-bordered w-full bg-zinc-900 border-zinc-700 text-white placeholder-gray-500"
+                    />
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={saveProfileMutation.isPending}
+                    className="w-full bg-yellow-400 text-black font-bold py-2 rounded-lg hover:bg-yellow-500 transition disabled:opacity-50"
+                  >
+                    {saveProfileMutation.isPending ? "Saving..." : "Save Profile"}
+                  </button>
+                </form>
+              </div>
+
+              {/* Subscription Plans */}
+              <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-6">
+                <h3 className="text-xl font-bold text-white mb-2">2. Choose Your Plan</h3>
+                <p className="text-gray-400 text-sm mb-6">Subscribe to unlock the teacher platform and start selling courses.</p>
+
+                <div className="space-y-4">
+                  {Object.entries(PLANS).map(([key, plan]) => (
+                    <div
+                      key={key}
+                      className={`relative border rounded-xl p-5 transition-all ${
+                        plan.popular
+                          ? "border-yellow-400 bg-yellow-400/5"
+                          : "border-zinc-700 bg-zinc-900 hover:border-zinc-600"
+                      }`}
+                    >
+                      {plan.popular && (
+                        <span className="absolute -top-3 left-4 bg-yellow-400 text-black text-xs font-bold px-3 py-1 rounded-full">
+                          BEST VALUE
+                        </span>
+                      )}
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h4 className="text-white font-bold text-lg">{plan.label}</h4>
+                          <p className="text-gray-400 text-sm">{plan.period}</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-white font-bold text-xl">₦{plan.price.toLocaleString()}</p>
+                          {plan.discount > 0 && (
+                            <p className="text-green-400 text-sm line-through">₦{plan.originalPrice.toLocaleString()}</p>
+                          )}
+                        </div>
+                      </div>
+                      {plan.discount > 0 && (
+                        <p className="text-yellow-400 text-sm mt-2 font-medium">Save ₦{plan.discount.toLocaleString()} (10% off)</p>
+                      )}
+                      <button
+                        onClick={() => onSubscribe(key)}
+                        disabled={subscribeMutation.isPending && selectedPlan === key}
+                        className={`w-full mt-4 py-2 rounded-lg font-bold transition ${
+                          plan.popular
+                            ? "bg-yellow-400 text-black hover:bg-yellow-500"
+                            : "bg-zinc-800 text-white hover:bg-zinc-700"
+                        } disabled:opacity-50`}
+                      >
+                        {subscribeMutation.isPending && selectedPlan === key ? "Processing..." : "Subscribe Now"}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-6 bg-zinc-900 border border-zinc-700 rounded-xl p-4">
+                  <p className="text-gray-400 text-xs leading-relaxed">
+                    By subscribing, you get access to the full teacher dashboard: create courses, upload videos, track student progress, and receive payments directly to your bank account. Cancel anytime before your next billing cycle.
+                  </p>
+                </div>
+              </div>
             </div>
-          </form>
+          )}
         </div>
       </div>
     </>
