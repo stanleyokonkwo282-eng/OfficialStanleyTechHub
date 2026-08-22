@@ -22,6 +22,8 @@ export default function AdminNotifications() {
         return "New User Joined";
       case "user_login":
         return "User Login";
+      case "user_logout":
+        return "User Logout";
       case "course_joined":
         return "New Course Enrollment";
       case "exam_completed":
@@ -41,6 +43,8 @@ export default function AdminNotifications() {
         return "text-green-400";
       case "user_login":
         return "text-blue-400";
+      case "user_logout":
+        return "text-orange-400";
       case "course_joined":
         return "text-yellow-400";
       case "exam_completed":
@@ -60,6 +64,8 @@ export default function AdminNotifications() {
         return `${notif.meta?.role === "teacher" ? "Teacher" : "Student"}: ${notif.studentName}`;
       case "user_login":
         return `${notif.studentName} logged in${notif.meta?.page ? ` from ${notif.meta.page}` : ""}`;
+      case "user_logout":
+        return `${notif.studentName} logged out`;
       case "course_joined":
         return `${notif.studentName} enrolled in ${notif.courseTitle}`;
       case "exam_completed":
@@ -117,6 +123,12 @@ export default function AdminNotifications() {
                         <p className="text-gray-400 text-sm">Phone: {notif.meta.phone}</p>
                       )}
                       {notif.type === "user_login" && notif.meta?.role && (
+                        <p className="text-gray-400 text-sm">Role: {notif.meta.role}</p>
+                      )}
+                      {notif.type === "user_logout" && notif.meta?.phone && (
+                        <p className="text-gray-400 text-sm">Phone: {notif.meta.phone}</p>
+                      )}
+                      {notif.type === "user_logout" && notif.meta?.role && (
                         <p className="text-gray-400 text-sm">Role: {notif.meta.role}</p>
                       )}
                       {notif.type === "site_visit" && notif.meta?.authenticated && notif.meta?.userPhone && (

@@ -237,6 +237,7 @@ const UserData = ({ user, isUserLoading, logoutMutation, notifications, unreadCo
                     <p className="text-sm text-white">
                       {notif.type === "user_joined" && `🆕 New ${notif.meta?.role || "user"} joined`}
                       {notif.type === "user_login" && `🔑 ${notif.meta?.role || "User"} login: ${notif.studentName}`}
+                      {notif.type === "user_logout" && `🚪 ${notif.meta?.role || "User"} logout: ${notif.studentName}`}
                       {notif.type === "course_joined" && `📚 New enrollment: ${notif.courseTitle}`}
                       {notif.type === "exam_completed" && `🎓 Exam completed: ${notif.courseTitle}`}
                       {notif.type === "certificate_payment" && `💳 Certificate payment`}

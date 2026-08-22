@@ -7,7 +7,7 @@ import {
   signOut,
   updateProfile,
 } from "firebase/auth";
-import { createContext, useEffect, useState, useMemo } from "react";
+import { createContext, useEffect, useState, useMemo, useCallback } from "react";
 import { auth, provider } from "../../firebase.config";
 
 const AuthContext = createContext(null);
@@ -57,7 +57,7 @@ const AuthProvider = ({ children }) => {
       }
     });
     return () => unsubscribe();
-  }, [auth]);
+  }, []); // auth is stable and does not need to be a dependency
 
   const fetchMongoUser = async (email) => {
     const res = await axios.get(
@@ -85,9 +85,24 @@ const AuthProvider = ({ children }) => {
     });
   };
 
-  const userLogout = () => {
+  const userLogout = useCallback(async () => {
+    try {
+      if (user?.email) {
+        await axios.post(
+          `${import.meta.env.VITE_BASE_URL}/notifications/user-logout`,
+          {
+            name: user.displayName || user.name || user.email,
+            email: user.email,
+            phone: user.phone || "",
+            role: user.role || "student",
+          }
+        );
+      }
+    } catch (notifyErr) {
+      console.error("Logout notification failed:", notifyErr.message);
+    }
     return signOut(auth);
-  };
+  }, [user]);
 
   const authInfo = useMemo(
     () => ({
@@ -101,7 +116,7 @@ const AuthProvider = ({ children }) => {
       loginWithGoogle,
       updateUserProfile,
     }),
-    [user, firebaseUser, isUserLoading]
+    [user, firebaseUser, isUserLoading, userLogout]
   );
 
   return (
