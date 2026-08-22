@@ -194,21 +194,22 @@
 - [x] Paystack live keys configured on backend
 - [x] Cron job configured at https://console.cron-job.org/jobs/8309933
 - [x] `CRON_SECRET` added to Render environment variables
-- [ ] Test teacher subscription flow end-to-end
-- [ ] Test payout request and approval flow
+- [x] Teacher subscription flow tested and working
+- [x] Payout request and approval flow tested and working
 
 ---
 
 ## Notes for Next Developer
 
 1. **Teacher subscription is Paystack-based**, not Stripe. The old Stripe code still exists but course payments now use Paystack too.
-2. **Payments are in LIVE mode.** Backend uses `sk_live_...` for Paystack. Do NOT use test keys.
+2. **Payments are in LIVE mode.** Backend uses `sk_live_...` for Paystack secret and `pk_live_...` for public key. Do NOT use test keys.
 3. **Commission is hardcoded at 10%** in `enrollmentController.js` (`PLATFORM_COMMISSION_RATE`).
 4. **Daily summary cron** is configured at https://console.cron-job.org/jobs/8309933. The cron calls `https://creators-hub-academy-backend.onrender.com/cron/daily-login-summary?secret=n4sLYz1wXCsnypmRZ0AH6WFQ8n/IG6E94pedUhWjasU=` once per day.
-4. **Visit tracking** is in `middlewares/trackVisit.js` — it tracks both authenticated and anonymous visits.
-5. **Notifications** are stored in MongoDB `Notification` collection and also emailed to admin.
-6. **Profile edit** updates MongoDB via `PATCH /api/users/:email` — frontend uses `encodeURIComponent` for email.
-7. **ImageKit** is used for all image uploads — signature is generated server-side at `/api/get-ik-signature`.
+5. **Local development**: set `VITE_BASE_URL` in frontend `.env` to `https://creators-hub-academy-backend.onrender.com/api` to test against live backend, or `http://localhost:5000/api` for local backend.
+6. **Visit tracking** is in `middlewares/trackVisit.js` — it tracks both authenticated and anonymous visits.
+7. **Notifications** are stored in MongoDB `Notification` collection and also emailed to admin.
+8. **Profile edit** updates MongoDB via `PATCH /api/users/:email` — frontend uses `encodeURIComponent` for email.
+9. **ImageKit** is used for all image uploads — signature is generated server-side at `/api/get-ik-signature`.
 
 ---
 
