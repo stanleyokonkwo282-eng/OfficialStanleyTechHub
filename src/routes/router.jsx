@@ -138,9 +138,9 @@ const router = createBrowserRouter([
           {
             path: "daily-summary",
             element: (
-              <RoleBasedRoute allowedRoles={["admin"]}>
+              <PrivateRoute>
                 <AdminDailySummary />
-              </RoleBasedRoute>
+              </PrivateRoute>
             ),
           },
           {
