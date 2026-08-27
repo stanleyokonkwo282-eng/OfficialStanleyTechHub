@@ -1,4 +1,4 @@
-import { FaLinkedin, FaTwitter, FaInstagram, FaEnvelope, FaPhone, FaGithub } from "react-icons/fa";
+import { FaLinkedin, FaEnvelope, FaPhone, FaGithub } from "react-icons/fa";
 import founderImg from "../assets/images/founder.jpg";
 import { motion } from "framer-motion";
 import { useEffect, useRef } from "react";
@@ -215,14 +215,12 @@ export default function About() {
                   <a href={waLink} target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:text-yellow-400 transition">
                     <FaPhone className="text-yellow-400" /> {phone}
                   </a>
-                  <a href="mailto:hello@creatorshubacademy.com" className="flex items-center gap-2 hover:text-yellow-400 transition">
-                    <FaEnvelope className="text-yellow-400" /> hello@creatorshubacademy.com
+                  <a href="mailto:support@creatorshubacademy.com" className="flex items-center gap-2 hover:text-yellow-400 transition">
+                    <FaEnvelope className="text-yellow-400" /> support@creatorshubacademy.com
                   </a>
                 </div>
                 <div className="flex gap-4 mt-4">
-                  <a href="#" className="text-gray-400 hover:text-yellow-400 transition text-xl"><FaLinkedin /></a>
-                  <a href="#" className="text-gray-400 hover:text-yellow-400 transition text-xl"><FaTwitter /></a>
-                  <a href="#" className="text-gray-400 hover:text-yellow-400 transition text-xl"><FaInstagram /></a>
+                  <span className="text-gray-500 text-xs">Social profiles coming soon</span>
                 </div>
               </div>
             </div>
@@ -404,12 +402,12 @@ export default function About() {
             </motion.a>
 
             <motion.a
-              href="mailto:hello@creatorshubacademy.com"
+              href="mailto:support@creatorshubacademy.com"
               whileHover={{ y: -3 }}
               className="inline-flex items-center gap-2 text-gray-400 hover:text-yellow-400 transition-colors text-sm font-medium"
             >
               <FaEnvelope className="text-yellow-400" />
-              hello@creatorshubacademy.com
+              support@creatorshubacademy.com
             </motion.a>
           </motion.div>
         </div>
@@ -439,8 +437,8 @@ export default function About() {
             <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 hover:border-yellow-400/50 transition">
               <FaEnvelope className="text-yellow-400 text-2xl mx-auto mb-3" />
               <p className="text-white font-semibold mb-1">Email</p>
-              <a href="mailto:hello@creatorshubacademy.com" className="text-gray-400 hover:text-yellow-400 transition text-sm">
-                hello@creatorshubacademy.com
+              <a href="mailto:support@creatorshubacademy.com" className="text-gray-400 hover:text-yellow-400 transition text-sm">
+                support@creatorshubacademy.com
               </a>
             </div>
             <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 hover:border-yellow-400/50 transition">

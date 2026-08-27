@@ -12,7 +12,7 @@ export default function RefundPolicy() {
           <section>
             <h2 className="text-2xl font-bold text-white mb-2">1. Overview</h2>
             <p>
-              We want you to be satisfied with your purchase. If you are not happy with a course, we offer refunds under the conditions outlined below.
+              Creators Hub Academy, operated by Stanley Chukwunonso Okonkwo (Lagos, Nigeria), wants you to be satisfied with your purchase. If you are not happy with a course, we offer refunds under the conditions outlined below.
             </p>
           </section>
 
@@ -33,14 +33,21 @@ export default function RefundPolicy() {
           <section>
             <h2 className="text-2xl font-bold text-white mb-2">4. How to Request a Refund</h2>
             <p>
-              Contact our support team at support@creatorhubacademy.com with your order details and the reason for your request. We aim to respond within 3 business days.
+              Contact our support team at support@creatorshubacademy.com with your order details and the reason for your request. We aim to respond within 3 business days.
             </p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-white mb-2">5. Processing</h2>
+            <h2 className="text-2xl font-bold text-white mb-2">5. Processing & Payment Provider</h2>
             <p>
-              Approved refunds are processed back to the original payment method within 7–10 business days, depending on your bank or payment provider.
+              Approved refunds are processed back to the original payment method through Paystack. Depending on your bank or payment provider, this may take 7–10 business days to appear on your statement.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-bold text-white mb-2">6. Disputes</h2>
+            <p>
+              If you are unsatisfied with our refund decision, you may escalate the matter through the relevant dispute resolution channels in Lagos, Nigeria, under Nigerian law.
             </p>
           </section>
         </div>

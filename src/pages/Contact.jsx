@@ -7,13 +7,13 @@ export default function Contact() {
         <HeadTag title="Contact Us | Creators Hub Academy" />
         <h1 className="text-4xl font-black text-white mb-4">Contact Us</h1>
         <p className="text-gray-400 mb-8">
-          Have a question about courses, enrollment, or support? Reach out and we will get back to you as soon as possible.
+          Creators Hub Academy is operated by Stanley Chukwunonso Okonkwo. Reach out for support, partnerships, or general enquiries.
         </p>
 
         <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 md:p-8 space-y-6">
           <div>
             <h2 className="text-xl font-bold text-white mb-2">Email</h2>
-            <p className="text-gray-300">support@creatorhubacademy.com</p>
+            <p className="text-gray-300">support@creatorshubacademy.com</p>
           </div>
           <div>
             <h2 className="text-xl font-bold text-white mb-2">WhatsApp</h2>
@@ -22,6 +22,11 @@ export default function Contact() {
           <div>
             <h2 className="text-xl font-bold text-white mb-2">Business Hours</h2>
             <p className="text-gray-300">Monday – Friday, 9:00 AM – 6:00 PM (WAT)</p>
+          </div>
+          <div>
+            <h2 className="text-xl font-bold text-white mb-2">Operator</h2>
+            <p className="text-gray-300">Stanley Chukwunonso Okonkwo</p>
+            <p className="text-gray-400 text-sm">Lagos, Nigeria</p>
           </div>
 
           <div className="border-t border-zinc-800 pt-6">

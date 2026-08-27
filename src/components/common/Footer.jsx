@@ -1,4 +1,4 @@
-import { FaFacebookF, FaInstagram, FaTwitter, FaWhatsapp, FaYoutube } from "react-icons/fa";
+import { FaWhatsapp } from "react-icons/fa";
 import { Link } from "react-router";
 import logo from "../../assets/logo.png";
 
@@ -70,22 +70,7 @@ export default function Footer() {
               className="w-8 h-8 bg-zinc-800 hover:bg-yellow-400 hover:text-black text-gray-300 rounded-full flex items-center justify-center transition-all">
               <FaWhatsapp />
             </a>
-            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer"
-              className="w-8 h-8 bg-zinc-800 hover:bg-yellow-400 hover:text-black text-gray-300 rounded-full flex items-center justify-center transition-all">
-              <FaInstagram />
-            </a>
-            <a href="https://youtube.com" target="_blank" rel="noopener noreferrer"
-              className="w-8 h-8 bg-zinc-800 hover:bg-yellow-400 hover:text-black text-gray-300 rounded-full flex items-center justify-center transition-all">
-              <FaYoutube />
-            </a>
-            <a href="https://facebook.com" target="_blank" rel="noopener noreferrer"
-              className="w-8 h-8 bg-zinc-800 hover:bg-yellow-400 hover:text-black text-gray-300 rounded-full flex items-center justify-center transition-all">
-              <FaFacebookF />
-            </a>
-            <a href="https://twitter.com" target="_blank" rel="noopener noreferrer"
-              className="w-8 h-8 bg-zinc-800 hover:bg-yellow-400 hover:text-black text-gray-300 rounded-full flex items-center justify-center transition-all">
-              <FaTwitter />
-            </a>
+            <span className="text-gray-500 text-xs self-center">Social profiles coming soon</span>
           </div>
 
           {/* WhatsApp CTA button only — no bank details */}

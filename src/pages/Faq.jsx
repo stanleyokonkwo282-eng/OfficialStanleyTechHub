@@ -46,7 +46,7 @@ const faqs = [
   {
     question: "How do I contact support?",
     answer:
-      "Chat us on WhatsApp at +234 813 443 8808 or email hello@creatorshubacademy.com. We typically respond within a few hours.",
+      "Chat us on WhatsApp at +234 813 443 8808 or email support@creatorshubacademy.com. We typically respond within a few hours.",
   },
   {
     question: "Is my data safe?",

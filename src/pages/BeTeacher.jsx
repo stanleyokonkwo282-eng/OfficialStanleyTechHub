@@ -48,10 +48,10 @@ const BeTeacher = () => {
 
   const saveProfileMutation = useMutation({
     mutationFn: async (data) => {
-      const result = await axiosSecure.post(
-        `${import.meta.env.VITE_BASE_URL}/be-teacher/${user.email}`,
-        data
-      );
+      const result = await axiosSecure.post("/be-teacher", {
+        ...data,
+        email: user.email,
+      });
       return result.data;
     },
     onSuccess: (data) => {

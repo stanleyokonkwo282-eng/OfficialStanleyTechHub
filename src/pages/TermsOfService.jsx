@@ -17,37 +17,58 @@ export default function TermsOfService() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-white mb-2">2. Course Enrollment & Payments</h2>
+            <h2 className="text-2xl font-bold text-white mb-2">2. Operator</h2>
+            <p>
+              Creators Hub Academy is operated by Stanley Chukwunonso Okonkwo, Lagos, Nigeria. For support, contact support@creatorshubacademy.com.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-bold text-white mb-2">3. Course Enrollment & Payments</h2>
             <p>
               All courses are subject to a ₦5,000 enrollment fee unless otherwise stated. Payments are processed securely through Paystack. Access to course materials is granted only after successful payment confirmation.
             </p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-white mb-2">3. Account Responsibilities</h2>
+            <h2 className="text-2xl font-bold text-white mb-2">4. Account Responsibilities</h2>
             <p>
               You are responsible for maintaining the confidentiality of your account credentials and for all activities that occur under your account. Notify us immediately of any unauthorized use.
             </p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-white mb-2">4. Intellectual Property</h2>
+            <h2 className="text-2xl font-bold text-white mb-2">5. Intellectual Property</h2>
             <p>
               All course content, including videos, PDFs, and materials, is the property of Creators Hub Academy or its licensors. You may access content for personal, non-commercial use only.
             </p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-white mb-2">5. Termination</h2>
+            <h2 className="text-2xl font-bold text-white mb-2">6. Termination</h2>
             <p>
-              We reserve the right to suspend or terminate your access to the platform at our discretion, without notice, for conduct that we believe violates these terms or is harmful to other users or the platform.
+              We may suspend or terminate your access if you violate these terms or engage in conduct that is harmful to other users or the platform. Where possible, we will provide notice before taking such action.
             </p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-white mb-2">6. Contact</h2>
+            <h2 className="text-2xl font-bold text-white mb-2">7. Governing Law & Disputes</h2>
             <p>
-              For questions about these terms, contact us at support@creatorhubacademy.com.
+              These terms are governed by the laws of the Federal Republic of Nigeria. Any disputes shall be resolved through good-faith negotiation, and if necessary, through the courts of Lagos, Nigeria.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-bold text-white mb-2">8. Refunds</h2>
+            <p>
+              Refunds are handled in accordance with our Refund Policy. Please review that policy before purchasing any course.
+            </p>
+          </section>
+
+          <section>
+            <h2 className="text-2xl font-bold text-white mb-2">9. Contact</h2>
+            <p>
+              For questions about these terms, contact us at support@creatorshubacademy.com.
             </p>
           </section>
         </div>
