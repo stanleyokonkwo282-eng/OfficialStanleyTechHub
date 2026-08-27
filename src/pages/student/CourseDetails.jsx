@@ -1,18 +1,16 @@
 import { useEffect, useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { useNavigate, useParams } from "react-router";
-import { toast } from "react-toastify";
 import LoaderSpinner from "../../components/common/LoaderSpinner";
 import useAuth from "../../hooks/useAuth";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
 import renderStars from "../../utils/renderStars";
 
 const CourseDetails = () => {
-  const { id } = useParams();
-  const navigate = useNavigate();
   const { user } = useAuth();
   const axiosSecure = useAxiosSecure();
-  const queryClient = useQueryClient();
+  const { id } = useParams();
+  const navigate = useNavigate();
   const [selectedFormat, setSelectedFormat] = useState("video");
 
   const { data: course, isLoading: courseLoading } = useQuery({
@@ -47,33 +45,6 @@ const CourseDetails = () => {
     (e) => e.studentEmail === user?.email
   );
 
-  const enrollMutation = useMutation({
-    mutationFn: async (format) => {
-      const res = await axiosSecure.post("/enroll", {
-        courseId: id,
-        format: format || selectedFormat,
-      });
-      return res.data;
-    },
-    onSuccess: (data) => {
-      if (data.authorizationUrl) {
-        window.location.href = data.authorizationUrl;
-      } else {
-        toast.success("Enrollment initiated!");
-        queryClient.invalidateQueries(["enrollment", id, user?.email]);
-        navigate(`/dashboard/learn/${id}`, { replace: true });
-      }
-    },
-    onError: (err) => {
-      const message = err?.response?.data?.message;
-      if (message === "Already enrolled in this course") {
-        navigate(`/dashboard/learn/${id}`, { replace: true });
-      } else {
-        toast.error(message || "Enrollment failed. Please try again.");
-      }
-    },
-  });
-
   const handleEnrollClick = () => {
     if (!user) {
       navigate("/login", {
@@ -85,7 +56,9 @@ const CourseDetails = () => {
       navigate(`/dashboard/learn/${id}`, { replace: true });
       return;
     }
-    enrollMutation.mutate(selectedFormat);
+    sessionStorage.setItem("enrollmentFormat", selectedFormat);
+    sessionStorage.setItem("enrollmentCourseId", id);
+    window.location.href = "https://paystack.shop/pay/avbg0eyx6c";
   };
 
   const getButtonClass = () => {
@@ -96,7 +69,6 @@ const CourseDetails = () => {
   };
 
   const getButtonLabel = () => {
-    if (enrollMutation.isPending) return "Processing...";
     return isEnrolled ? "▶ Continue Learning" : `Enroll for ₦5,000`;
   };
 
@@ -233,7 +205,6 @@ const CourseDetails = () => {
 
               <button
                 onClick={handleEnrollClick}
-                disabled={enrollMutation.isPending}
                 className={getButtonClass()}
               >
                 {getButtonLabel()}

@@ -154,8 +154,10 @@ export default function CoursePlayer() {
   });
 
   const verifyPaymentMutation = useMutation({
-    mutationFn: async (reference) => {
-      const res = await axiosSecure.get(`/courses/verify-payment/${reference}`);
+    mutationFn: async ({ reference, courseId, format }) => {
+      const res = await axiosSecure.get(`/courses/verify-payment/${reference}`, {
+        params: { courseId, format },
+      });
       return res.data;
     },
     onSuccess: (data) => {
@@ -177,8 +179,15 @@ export default function CoursePlayer() {
     const reference = searchParams.get("reference");
     if (reference && !verifyPaymentAttempted.current && !verifyPaymentMutation.isPending && !verifyPaymentMutation.isSuccess) {
       verifyPaymentAttempted.current = true;
-      verifyPaymentMutation.mutate(reference);
+      const format = sessionStorage.getItem("enrollmentFormat") || "video";
+      const storedCourseId = sessionStorage.getItem("enrollmentCourseId");
+      if (storedCourseId) {
+        sessionStorage.removeItem("enrollmentCourseId");
+        sessionStorage.removeItem("enrollmentFormat");
+      }
+      verifyPaymentMutation.mutate({ reference, courseId: storedCourseId || courseId, format });
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams, verifyPaymentMutation]);
 
   const markCompleteMutationRef = useRef(markCompleteMutation);

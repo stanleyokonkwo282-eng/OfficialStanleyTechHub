@@ -25,8 +25,10 @@ const StripeWrapper = () => {
   });
 
   const verifyMutation = useMutation({
-    mutationFn: async (ref) => {
-      const res = await axiosSecure.get(`/courses/verify-payment/${ref}`);
+    mutationFn: async ({ reference, courseId, format }) => {
+      const res = await axiosSecure.get(`/courses/verify-payment/${reference}`, {
+        params: { courseId, format },
+      });
       return res.data;
     },
     onSuccess: (data) => {
@@ -46,9 +48,15 @@ const StripeWrapper = () => {
 
   useEffect(() => {
     if (reference) {
-      verifyMutation.mutate(reference);
+      const courseId = sessionStorage.getItem("enrollmentCourseId");
+      const format = sessionStorage.getItem("enrollmentFormat") || "video";
+      if (courseId) {
+        sessionStorage.removeItem("enrollmentCourseId");
+        sessionStorage.removeItem("enrollmentFormat");
+      }
+      verifyMutation.mutate({ reference, courseId: courseId || id, format });
     }
-  }, [reference, verifyMutation]);
+  }, [reference, verifyMutation, id]);
 
   if (!courseDetails) return <LoaderDotted />;
 
@@ -108,20 +116,10 @@ const StripeWrapper = () => {
                 <span>₦5,000</span>
               </div>
               <button
-                onClick={async () => {
-                  try {
-                    const res = await axiosSecure.post("/enroll", {
-                      courseId: id,
-                      format: courseDetails?.hasPdf ? "pdf" : "video",
-                    });
-                    if (res.data.authorizationUrl) {
-                      window.location.href = res.data.authorizationUrl;
-                    } else {
-                      toast.error("Could not start payment.");
-                    }
-                  } catch (err) {
-                    toast.error(err.response?.data?.message || "Payment initialization failed.");
-                  }
+                onClick={() => {
+                  sessionStorage.setItem("enrollmentFormat", courseDetails?.hasPdf ? "pdf" : "video");
+                  sessionStorage.setItem("enrollmentCourseId", id);
+                  window.location.href = "https://paystack.shop/pay/avbg0eyx6c";
                 }}
                 className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-lg transition"
               >
