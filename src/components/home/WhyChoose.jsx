@@ -24,10 +24,10 @@ export default function WhyChoose() {
         "Complete your course, pass the exam, and earn a certificate verified worldwide for just ₦10,000. Recognized by employers globally.",
     },
     {
-      icon: "🆓",
-      title: "100% Free Access",
+      icon: "💳",
+      title: "Secure Payments",
       description:
-        "All 25 courses are completely free with coupon code CREATOR. No hidden fees, no credit card required. Just learn and grow.",
+        "Enroll instantly with Paystack. Your payment is protected, and you get immediate access to your chosen course format.",
     },
     {
       icon: "📊",

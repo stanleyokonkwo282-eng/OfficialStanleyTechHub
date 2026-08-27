@@ -8,6 +8,8 @@ import handleUpload from "../../utils/ImageUploadApi";
 const UpdateCourse = ({ isOpen, setIsOpen, course, refetch }) => {
   const axiosSecure = useAxiosSecure();
   const [customCategory, setCustomCategory] = useState("");
+  const [videoUrl, setVideoUrl] = useState(course?.resourceVideoUrl || course?.videoUrl || "");
+  const [pdfFile, setPdfFile] = useState(null);
   const {
     register,
     handleSubmit,
@@ -17,12 +19,10 @@ const UpdateCourse = ({ isOpen, setIsOpen, course, refetch }) => {
   } = useForm();
   const selectedCategory = watch("category");
 
-  // Mutation to upload image to imagekit
   const uploadImageMutation = useMutation({
     mutationFn: handleUpload,
   });
 
-  // Mutation to save course to DB
   const updateCourseMutation = useMutation({
     mutationFn: async (updatedCourse) => {
       const res = await axiosSecure.patch(
@@ -42,25 +42,47 @@ const UpdateCourse = ({ isOpen, setIsOpen, course, refetch }) => {
     },
   });
 
-  // Form submit handler
   const onSubmit = async (updateData) => {
-    if (updateData.image && updateData.image.length > 0) {
-      const imageFile = updateData.image[0];
-      const imageUrl = await uploadImageMutation.mutateAsync(imageFile);
-      updateData.image = imageUrl;
-    } else {
-      updateData.image = course.image;
+    try {
+      let imageUrl = course.image;
+      if (updateData.image && updateData.image.length > 0) {
+        const imageFile = updateData.image[0];
+        imageUrl = await uploadImageMutation.mutateAsync(imageFile);
+      }
+
+      let resourcePdfUrl = course.resourcePdfUrl || "";
+      if (pdfFile) {
+        if (pdfFile.size > 10 * 1024 * 1024) {
+          toast.error("PDF file is too large. Please keep it under 10MB.");
+          return;
+        }
+        resourcePdfUrl = await uploadImageMutation.mutateAsync(pdfFile);
+      }
+
+      const payload = {
+        ...updateData,
+        image: imageUrl,
+        price: 5000,
+        hasVideo: Boolean(videoUrl),
+        hasPdf: Boolean(pdfFile || resourcePdfUrl),
+        resourceVideoUrl: videoUrl,
+        resourcePdfUrl: resourcePdfUrl,
+      };
+      if (payload.category === "Others") {
+        payload.category = customCategory;
+      }
+      updateCourseMutation.mutate(payload);
+    } catch (err) {
+      toast.error("Failed to process updates");
+      console.error(err);
     }
-    if (updateData.category === "Others") {
-      updateData.category = customCategory;
-    }
-    updateCourseMutation.mutate(updateData);
   };
 
-  // Close modal handler
   const closeModal = () => {
     setIsOpen(false);
     reset();
+    setVideoUrl(course?.resourceVideoUrl || course?.videoUrl || "");
+    setPdfFile(null);
   };
 
   if (!isOpen) return null;
@@ -90,13 +112,13 @@ const UpdateCourse = ({ isOpen, setIsOpen, course, refetch }) => {
           </div>
 
           <div>
-            <label className="block mb-1 font-medium">Price ($)</label>
+            <label className="block mb-1 font-medium">Price (NGN)</label>
             <input
               type="number"
-              step="0.01"
+              step="1"
               {...register("price", { required: true })}
               className="w-full input input-bordered"
-              defaultValue={course.price}
+              defaultValue={course.price || 5000}
             />
             {errors.price && (
               <span className="text-red-500 text-sm">Price is required</span>
@@ -149,15 +171,30 @@ const UpdateCourse = ({ isOpen, setIsOpen, course, refetch }) => {
             )}
           </div>
 
-          <div>
-            <label className="block mb-1 font-medium">Promotional Video URL (YouTube)</label>
-            <input
-              type="url"
-              {...register("videoUrl")}
-              defaultValue={course.videoUrl || ""}
-              placeholder="https://www.youtube.com/watch?v=..."
-              className="w-full input input-bordered"
-            />
+          <div className="bg-zinc-50 border border-zinc-200 rounded-lg p-4 space-y-3">
+            <h3 className="font-semibold text-gray-800">Course Content</h3>
+            <div>
+              <label className="block mb-1 font-medium text-sm">Video URL</label>
+              <input
+                type="url"
+                value={videoUrl}
+                onChange={(e) => setVideoUrl(e.target.value)}
+                placeholder="https://www.youtube.com/watch?v=..."
+                className="w-full input input-bordered"
+              />
+            </div>
+            <div>
+              <label className="block mb-1 font-medium text-sm">Upload PDF</label>
+              <input
+                type="file"
+                accept="application/pdf"
+                onChange={(e) => setPdfFile(e.target.files[0])}
+                className="file-input file-input-bordered w-full"
+              />
+              {pdfFile && (
+                <p className="text-xs text-gray-500 mt-1">{pdfFile.name}</p>
+              )}
+            </div>
           </div>
 
           <div>

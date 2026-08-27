@@ -1,6 +1,7 @@
 import { createBrowserRouter } from "react-router";
 import App from "../App";
 import About from "../pages/About";
+import Contact from "../pages/Contact";
 import ManageCertificates from "../pages/admin/ManageCertificates";
 import AdminManagePayouts from "../pages/admin/AdminManagePayouts";
 import AdminDailySummary from "../pages/admin/AdminDailySummary";
@@ -20,6 +21,9 @@ import FAQ from "../pages/Faq";
 import Home from "../pages/Home";
 import Login from "../pages/Login";
 import NotFound from "../pages/NotFound";
+import PrivacyPolicy from "../pages/PrivacyPolicy";
+import TermsOfService from "../pages/TermsOfService";
+import RefundPolicy from "../pages/RefundPolicy";
 import Signup from "../pages/Signup";
 import Unauthorized from "../pages/Unauthorized";
 import VerifyCertificate from "../pages/VerifyCertificate";
@@ -45,7 +49,11 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <Home /> },
       { path: "/about", element: <About /> },
+      { path: "/contact", element: <Contact /> },
       { path: "/faq", element: <FAQ /> },
+      { path: "/privacy-policy", element: <PrivacyPolicy /> },
+      { path: "/terms-of-service", element: <TermsOfService /> },
+      { path: "/refund-policy", element: <RefundPolicy /> },
       { path: "/courses", element: <Courses /> },
       { path: "/category/:category", element: <CategoryCourses /> },
       { path: "/login", element: <Login /> },

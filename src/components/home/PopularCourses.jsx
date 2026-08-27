@@ -62,7 +62,7 @@ export default function PopularCourses() {
   }), []);
 
   if (courses.length === 0)
-    return <ContentNotFound title="No Popular Courses available" />;
+    return <ContentNotFound title="Popular courses coming soon" />;
 
   return (
     <section className="pt-16 pb-8 md:pt-32 md:pb-16 bg-black relative">

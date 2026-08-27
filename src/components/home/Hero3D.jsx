@@ -17,10 +17,10 @@ const skills = [
 ];
 
 const metrics = [
-  { icon: FiBookOpen, value: "25+", label: "Digital Courses", sub: "All completely FREE", hero: true, span: "sm:col-span-2" },
+  { icon: FiBookOpen, value: "25+", label: "Digital Courses", sub: "Video & PDF formats", hero: true, span: "sm:col-span-2" },
   { icon: FiPlay, value: "90+", label: "Video Lessons", sub: "Step-by-step tutorials", span: "" },
-  { icon: FiFileText, value: "₦10K", label: "Certificate", sub: "Verified worldwide", span: "" },
-  { icon: FiGift, value: "100%", label: "Free Access", sub: "Use code: CREATOR", span: "sm:col-span-2 sm:col-start-2" },
+  { icon: FiFileText, value: "₦10,000", label: "Certificate", sub: "Verified worldwide", span: "" },
+  { icon: FiAward, value: "₦5,000", label: "Enrollment", sub: "Instant access via Paystack", span: "sm:col-span-2 sm:col-start-2" },
 ];
 
 function useMousePosition() {
@@ -238,17 +238,17 @@ export default function Hero3D() {
                   className="inline-block"
                 >
                   {word === "Create." || word === "Lead." ? (
-                    <span className="text-[#FFC700]">{word}</span>
+                    <span className="text-[#FFC700]">{word}&nbsp;</span>
                   ) : (
-                    word
-                  )}{" "}
+                    <>{word}&nbsp;</>
+                  )}
                 </motion.span>
               ))}
             </h1>
 
             <p className="text-neutral-300 text-lg md:text-xl max-w-xl leading-relaxed">
               Master profitable digital skills — Graphic Design, Video Editing,
-              Digital Marketing, AI Tools, and more. Enroll free and earn a
+              Digital Marketing, AI Tools, and more. Enroll for ₦5,000 and earn a
               verified certificate.
             </p>
 
@@ -271,7 +271,7 @@ export default function Hero3D() {
                 className="group relative overflow-hidden bg-[#FFC700] text-black text-lg font-black px-8 py-4 rounded-xl flex items-center gap-3 hover:shadow-[0_0_35px_rgba(255,199,0,0.35)] transition-shadow"
               >
                 <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/25 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 pointer-events-none" />
-                <span className="relative z-10">Explore Courses — FREE</span>
+                <span className="relative z-10">Explore Courses</span>
                 <FiArrowRight className="relative z-10 w-5 h-5 group-hover:translate-x-0.5 transition-transform" />
               </motion.button>
 
@@ -292,17 +292,20 @@ export default function Hero3D() {
             <div className="flex items-center gap-4">
               <div className="flex -space-x-3">
                 {Array.from({ length: 4 }).map((_, i) => (
-                  <img
+                  <div
                     key={i}
-                    src={`https://randomuser.me/api/portraits/${i % 2 ? "men" : "women"}/${30 + i}.jpg`}
-                    alt="student"
-                    className="w-10 h-10 rounded-full border-2 border-[#0A0A0A]"
-                  />
+                    className="w-10 h-10 rounded-full border-2 border-[#0A0A0A] flex items-center justify-center text-white font-black text-sm"
+                    style={{
+                      background: "linear-gradient(135deg, #1a6b1a 0%, #008000 50%, #1a6b1a 100%)",
+                    }}
+                  >
+                    {["C", "E", "F", "O"][i]}
+                  </div>
                 ))}
               </div>
               <div>
                 <p className="text-white font-bold text-lg">3,000+ Students</p>
-                <p className="text-neutral-500 text-sm">Already enrolled for free</p>
+                <p className="text-neutral-500 text-sm">Students learning daily</p>
               </div>
             </div>
           </div>

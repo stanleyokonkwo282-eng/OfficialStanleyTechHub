@@ -36,7 +36,7 @@ export default function CallToAction() {
 
         <p className="mb-8 text-lg md:text-xl text-gray-200 drop-shadow-sm">
           Join thousands leveling up their careers with Creators Hub Academy —
-          start for free and explore the future of learning.
+          explore the future of learning.
         </p>
         <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
           <Link

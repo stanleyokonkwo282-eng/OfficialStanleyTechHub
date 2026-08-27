@@ -1,6 +1,6 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useLocation, useNavigate, useParams } from "react-router";
+import { useNavigate, useParams } from "react-router";
 import { toast } from "react-toastify";
 import LoaderSpinner from "../../components/common/LoaderSpinner";
 import useAuth from "../../hooks/useAuth";
@@ -10,10 +10,10 @@ import renderStars from "../../utils/renderStars";
 const CourseDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const location = useLocation();
   const { user } = useAuth();
   const axiosSecure = useAxiosSecure();
   const queryClient = useQueryClient();
+  const [selectedFormat, setSelectedFormat] = useState("video");
 
   const { data: course, isLoading: courseLoading } = useQuery({
     queryKey: ["course", id],
@@ -23,7 +23,18 @@ const CourseDetails = () => {
     },
   });
 
-  const { data: enrollmentData, isLoading: enrollmentLoading } = useQuery({
+  useEffect(() => {
+    if (course) {
+      const formats = [];
+      if (course.hasVideo) formats.push("video");
+      if (course.hasPdf) formats.push("pdf");
+      if (formats.length === 1 && formats[0] !== selectedFormat) {
+        setSelectedFormat(formats[0]);
+      }
+    }
+  }, [course, selectedFormat]);
+
+  const { data: enrollmentData } = useQuery({
     queryKey: ["enrollment", id, user?.email],
     queryFn: async () => {
       const res = await axiosSecure.get(`/enrollments/${id}`);
@@ -37,56 +48,36 @@ const CourseDetails = () => {
   );
 
   const enrollMutation = useMutation({
-    mutationFn: async () => {
-      const res = await axiosSecure.post("/enrollments", {
+    mutationFn: async (format) => {
+      const res = await axiosSecure.post("/enroll", {
         courseId: id,
-        studentEmail: user?.email,
-        studentName: user?.displayName || user?.email,
-        price: 0,
-        paymentMethod: "coupon",
-        couponCode: "CREATOR",
+        format: format || selectedFormat,
       });
       return res.data;
     },
-    onSuccess: () => {
-      toast.success("🎉 You are now enrolled! Start learning for free!");
-      queryClient.invalidateQueries(["enrollment", id, user?.email]);
-      navigate(`/dashboard/learn/${id}`, { replace: true });
+    onSuccess: (data) => {
+      if (data.authorizationUrl) {
+        window.location.href = data.authorizationUrl;
+      } else {
+        toast.success("Enrollment initiated!");
+        queryClient.invalidateQueries(["enrollment", id, user?.email]);
+        navigate(`/dashboard/learn/${id}`, { replace: true });
+      }
     },
     onError: (err) => {
       const message = err?.response?.data?.message;
       if (message === "Already enrolled in this course") {
         navigate(`/dashboard/learn/${id}`, { replace: true });
       } else {
-        toast.error("Enrollment failed. Please try again.");
+        toast.error(message || "Enrollment failed. Please try again.");
       }
     },
   });
 
-  // "Coupon code login pattern": when a guest starts the free-enrollment flow
-  // (course card → login), they return here with an `enrollAfterLogin` flag.
-  // Auto-enroll them with the CREATOR coupon so they never click twice.
-  useEffect(() => {
-    const shouldAutoEnroll = location.state?.enrollAfterLogin;
-    if (!shouldAutoEnroll) return;
-    if (!user) return;
-    if (enrollmentLoading) return;
-    if (enrollMutation.isPending) return;
-
-    if (isEnrolled) {
-      navigate(`/dashboard/learn/${id}`, { replace: true });
-      return;
-    }
-
-    enrollMutation.mutate();
-    navigate(".", { replace: true, state: { enrollAfterLogin: undefined } });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, isEnrolled, enrollmentLoading, location.state?.enrollAfterLogin, enrollMutation.isPending]);
-
   const handleEnrollClick = () => {
     if (!user) {
       navigate("/login", {
-        state: { from: `/courses/${id}`, enrollAfterLogin: true },
+        state: { from: `/courses/${id}` },
       });
       return;
     }
@@ -94,10 +85,9 @@ const CourseDetails = () => {
       navigate(`/dashboard/learn/${id}`, { replace: true });
       return;
     }
-    enrollMutation.mutate();
+    enrollMutation.mutate(selectedFormat);
   };
 
-  // Prepare button styles and labels to resolve SonarLint warnings
   const getButtonClass = () => {
     const baseClass = "w-full py-3 rounded-lg font-bold text-base transition-all duration-200 disabled:opacity-50";
     return isEnrolled
@@ -106,8 +96,8 @@ const CourseDetails = () => {
   };
 
   const getButtonLabel = () => {
-    if (enrollMutation.isPending) return "Enrolling...";
-    return isEnrolled ? "▶ Continue Learning" : "Enroll for FREE";
+    if (enrollMutation.isPending) return "Processing...";
+    return isEnrolled ? "▶ Continue Learning" : `Enroll for ₦5,000`;
   };
 
   if (courseLoading) return <LoaderSpinner />;
@@ -117,6 +107,10 @@ const CourseDetails = () => {
         <p className="text-white text-xl">Course not found</p>
       </div>
     );
+
+  const availableFormats = [];
+  if (course.hasVideo) availableFormats.push("video");
+  if (course.hasPdf) availableFormats.push("pdf");
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -153,7 +147,7 @@ const CourseDetails = () => {
               <ul className="space-y-2 text-gray-300 text-sm">
                 {[
                   "Professional skills used by industry experts",
-                  "Step-by-step video lessons with real examples",
+                  "Step-by-step lessons with real examples",
                   "Progress tracking so you never lose your place",
                   "Resume exactly where you stopped last time",
                   "Certificate of completion verified worldwide",
@@ -167,29 +161,39 @@ const CourseDetails = () => {
               </ul>
             </div>
 
-            <div className="bg-green-950 border border-green-800 rounded-xl p-4">
-              <p className="text-green-400 font-semibold text-sm">
-                🎁 This course is completely FREE
-              </p>
-              <p className="text-green-300 text-sm mt-1">
-                Click <strong>Enroll for FREE</strong> to get full access at no
-                cost. Only pay ₦10,000 when you want your verified certificate.
-              </p>
-            </div>
+            {availableFormats.length > 1 && (
+              <div className="bg-zinc-950 border border-zinc-800 rounded-xl p-6">
+                <h3 className="text-white font-bold text-lg mb-4">
+                  Choose Your Learning Format
+                </h3>
+                <div className="flex gap-4">
+                  {availableFormats.map((fmt) => (
+                    <button
+                      key={fmt}
+                      onClick={() => setSelectedFormat(fmt)}
+                      className={`flex-1 py-3 rounded-lg font-semibold transition-all duration-200 border ${
+                        selectedFormat === fmt
+                          ? "bg-yellow-400 text-black border-yellow-400"
+                          : "bg-zinc-900 text-gray-300 border-zinc-700 hover:border-yellow-400"
+                      }`}
+                    >
+                      {fmt === "video" ? "🎥 Video Course" : "📄 PDF Course"}
+                    </button>
+                  ))}
+                </div>
+                <p className="text-gray-400 text-xs mt-3">
+                  Select the format you prefer. Your progress and lessons will follow this track.
+                </p>
+              </div>
+            )}
           </div>
 
           <div>
             <div className="bg-zinc-950 border border-zinc-800 rounded-xl p-6 sticky top-24 space-y-5">
               <div>
-                <div className="flex items-center gap-3">
-                  <p className="text-3xl font-bold text-green-400">FREE</p>
-                  <p className="text-gray-500 line-through text-xl">
-                    ${Number(course.price || 0).toFixed(2)}
-                  </p>
-                </div>
+                <p className="text-3xl font-bold text-green-400">₦5,000</p>
                 <p className="text-gray-400 text-sm mt-1">
-                  Full access at no cost — certificate costs{" "}
-                  <span className="text-yellow-400 font-bold">₦10,000</span>
+                  Full enrollment access — choose your format and start learning.
                 </p>
               </div>
 
@@ -218,13 +222,9 @@ const CourseDetails = () => {
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-400">Certificate Fee</span>
-                  <span className="text-yellow-400 font-bold">₦10,000</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Certificate Valid</span>
-                  <span className="text-green-400 font-medium">
-                    ✓ Worldwide
+                  <span className="text-gray-400">Format</span>
+                  <span className="text-yellow-400 font-bold">
+                    {availableFormats.length > 1 ? "Video & PDF" : availableFormats[0]?.toUpperCase() || "N/A"}
                   </span>
                 </div>
               </div>
@@ -246,8 +246,7 @@ const CourseDetails = () => {
               )}
 
               <p className="text-gray-500 text-xs text-center">
-                🔒 Free access · Lifetime learning · ₦10,000 for verified
-                certificate
+                🔒 Secure payment via Paystack · Instant enrollment
               </p>
             </div>
           </div>

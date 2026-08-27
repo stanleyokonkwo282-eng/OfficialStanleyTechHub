@@ -50,20 +50,26 @@ export default function PlatformStats() {
       const response = await axiosSecure.get("/statistics");
       return response.data.data;
     },
+    retry: 1,
+    refetchOnWindowFocus: false,
   });
+
+  const totalUsers = Number(statistics?.totalUsers) || 0;
+  const totalCourses = Number(statistics?.totalCourses) || 0;
+  const totalEnrollments = Number(statistics?.totalEnrollments) || 0;
 
   const stats = [
     {
-      value: statistics?.totalUsers ? `${statistics.totalUsers}+` : "3,000+",
+      value: totalUsers > 0 ? `${totalUsers.toLocaleString()}+` : "3,000+",
       label: "Students Enrolled",
       icon: "👨‍🎓",
       desc: "And growing daily",
     },
     {
-      value: statistics?.totalCourses ? `${statistics.totalCourses}+` : "25+",
+      value: totalCourses > 0 ? `${totalCourses.toLocaleString()}+` : "25+",
       label: "Digital Courses",
       icon: "📚",
-      desc: "All 100% free to access",
+      desc: "Video & PDF formats available",
     },
     {
       value: "90+",
@@ -72,12 +78,10 @@ export default function PlatformStats() {
       desc: "Step-by-step tutorials",
     },
     {
-      value: statistics?.totalEnrollments
-        ? `${statistics.totalEnrollments}+`
-        : "5,000+",
+      value: totalEnrollments > 0 ? `${totalEnrollments.toLocaleString()}+` : "5,000+",
       label: "Course Enrollments",
       icon: "🏆",
-      desc: "Using coupon CREATOR",
+      desc: "Paid via Paystack",
     },
   ];
 
@@ -129,12 +133,10 @@ export default function PlatformStats() {
           className="bg-gradient-to-r from-yellow-400/10 to-yellow-400/5 border border-yellow-400/30 rounded-2xl p-8 text-center"
         >
           <h3 className="text-2xl font-black text-white mb-2">
-            Ready to Start Learning for Free?
+            Ready to Start Learning?
           </h3>
           <p className="text-gray-400 mb-6">
-            Use coupon code{" "}
-            <span className="text-yellow-400 font-bold text-lg">CREATOR</span>{" "}
-            to enroll in any course at no cost.
+            Enroll in any course for <span className="text-yellow-400 font-bold text-lg">₦5,000</span> and get instant access.
           </p>
           <a
             href="/courses"

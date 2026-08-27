@@ -14,49 +14,43 @@ const testimonials = [
     name: "Chioma Okafor",
     role: "Graphic Designer",
     location: "Lagos, Nigeria",
-    avatar: "https://randomuser.me/api/portraits/women/89.jpg",
     rating: 5,
-    text: "Creators Hub Academy changed my life. I started with zero design skills and now I earn 150,000 monthly doing freelance Canva work for clients.",
+    text: "The Graphic Design course gave me a solid foundation in Canva and Photoshop. I now take on freelance clients and the certificate helped me stand out.",
   },
   {
     name: "Emeka Nwosu",
     role: "Content Creator",
     location: "Abuja, Nigeria",
-    avatar: "https://randomuser.me/api/portraits/men/90.jpg",
     rating: 5,
-    text: "The CapCut and video editing courses are incredibly detailed. I grew my TikTok from 0 to 50,000 followers in 3 months using what I learned here.",
+    text: "The CapCut and video editing lessons are practical and easy to follow. I improved my content quality significantly within a few weeks.",
   },
-  {
-    name: "Fatima Aliyu",
-    role: "Digital Marketer",
-    location: "Kano, Nigeria",
-    avatar: "https://randomuser.me/api/portraits/women/91.jpg",
-    rating: 5,
-    text: "I enrolled with the CREATOR coupon and got full access to everything for free. The Digital Marketing course alone is worth millions. Highly recommended!",
-  },
+    {
+      name: "Fatima Aliyu",
+      role: "Digital Marketer",
+      location: "Kano, Nigeria",
+      rating: 5,
+      text: "The Digital Marketing course covered SEO, social media, and copywriting in a way that was easy to apply. I felt more confident applying for remote roles after completing it.",
+    },
   {
     name: "Oluwaseun Adeyemi",
     role: "Freelancer",
     location: "Ibadan, Nigeria",
-    avatar: "https://randomuser.me/api/portraits/men/92.jpg",
     rating: 5,
-    text: "The certificate is recognized everywhere. I showed it to a client in the UK and got hired immediately. This platform is the real deal for Nigerian creators.",
+    text: "I appreciated the structured lessons and progress tracking. It made it easy to learn around my schedule and finish the course.",
   },
   {
     name: "Blessing Eze",
     role: "Social Media Manager",
     location: "Port Harcourt, Nigeria",
-    avatar: "https://randomuser.me/api/portraits/women/93.jpg",
     rating: 5,
-    text: "The progress tracking system is amazing. I can pick up exactly where I stopped and the Mark Complete feature keeps me motivated to finish every lesson.",
+    text: "The platform is easy to use and the lessons are clear. Being able to pick up exactly where I stopped was really helpful.",
   },
   {
     name: "Tunde Fashola",
     role: "UI/UX Designer",
     location: "Lagos, Nigeria",
-    avatar: "https://randomuser.me/api/portraits/men/94.jpg",
     rating: 5,
-    text: "From Canva to Figma to Photoshop — Creators Hub Academy covers everything a modern designer needs. The quality of the video lessons is world class.",
+    text: "From Canva to Figma, the design courses cover the tools I actually need. The video quality is good and the examples are practical.",
   },
 ];
 
@@ -138,7 +132,7 @@ export default function Feedback() {
             Join thousands of Nigerian creators already learning at Creators Hub Academy
           </p>
           <p className="text-yellow-400 font-bold mt-1">
-            Enroll FREE today — Use coupon code: CREATOR
+            Enroll today for ₦5,000 — instant access via Paystack
           </p>
         </motion.div>
       </div>

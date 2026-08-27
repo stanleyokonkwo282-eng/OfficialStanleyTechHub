@@ -62,7 +62,7 @@ export default function NewCourses() {
   }), []);
 
   if (newCourses.length === 0)
-    return <ContentNotFound title="No Recent Courses available" />;
+    return <ContentNotFound title="Recent courses coming soon" />;
 
   return (
     <section className="pb-16 pt-8 md:pb-32 md:pt-16 bg-black relative">

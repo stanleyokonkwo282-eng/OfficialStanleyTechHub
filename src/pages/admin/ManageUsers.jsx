@@ -115,14 +115,11 @@ export default function AllUsers() {
             {data?.users?.map((user) => (
               <tr key={user._id} className="border-t border-zinc-800 hover:bg-zinc-900">
                 <td>
-                  <img
-                    src={
-                      user.photoURL ||
-                      "https://randomuser.me/api/portraits/lego/1.jpg"
-                    }
-                    alt="User"
-                    className="w-10 h-10 rounded-full border-2 border-yellow-400"
-                  />
+                  <div
+                    className="w-10 h-10 rounded-full border-2 border-yellow-400 flex items-center justify-center text-white font-black text-sm bg-zinc-800"
+                  >
+                    {user.name?.charAt(0)?.toUpperCase() || "U"}
+                  </div>
                 </td>
                 <td className="text-white">{user.name}</td>
                 <td className="text-gray-300">{user.email}</td>

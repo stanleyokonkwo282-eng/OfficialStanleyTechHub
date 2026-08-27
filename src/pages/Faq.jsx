@@ -6,17 +6,17 @@ const faqs = [
   {
     question: "How do I create an account on Creators Hub Academy?",
     answer:
-      "You can sign up with your email and password, or use Google login. Verify your email and start exploring 25+ free digital skills courses immediately.",
+      "You can sign up with your email and password, or use Google login. Verify your email and browse our catalog of paid digital skills courses.",
   },
   {
     question: "Are the courses really free?",
     answer:
-      "Yes! All courses are free to learn. Use coupon code CREATOR during enrollment to access any course at no cost. A ₦10,000 verification fee only applies if you want a shareable certificate after passing the exam.",
+      "No. All courses require a ₦5,000 enrollment fee via Paystack. A ₦10,000 verification fee only applies if you want a shareable certificate after passing the exam.",
   },
   {
     question: "What payment methods are supported?",
     answer:
-      "For certificate verification, we accept Paystack (card payment) or direct bank transfer: Opay — 8134438808, Polaris — 3046748449. Course enrollment is free with the CREATOR coupon.",
+      "We accept Paystack (card, bank transfer, USSD) for course enrollment and certificate verification. No manual bank transfer or screenshot uploads are needed.",
   },
   {
     question: "How do I reset my password?",

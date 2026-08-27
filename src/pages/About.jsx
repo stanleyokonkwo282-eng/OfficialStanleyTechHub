@@ -1,4 +1,5 @@
 import { FaLinkedin, FaTwitter, FaInstagram, FaEnvelope, FaPhone, FaGithub } from "react-icons/fa";
+import founderImg from "../assets/images/founder.jpg";
 import { motion } from "framer-motion";
 import { useEffect, useRef } from "react";
 import { toast } from "react-toastify";
@@ -63,10 +64,10 @@ export default function About() {
             <span className="text-yellow-400">Digital Creators</span>
           </h1>
           <p className="text-lg md:text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed">
-            Creators Hub Academy is a free, world-class digital skills platform built
-            to transform lives through practical education, verified credentials, and
-            real-world opportunity.
-          </p>
+             Creators Hub Academy is a world-class digital skills platform built
+             to transform lives through practical education, verified credentials, and
+             real-world opportunity.
+           </p>
         </div>
       </section>
 
@@ -76,7 +77,7 @@ export default function About() {
           <div className="md:w-1/2">
             <div className="relative">
               <img
-                src="https://i.postimg.cc/MKkVCDNJ/762719758-5443054415919655-4524288621991209147-n-(1).jpg"
+                src={founderImg}
                 alt="Stanley Okonkwo - Founder"
                 className="rounded-2xl shadow-2xl shadow-yellow-400/10 border border-zinc-800 w-full object-cover"
               />
@@ -157,7 +158,7 @@ export default function About() {
               Sign Up and Explore
             </h3>
             <p className="text-gray-300">
-              Create your free account and browse courses in graphic design, AI
+               Create your account and browse courses in graphic design, AI
               tools, content creation, video editing, and more.
             </p>
           </div>
@@ -169,9 +170,7 @@ export default function About() {
               Enroll and Learn
             </h3>
             <p className="text-gray-300">
-              Use coupon code{" "}
-              <span className="text-yellow-400 font-bold">CREATOR</span> to enroll
-              in any course for FREE. Watch lessons, track your progress, and resume
+              Enroll in any course for ₦5,000. Watch lessons, track your progress, and resume
               exactly where you stopped.
             </p>
           </div>
@@ -206,7 +205,7 @@ export default function About() {
           <div className="md:flex md:items-start md:gap-16">
             <div className="md:w-1/3 mb-10 md:mb-0">
               <img
-                src="https://i.postimg.cc/MKkVCDNJ/762719758-5443054415919655-4524288621991209147-n-(1).jpg"
+                src={founderImg}
                 alt="Stanley Chukwunonso Okonkwo"
                 className="rounded-2xl shadow-2xl shadow-yellow-400/10 border border-zinc-800 w-full object-cover"
               />
@@ -361,11 +360,11 @@ export default function About() {
             variants={fadeUp}
             className="flex flex-col sm:flex-row items-center justify-center gap-5 mb-12"
           >
-            {[
-              { label: "23+ Free Courses Built", value: "🎓" },
-              { label: "Production Deployments", value: "🚀" },
-              { label: "Self-Hosted Platform", value: "🛠️" },
-            ].map((stat) => (
+              {[
+                { label: "23+ Courses Built", value: "🎓" },
+                { label: "Production Deployments", value: "🚀" },
+                { label: "Self-Hosted Platform", value: "🛠️" },
+              ].map((stat) => (
               <motion.div
                 key={stat.label}
                 whileHover={{ scale: 1.08, y: -4 }}

@@ -53,15 +53,11 @@ export default function CourseCard({ course }) {
 
         <div className="flex justify-between items-center mt-auto pt-3 border-t border-zinc-800">
           <div>
-            <p className="text-green-400 font-bold text-lg">FREE</p>
-            <p className="text-gray-600 line-through text-xs">
-              ${Number(course.price || 0).toFixed(2)}
-            </p>
+            <p className="text-green-400 font-bold text-lg">₦5,000</p>
           </div>
           <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
             <Link
               to={`/courses/${course._id}`}
-              state={{ enrollAfterLogin: true }}
               className="bg-yellow-400 text-black px-4 py-2 rounded-lg hover:bg-yellow-500 transition font-semibold text-sm"
             >
               Enroll Now

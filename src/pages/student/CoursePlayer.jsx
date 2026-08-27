@@ -1,7 +1,7 @@
 import { useMemo, useCallback, useEffect, useRef, useState } from "react";
-import { useNavigate, useParams } from "react-router";
+import { useNavigate, useParams, useSearchParams } from "react-router";
 import { toast } from "react-toastify";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import LoaderSpinner from "../../components/common/LoaderSpinner";
 import useAuth from "../../hooks/useAuth";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
@@ -11,6 +11,8 @@ export default function CoursePlayer() {
   const { user } = useAuth();
   const axiosSecure = useAxiosSecure();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const [searchParams] = useSearchParams();
   const [activeLesson, setActiveLesson] = useState(null);
   const [expandedModules, setExpandedModules] = useState({});
   const playerRef = useRef(null);
@@ -70,6 +72,22 @@ export default function CoursePlayer() {
     },
     enabled: !!user?.email,
   });
+
+  const { data: enrollmentData } = useQuery({
+    queryKey: ["enrollment-check", courseId, user?.email],
+    queryFn: async () => {
+      const res = await axiosSecure.get(`/enrollments/${courseId}`);
+      return res.data;
+    },
+    enabled: !!user?.email,
+  });
+
+  const isEnrolled = enrollmentData?.enrollments?.some(
+    (e) => e.studentEmail === user?.email
+  );
+  const enrollmentId = enrollmentData?.enrollments?.find(
+    (e) => e.studentEmail === user?.email
+  )?._id;
 
   // --- Fetch saved AI chat history for the active lesson ---
   const { data: chatHistoryData } = useQuery({
@@ -135,6 +153,34 @@ export default function CoursePlayer() {
     },
   });
 
+  const verifyPaymentMutation = useMutation({
+    mutationFn: async (reference) => {
+      const res = await axiosSecure.get(`/courses/verify-payment/${reference}`);
+      return res.data;
+    },
+    onSuccess: (data) => {
+      if (data.success) {
+        toast.success("Payment verified! You are now enrolled.");
+        queryClient.invalidateQueries(["enrollment-check", courseId, user?.email]);
+      } else {
+        toast.error(data.message || "Payment verification failed.");
+      }
+    },
+    onError: () => {
+      toast.error("Could not verify payment. Contact support if you were charged.");
+    },
+  });
+
+  const verifyPaymentAttempted = useRef(false);
+
+  useEffect(() => {
+    const reference = searchParams.get("reference");
+    if (reference && !verifyPaymentAttempted.current && !verifyPaymentMutation.isPending && !verifyPaymentMutation.isSuccess) {
+      verifyPaymentAttempted.current = true;
+      verifyPaymentMutation.mutate(reference);
+    }
+  }, [searchParams, verifyPaymentMutation]);
+
   const markCompleteMutationRef = useRef(markCompleteMutation);
   markCompleteMutationRef.current = markCompleteMutation;
   const updateLastWatchedMutationRef = useRef(updateLastWatchedMutation);
@@ -172,20 +218,22 @@ export default function CoursePlayer() {
   // --- Load YouTube API once ---
   useEffect(() => {
     if (apiLoadedRef.current) return;
-    if (!window.YT) {
-      window.onYouTubeIframeAPIReady = () => {
-        apiLoadedRef.current = true;
-      };
-      const tag = document.createElement("script");
-      tag.src = "https://www.youtube.com/iframe_api";
-      const firstScriptTag = document.getElementsByTagName("script")[0];
-      firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+    if (window.YT && window.YT.Player) {
+      apiLoadedRef.current = true;
+      return;
     }
+    window.onYouTubeIframeAPIReady = () => {
+      apiLoadedRef.current = true;
+    };
+    const tag = document.createElement("script");
+    tag.src = "https://www.youtube.com/iframe_api";
+    const firstScriptTag = document.getElementsByTagName("script")[0];
+    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
   }, []);
 
   // --- Initialize player when activeLesson changes ---
   useEffect(() => {
-    if (!activeLesson || !window.YT || videoError) return;
+    if (!activeLesson || !window.YT) return;
 
     const youtubeId = getYouTubeId(activeLesson.videoUrl, activeLesson.lessonTitle);
     if (!youtubeId) {
@@ -291,7 +339,7 @@ export default function CoursePlayer() {
       if (watchInterval.current) clearInterval(watchInterval.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeLesson, videoError]);
+  }, [activeLesson]);
 
   // --- Cleanup on unmount ---
   useEffect(() => {
@@ -345,7 +393,6 @@ export default function CoursePlayer() {
     if (watchInterval.current) clearInterval(watchInterval.current);
     if (playerRef.current && playerRef.current.stopVideo) playerRef.current.stopVideo();
     
-    // Explicitly save current position before switching
     if (playerRef.current && playerReady && activeLesson && playerRef.current.getCurrentTime) {
       try {
         const currentTime = playerRef.current.getCurrentTime();
@@ -357,6 +404,8 @@ export default function CoursePlayer() {
       }
     }
     
+    setVideoError(false);
+    setPlayerReady(false);
     setActiveLesson(lesson);
     setWatchPercent(0);
     completedRef.current = false;
@@ -409,6 +458,23 @@ export default function CoursePlayer() {
   };
 
   if (lessonsLoading) return <LoaderSpinner />;
+  if (!isEnrolled) {
+    return (
+      <div className="min-h-screen bg-black flex flex-col items-center justify-center gap-6 p-6">
+        <div className="text-6xl">🔒</div>
+        <h2 className="text-3xl font-bold text-white">Course Locked</h2>
+        <p className="text-gray-400 text-center max-w-md">
+          You need to enroll in this course to access lessons. Enroll for ₦5,000 and start learning instantly.
+        </p>
+        <button
+          onClick={() => navigate(`/courses/${courseId}`)}
+          className="bg-yellow-400 text-black px-8 py-3 rounded-lg font-bold hover:bg-yellow-500"
+        >
+          Go to Course Page
+        </button>
+      </div>
+    );
+  }
   if (!lessonsData?.lessons?.length) {
     return (
       <div className="min-h-screen bg-black flex items-center justify-center">
@@ -431,6 +497,23 @@ export default function CoursePlayer() {
       : `${import.meta.env.VITE_BASE_URL || ''}${rawPdfUrl.startsWith("/") ? "" : "/"}${rawPdfUrl}`
     : null;
   const canPreview = Boolean(normalizedPdfUrl && (rawPdfUrl.startsWith("http") || rawPdfUrl.startsWith("/uploads/")));
+
+  const downloadReceipt = async () => {
+    try {
+      const res = await axiosSecure.get(`/enrollments/${enrollmentId}/receipt`, {
+        responseType: "blob",
+      });
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `receipt-${enrollmentId}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch {
+      toast.error("Failed to download receipt");
+    }
+  };
 
   // YouTube watch link for fallback
   const youtubeWatchUrl = fallbackYoutubeId
@@ -458,6 +541,14 @@ export default function CoursePlayer() {
             </button>
           )}
           {courseCompleted && isLocked && <span className="text-red-400 text-xs md:text-sm">Exam Locked</span>}
+          {enrollmentId && (
+            <button
+              onClick={downloadReceipt}
+              className="bg-zinc-800 text-white px-2 py-1 md:px-3 rounded text-xs md:text-sm hover:bg-zinc-700 transition"
+            >
+              🧾 Receipt
+            </button>
+          )}
         </div>
       </div>
 

@@ -103,10 +103,10 @@ export default function TeachersCourses() {
                   <div className="mt-3">
                     <h3 className="text-lg font-bold">{course.title}</h3>
 
-                    <p className="mt-2">
-                      <span className="text-sm font-semibold">Price:</span> $
-                      {course.price}
-                    </p>
+                     <p className="mt-2">
+                       <span className="text-sm font-semibold">Price:</span> ₦
+                       {course.price || 5000}
+                     </p>
 
                     <p className="mt-2">
                       <span className="font-semibold">Status:</span>{" "}

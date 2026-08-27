@@ -5,7 +5,7 @@ import logo from "../../assets/logo.png";
 export default function Footer() {
   return (
     <footer className="bg-zinc-950 border-t border-zinc-800 text-white py-12 px-6">
-      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
+      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-5 gap-8">
 
         {/* Brand */}
         <div>
@@ -32,6 +32,7 @@ export default function Footer() {
             <li><Link to="/courses" className="hover:text-yellow-400 transition-colors">All Courses</Link></li>
             <li><Link to="/about" className="hover:text-yellow-400 transition-colors">About</Link></li>
             <li><Link to="/faq" className="hover:text-yellow-400 transition-colors">FAQ</Link></li>
+            <li><Link to="/contact" className="hover:text-yellow-400 transition-colors">Contact</Link></li>
             <li><Link to="/become-teacher" className="hover:text-yellow-400 transition-colors">Become a Teacher</Link></li>
           </ul>
         </div>
@@ -48,6 +49,16 @@ export default function Footer() {
             <li><Link to={`/category/${encodeURIComponent("Content Creation")}`} className="hover:text-yellow-400 transition-colors">Content Creation</Link></li>
             <li><Link to={`/category/${encodeURIComponent("Web Development")}`} className="hover:text-yellow-400 transition-colors">Web Development</Link></li>
             <li><Link to={`/category/${encodeURIComponent("Artificial Intelligence")}`} className="hover:text-yellow-400 transition-colors">AI Tools</Link></li>
+          </ul>
+        </div>
+
+        {/* Legal */}
+        <div>
+          <h2 className="text-base font-bold mb-4 text-white uppercase tracking-wide">Legal</h2>
+          <ul className="space-y-2 text-sm text-gray-400">
+            <li><Link to="/privacy-policy" className="hover:text-yellow-400 transition-colors">Privacy Policy</Link></li>
+            <li><Link to="/terms-of-service" className="hover:text-yellow-400 transition-colors">Terms of Service</Link></li>
+            <li><Link to="/refund-policy" className="hover:text-yellow-400 transition-colors">Refund Policy</Link></li>
           </ul>
         </div>
 

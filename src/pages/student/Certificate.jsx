@@ -1,5 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router";
 import { toast } from "react-toastify";
 import LoaderSpinner from "../../components/common/LoaderSpinner";
@@ -13,11 +13,7 @@ export default function Certificate() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const certRef = useRef();
-  const [proofUrl, setProofUrl] = useState("");
-  const [showPaymentForm, setShowPaymentForm] = useState(false);
   const [searchParams, setSearchParams] = useSearchParams();
-  const [proofError, setProofError] = useState("");
-  const [proofImageError, setProofImageError] = useState(false);
   const paystackReference = searchParams.get("reference");
 
   const { data: courseData, isLoading: courseLoading } = useQuery({
@@ -44,27 +40,6 @@ export default function Certificate() {
       return res.data;
     },
     enabled: !!user?.email,
-  });
-
-  const requestCertMutation = useMutation({
-    mutationFn: async () => {
-      const res = await axiosSecure.post("/certificates/request", {
-        studentEmail: user?.email,
-        studentName: user?.displayName || user?.email?.split("@")[0],
-        courseId,
-        courseName: courseData?.course?.title,
-        paymentProof: proofUrl,
-      });
-      return res.data;
-    },
-    onSuccess: () => {
-      toast.success("Payment proof submitted! Admin will verify within 24 hours.");
-      queryClient.invalidateQueries(["certificate", courseId, user?.email]);
-      setShowPaymentForm(false);
-    },
-    onError: () => {
-      toast.error("Failed to submit. Please try again.");
-    },
   });
 
   const paystackInitMutation = useMutation({
@@ -117,31 +92,6 @@ export default function Certificate() {
     },
   });
 
-  const validateProofUrl = (url) => {
-    if (!url) {
-      setProofError("");
-      return false;
-    }
-    try {
-      const parsed = new URL(url);
-      if (!["http:", "https:"].includes(parsed.protocol)) {
-        setProofError("Only HTTP/HTTPS URLs are allowed");
-        return false;
-      }
-      const allowedDomains = ["postimg.cc", "i.postimg.cc", "imgur.com", "i.imgur.com"];
-      if (!allowedDomains.some(d => parsed.hostname.includes(d))) {
-        setProofError("Please use postimages.org or imgur.com for image hosting");
-        return false;
-      }
-      setProofError("");
-      setProofImageError(false);
-      return true;
-    } catch {
-      setProofError("Please enter a valid URL");
-      return false;
-    }
-  };
-
   useEffect(() => {
     if (paystackReference && !paystackVerifyMutation.isPending && !paystackVerifyMutation.isSuccess) {
       paystackVerifyMutation.mutate(paystackReference);
@@ -154,7 +104,6 @@ export default function Certificate() {
   }
 
   const courseName = courseData?.course?.title || "Digital Skills Course";
-  const studentName = user?.displayName || user?.email?.split("@")[0] || "Student";
   const certificate = certData?.certificate;
 
   // Not completed yet
@@ -247,55 +196,19 @@ export default function Certificate() {
     );
   }
 
-  // Certificate pending review (manual bank transfer, awaiting admin)
-  if (certificate?.paymentStatus === "pending") {
+  // Certificate payment — Paystack only
+  if (!progressData?.percentage || progressData?.percentage < 100) {
     return (
-      <div className="min-h-screen bg-black flex flex-col items-center justify-center gap-6 px-4">
-        <div className="text-6xl">⏳</div>
-        <h2 className="text-white text-2xl font-bold">Payment Under Review</h2>
-        <p className="text-gray-400 text-center max-w-md">
-          Your payment proof has been submitted. Admin will verify your payment within 24 hours.
-          Once approved, your certificate will be available here.
-        </p>
-        <div className="bg-zinc-950 border border-zinc-800 rounded-xl p-6 w-full max-w-md space-y-3">
-          <div>
-            <p className="text-gray-400 text-sm">Certificate ID (reserved):</p>
-            <p className="text-yellow-400 font-bold text-lg">{certificate.certificateId}</p>
-          </div>
-          <div>
-            <p className="text-gray-400 text-sm">Status:</p>
-            <p className="text-yellow-400 font-semibold">Pending Verification</p>
-          </div>
-          <div>
-            <p className="text-gray-400 text-sm">Payment Proof Submitted:</p>
-            {certificate.paymentProof && !proofImageError && (
-              <img src={certificate.paymentProof} alt={`Payment proof for ${studentName}`} className="w-full max-h-32 object-contain rounded mt-1 border border-zinc-700" onError={() => setProofImageError(true)} />
-            )}
-          </div>
+      <div className="min-h-screen bg-black flex flex-col items-center justify-center gap-4 px-4">
+        <div className="text-6xl">📚</div>
+        <p className="text-white text-2xl font-bold">Course Not Completed Yet</p>
+        <p className="text-gray-400 text-center">Complete all lessons to earn your certificate.</p>
+        <div className="w-64 bg-zinc-800 rounded-full h-4 mt-2">
+          <div className="bg-yellow-400 h-4 rounded-full transition-all" style={{ width: `${progressData?.percentage || 0}%` }} />
         </div>
-        <button onClick={() => navigate(-1)} className="px-6 py-2 bg-zinc-800 border border-zinc-700 text-white rounded-lg hover:bg-zinc-700">
-          Back
-        </button>
-      </div>
-    );
-  }
-
-  // Certificate rejected
-  if (certificate?.paymentStatus === "rejected") {
-    return (
-      <div className="min-h-screen bg-black flex flex-col items-center justify-center gap-6 px-4">
-        <div className="text-6xl">❌</div>
-        <h2 className="text-white text-2xl font-bold">Payment Rejected</h2>
-        <p className="text-gray-400 text-center max-w-md">
-          Your payment proof was rejected. Please make sure you transferred exactly ₦10,000
-          and upload a clear screenshot. Contact us on WhatsApp if you need help.
-        </p>
-        <a href="https://wa.me/2348134438808" target="_blank" rel="noreferrer"
-          className="bg-green-500 text-white px-6 py-3 rounded-lg font-bold hover:bg-green-600">
-          Contact on WhatsApp
-        </a>
-        <button onClick={() => navigate(-1)} className="px-6 py-2 bg-zinc-800 border border-zinc-700 text-white rounded-lg hover:bg-zinc-700">
-          Back
+        <p className="text-yellow-400 text-2xl font-bold">{progressData?.percentage || 0}% Complete</p>
+        <button onClick={() => navigate(`/dashboard/learn/${courseId}`)} className="bg-yellow-400 text-black px-8 py-3 rounded-lg font-bold hover:bg-yellow-500">
+          Continue Learning
         </button>
       </div>
     );
@@ -329,94 +242,6 @@ export default function Certificate() {
         <p className="text-gray-500 text-xs text-center mb-8">
           Secure payment via Paystack. Your certificate unlocks immediately after payment.
         </p>
-
-        <div className="flex items-center gap-4 mb-8">
-          <div className="flex-1 h-px bg-zinc-800" />
-          <p className="text-gray-500 text-xs uppercase">Or pay manually by bank transfer</p>
-          <div className="flex-1 h-px bg-zinc-800" />
-        </div>
-
-        <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-6 mb-6">
-          <h3 className="text-white text-xl font-bold mb-4">How to Get Your Certificate</h3>
-          <div className="space-y-4 text-sm">
-            {[
-              "Transfer ₦10,000 to any account below",
-              "Take a screenshot of your payment confirmation",
-              "Upload the screenshot link below and submit",
-              "Admin verifies within 24 hours and issues your certificate",
-            ].map((step, i) => (
-              <div key={i} className="flex gap-3">
-                <span className="bg-yellow-400 text-black w-6 h-6 rounded-full flex items-center justify-center font-bold flex-shrink-0 text-xs">{i + 1}</span>
-                <p className="text-gray-300">{step}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-          <div className="bg-zinc-950 border border-zinc-800 rounded-xl p-5">
-            <p className="text-yellow-400 font-bold text-sm mb-3">OPAY BANK</p>
-            <p className="text-white font-bold text-2xl tracking-widest mb-1">8134438808</p>
-            <p className="text-gray-400 text-sm">Nonso Stanley Okonkwo</p>
-          </div>
-          <div className="bg-zinc-950 border border-zinc-800 rounded-xl p-5">
-            <p className="text-yellow-400 font-bold text-sm mb-3">POLARIS BANK</p>
-            <p className="text-white font-bold text-2xl tracking-widest mb-1">3046748449</p>
-            <p className="text-gray-400 text-sm">Nonso Stanley Okonkwo</p>
-          </div>
-        </div>
-
-        {!showPaymentForm ? (
-          <button onClick={() => setShowPaymentForm(true)} className="w-full py-4 bg-zinc-800 border border-zinc-700 text-white rounded-xl font-bold text-lg hover:bg-zinc-700">
-            I Have Paid by Bank Transfer — Submit Proof
-          </button>
-        ) : (
-          <div className="bg-zinc-950 border border-zinc-800 rounded-xl p-6">
-            <h4 className="text-white font-bold mb-4">Submit Payment Proof</h4>
-            <p className="text-gray-400 text-sm mb-3">
-              Upload your payment screenshot to{" "}
-              <a href="https://postimages.org" target="_blank" rel="noreferrer" className="text-yellow-400 underline">postimages.org</a>
-              {" "}then paste the image link below.
-            </p>
-            <input
-              type="url"
-              value={proofUrl}
-              onChange={(e) => {
-                setProofUrl(e.target.value);
-                if (proofError) validateProofUrl(e.target.value);
-              }}
-              onBlur={() => validateProofUrl(proofUrl)}
-              placeholder="https://i.postimg.cc/your-image-link.jpg"
-              className={`w-full bg-zinc-900 border rounded-lg px-4 py-3 focus:outline-none focus:border-yellow-400 mb-1 ${proofError ? "border-red-500" : "border-zinc-700 text-white placeholder-zinc-500"}`}
-            />
-            {proofError && <p className="text-red-400 text-sm mb-3">{proofError}</p>}
-            {proofUrl && !proofError && (
-              <div className="mb-4 rounded-lg overflow-hidden border border-zinc-700">
-                {!proofImageError ? (
-                  <img src={proofUrl} alt={`Payment proof preview for ${studentName}`} className="w-full max-h-48 object-contain bg-zinc-900" onError={() => setProofImageError(true)} />
-                ) : (
-                  <p className="text-gray-500 text-sm p-4">Unable to load image preview. Please check the URL.</p>
-                )}
-              </div>
-            )}
-            <div className="flex gap-3">
-              <button onClick={() => { setShowPaymentForm(false); setProofError(""); setProofImageError(false); }} className="flex-1 py-3 bg-zinc-800 border border-zinc-700 text-white rounded-lg hover:bg-zinc-700 font-semibold">
-                Cancel
-              </button>
-              <button
-                onClick={() => {
-                  if (validateProofUrl(proofUrl)) {
-                    requestCertMutation.mutate();
-                  }
-                }}
-                disabled={!proofUrl || requestCertMutation.isPending}
-                className="flex-1 py-3 bg-yellow-400 text-black rounded-lg font-bold hover:bg-yellow-500 disabled:opacity-50"
-              >
-                {requestCertMutation.isPending ? "Submitting..." : "Submit Proof"}
-              </button>
-            </div>
-          </div>
-        )}
 
         <div className="mt-6 text-center">
           <a href="https://wa.me/2348134438808" target="_blank" rel="noreferrer" className="text-green-400 text-sm hover:underline">
