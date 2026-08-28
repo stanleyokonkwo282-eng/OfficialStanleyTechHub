@@ -1,14 +1,9 @@
-import { useState, useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { motion } from "framer-motion";
-import {
-  FiBookOpen,
-  FiPlay,
-  FiFileText,
-  FiAward,
-  FiGift,
-  FiArrowRight,
-} from "react-icons/fi";
+import { Canvas, useFrame } from "@react-three/fiber";
+import { Points, PointMaterial } from "@react-three/drei";
+import * as THREE from "three";
 
 const AMBER = "#FFC700";
 const skills = [
@@ -17,11 +12,67 @@ const skills = [
 ];
 
 const metrics = [
-  { icon: FiBookOpen, value: "25+", label: "Digital Courses", sub: "Video & PDF formats", hero: true, span: "sm:col-span-2" },
-  { icon: FiPlay, value: "90+", label: "Video Lessons", sub: "Step-by-step tutorials", span: "" },
-  { icon: FiFileText, value: "₦10,000", label: "Certificate", sub: "Verified worldwide", span: "" },
-  { icon: FiAward, value: "₦5,000", label: "Enrollment", sub: "Instant access via Paystack", span: "sm:col-span-2 sm:col-start-2" },
+  { icon: "🎓", value: "25+", label: "Digital Courses", sub: "Video & PDF formats", hero: true, span: "sm:col-span-2" },
+  { icon: "🎬", value: "90+", label: "Video Lessons", sub: "Step-by-step tutorials", span: "" },
+  { icon: "📜", value: "₦10,000", label: "Certificate", sub: "Unique verification ID", span: "" },
+  { icon: "🏆", value: "₦5,000", label: "Enrollment", sub: "Instant access via Paystack", span: "sm:col-span-2 sm:col-start-2" },
 ];
+
+function ParticleGlobe({ mouse }) {
+  const pointsRef = useRef();
+  const [sphere] = useState(() => {
+    const count = 1800;
+    const positions = new Float32Array(count * 3);
+    const radius = 2.6;
+    for (let i = 0; i < count; i++) {
+      const phi = Math.acos(2 * Math.random() - 1);
+      const theta = Math.random() * Math.PI * 2;
+      positions[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
+      positions[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
+      positions[i * 3 + 2] = radius * Math.cos(phi);
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+    return geo;
+  });
+
+  useFrame(() => {
+    if (!pointsRef.current) return;
+    pointsRef.current.rotation.y += 0.0025;
+    pointsRef.current.rotation.x += 0.001;
+    const targetY = (mouse.x || 0) * 0.4;
+    const targetX = (mouse.y || 0) * 0.25;
+    pointsRef.current.rotation.y += (targetY - pointsRef.current.rotation.y) * 0.02;
+    pointsRef.current.rotation.x += (targetX - pointsRef.current.rotation.x) * 0.02;
+  });
+
+  return (
+    <Points ref={pointsRef} geometry={sphere} limit={1800}>
+      <PointMaterial
+        color={AMBER}
+        size={0.018}
+        sizeAttenuation
+        depthWrite={false}
+        blending={THREE.AdditiveBlending}
+        transparent
+        opacity={0.85}
+      />
+    </Points>
+  );
+}
+
+const GlobeScene = ({ mouse }) => {
+  return (
+    <Canvas
+      dpr={[1, 2]}
+      camera={{ position: [0, 0, 6], fov: 50 }}
+      style={{ position: "absolute", inset: 0, pointerEvents: "none" }}
+    >
+      <ambientLight intensity={0.6} />
+      <ParticleGlobe mouse={mouse} />
+    </Canvas>
+  );
+};
 
 function useMousePosition() {
   const [pos, setPos] = useState({ x: 0, y: 0 });
@@ -59,14 +110,13 @@ const CursorSpotlight = () => {
       aria-hidden
       className="pointer-events-none fixed inset-0 z-0"
       style={{
-        background: `radial-gradient(680px circle at ${x}px ${y}px, rgba(255,199,0,0.07), transparent 60%)`,
+        background: `radial-gradient(680px circle at ${x}px ${y}px, rgba(255,199,0,0.08), transparent 60%)`,
       }}
     />
   );
 };
 
 const TiltCard = ({ icon, value, label, sub, hero, span, delay = 0 }) => {
-  const Comp = icon;
   const cardRef = useRef(null);
   const [tilt, setTilt] = useState({ rx: 0, ry: 0 });
   const [glare, setGlare] = useState({ x: 0, y: 0, show: false });
@@ -107,22 +157,16 @@ const TiltCard = ({ icon, value, label, sub, hero, span, delay = 0 }) => {
         className={`
           group relative flex flex-col justify-between
           ${hero ? "p-8 ring-1 ring-amber-400/15" : "p-6"}
-          bg-[#0A0A0A] border border-[#1F1F1F] rounded-[1.25rem]
+          bg-[#0A0A0A]/80 backdrop-blur-md border border-[#1F1F1F] rounded-[1.25rem]
           hover:border-amber-400/40
-          hover:shadow-[0_25px_60px_rgba(255,199,0,0.08)]
+          hover:shadow-[0_25px_60px_rgba(255,199,0,0.1)]
           transition-[border-color_0.3s_cubic-bezier(0.22,1,0.35,1),box-shadow_0.3s_cubic-bezier(0.22,1,0.35,1)]
         `}
       >
         <div style={{ transform: "translateZ(40px)" }} className="flex items-center justify-center mb-6">
           <div className="p-3 rounded-xl bg-amber-400/10 border border-amber-400/25">
-            <Comp className="text-amber-300" size={30} />
+            <span className="text-3xl">{icon}</span>
           </div>
-          {hero && (
-            <div
-              aria-hidden
-              className="absolute inset-0 rounded-[1.25rem] bg-gradient-radial from-amber-300/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"
-            />
-          )}
         </div>
 
         <div style={{ transform: "translateZ(30px)" }}>
@@ -149,81 +193,18 @@ const TiltCard = ({ icon, value, label, sub, hero, span, delay = 0 }) => {
   );
 };
 
-const Ring = ({ size, duration, direction }) => (
-  <motion.div
-    animate={{ rotate: direction * 360 }}
-    transition={{ duration, repeat: Infinity, ease: "linear" }}
-    className="absolute left-1/2 top-1/2 rounded-full"
-    style={{
-      width: size,
-      height: size,
-      marginLeft: `-${size / 2}px`,
-      marginTop: `-${size / 2}px`,
-      border: `5px solid rgba(255,199,0,0.06)`,
-      borderTopColor: AMBER,
-      transformStyle: "preserve-3d",
-    }}
-  >
-    <motion.div
-      animate={{ rotate: direction * -360 }}
-      transition={{ duration: duration * 0.7, repeat: Infinity, ease: "linear" }}
-      className="absolute inset-2 rounded-full"
-      style={{
-        border: `1px solid rgba(255,199,0,0.05)`,
-        borderTopColor: "rgba(255,199,0,0.18)",
-      }}
-    />
-  </motion.div>
-);
-
-const Orb = ({ size, delay, x, y }) => (
-  <motion.div
-    initial={{ opacity: 0, scale: 0.8 }}
-    animate={{
-      opacity: [0.25, 0.45, 0.25],
-      scale: [1, 1.15, 1],
-      y: [0, -14, 0],
-    }}
-    transition={{ duration: 14, delay, repeat: Infinity, ease: "easeInOut" }}
-    className="absolute rounded-full"
-    style={{
-      width: size,
-      height: size,
-      left: `${x}%`,
-      top: `${y}%`,
-      background: `radial-gradient(circle, #FFC70070 0%, #FFC70000 65%)`,
-      boxShadow: "0 0 22px 6px rgba(255,199,0,0.18)",
-    }}
-  />
-);
-
-const FloatingRingGroup = () => (
-  <div className="absolute inset-0 z-0 overflow-hidden">
-    <Ring size={420} duration={110} direction={1} />
-    <Ring size={620} duration={170} direction={-1} />
-    <Ring size={820} duration={230} direction={1} />
-    {Array.from({ length: 6 }).map((_, i) => (
-      <Orb
-        key={i}
-        size={i % 2 === 0 ? 22 : 14}
-        delay={i * 1.3}
-        x={12 + (i * 15) % 78}
-        y={18 + (i * 23) % 62}
-      />
-    ))}
-  </div>
-);
-
 export default function Hero3D() {
   const headline = "Learn. Create. Lead.".split(" ");
-
   const navigate = useNavigate();
+  const mouse = useMousePosition();
   const handlePrimaryClick = () => navigate("/courses");
 
   return (
     <div className="relative min-h-screen bg-[#000000] text-white overflow-hidden">
       <CursorSpotlight />
-      <FloatingRingGroup />
+      <div className="absolute inset-0 z-0 opacity-40">
+        <GlobeScene mouse={mouse} />
+      </div>
 
       <div className="relative z-10 max-w-7xl mx-auto pt-32 pb-20 px-6 lg:px-12">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
@@ -249,14 +230,14 @@ export default function Hero3D() {
             <p className="text-neutral-300 text-lg md:text-xl max-w-xl leading-relaxed">
               Master profitable digital skills — Graphic Design, Video Editing,
               Digital Marketing, AI Tools, and more. Enroll for ₦5,000 and earn a
-              verified certificate.
+              verified certificate with a unique ID.
             </p>
 
             <div className="flex flex-wrap gap-2 max-w-xl">
               {skills.map((skill) => (
                 <span
                   key={skill}
-                  className="px-4 py-2 text-xs font-semibold bg-[#0A0A0A] border border-[#1F1F1F] text-neutral-400 rounded-full cursor-default hover:border-amber-400/40 hover:text-neutral-100 transition-all duration-300 hover:scale-[1.03]"
+                  className="px-4 py-2 text-xs font-semibold bg-[#0A0A0A]/80 backdrop-blur border border-[#1F1F1F] text-neutral-400 rounded-full cursor-default hover:border-amber-400/40 hover:text-neutral-100 transition-all duration-300 hover:scale-[1.03]"
                 >
                   {skill}
                 </span>
@@ -272,17 +253,13 @@ export default function Hero3D() {
               >
                 <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/25 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 pointer-events-none" />
                 <span className="relative z-10">Explore Courses</span>
-                <FiArrowRight className="relative z-10 w-5 h-5 group-hover:translate-x-0.5 transition-transform" />
+                <span className="relative z-10 group-hover:translate-x-0.5 transition-transform">→</span>
               </motion.button>
 
               <motion.button
                 whileHover={{ scale: 1.03 }}
                 onClick={() => navigate("/about")}
-                className="relative overflow-hidden border border-[#1F1F1F] hover:border-amber-400/40 text-neutral-200 hover:text-white font-semibold px-8 py-4 rounded-xl transition-all"
-                style={{
-                  background:
-                    "linear-gradient(135deg, rgba(255,199,0,0.05), rgba(255,199,0,0.02))",
-                }}
+                className="relative overflow-hidden border border-[#1F1F1F] hover:border-amber-400/40 text-neutral-200 hover:text-white font-semibold px-8 py-4 rounded-xl transition-all bg-[#0A0A0A]/60 backdrop-blur"
               >
                 <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/0 hover:via-white/5 to-transparent transition-all" />
                 Learn More

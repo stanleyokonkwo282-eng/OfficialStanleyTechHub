@@ -232,6 +232,33 @@ export default function Certificate() {
           <p className="text-xs mt-1">Certificate issued with unique verification ID</p>
         </div>
 
+        <div className="flex justify-center mb-6">
+          <div className="group relative w-full max-w-sm" style={{ perspective: "1200px" }}>
+            <div
+              className="relative rounded-2xl border-2 border-yellow-400 bg-gradient-to-br from-yellow-50 to-white p-6 shadow-2xl transition-transform duration-500 ease-out cert-3d"
+              style={{ transformStyle: "preserve-3d" }}
+            >
+              <div className="text-center">
+                <p className="text-xs font-bold uppercase tracking-widest text-yellow-600 mb-1">Certificate</p>
+                <h3 className="text-2xl font-black text-black mb-1" style={{ fontFamily: "'Playfair Display', serif" }}>
+                  Creators Hub Academy
+                </h3>
+                <p className="text-xs text-gray-500 mb-4">Verified Digital Skills Certificate</p>
+                <div className="mx-auto w-16 h-16 rounded-full border-2 border-yellow-400 flex items-center justify-center text-3xl mb-3">
+                  🎓
+                </div>
+                <p className="text-sm font-semibold text-gray-800">This certifies that</p>
+                <p className="text-lg font-bold text-black mt-1">{user?.displayName || user?.email?.split("@")[0]}</p>
+                <p className="text-sm text-gray-600 mt-2">has successfully completed the course</p>
+                <p className="text-base font-bold text-yellow-700 mt-1">{courseName}</p>
+                <div className="mt-4 flex items-center justify-center gap-2 text-xs text-gray-500">
+                  <span className="font-mono bg-gray-100 px-2 py-1 rounded">ID: {certData?.certificate?.certificateId || "Pending"}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <button
           onClick={() => paystackInitMutation.mutate()}
           disabled={paystackInitMutation.isPending}
