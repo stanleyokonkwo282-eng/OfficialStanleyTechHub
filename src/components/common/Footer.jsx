@@ -22,6 +22,11 @@ export default function Footer() {
           <p className="text-yellow-400 text-xs mt-3 font-semibold tracking-wide">
             LEARN • GROW • CREATE
           </p>
+          <p className="text-gray-500 text-xs mt-2">
+            Stanley Chukwunonso Okonkwo<br />
+            Lagos, Nigeria<br />
+            support@creatorshubacademy.com
+          </p>
         </div>
 
         {/* Quick Links */}
@@ -62,30 +67,23 @@ export default function Footer() {
           </ul>
         </div>
 
-        {/* Social + WhatsApp Contact Only */}
+        {/* WhatsApp Contact */}
         <div>
-          <h2 className="text-base font-bold mb-4 text-white uppercase tracking-wide">Connect With Us</h2>
-          <div className="flex gap-3 mb-6">
-            <a href="https://wa.me/2348134438808" target="_blank" rel="noopener noreferrer"
-              className="w-8 h-8 bg-zinc-800 hover:bg-yellow-400 hover:text-black text-gray-300 rounded-full flex items-center justify-center transition-all">
-              <FaWhatsapp />
+          <h2 className="text-base font-bold mb-4 text-white uppercase tracking-wide">Contact</h2>
+          <div className="space-y-3 text-sm text-gray-400">
+            <p>+234 813 443 8808</p>
+            <p>support@creatorshubacademy.com</p>
+            <p>Monday – Friday, 9:00 AM – 6:00 PM (WAT)</p>
+            <a
+              href="https://wa.me/2348134438808"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-semibold transition w-full justify-center"
+            >
+              <FaWhatsapp className="text-lg" />
+              Chat on WhatsApp
             </a>
-            <span className="text-gray-500 text-xs self-center">Social profiles coming soon</span>
           </div>
-
-          {/* WhatsApp CTA button only — no bank details */}
-          <a
-            href="https://wa.me/2348134438808"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-3 rounded-xl font-semibold text-sm transition w-full justify-center"
-          >
-            <FaWhatsapp className="text-lg" />
-            Chat Us on WhatsApp
-          </a>
-          <p className="text-gray-500 text-xs mt-3 text-center">
-            For certificate payment and enquiries
-          </p>
         </div>
       </div>
 

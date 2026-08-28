@@ -125,6 +125,14 @@ export default function ExamPage() {
           >
             Go Back
           </button>
+          <a
+            href="https://wa.me/2348134438808"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 mt-3"
+          >
+            Contact Admin on WhatsApp
+          </a>
         </div>
       </div>
     );

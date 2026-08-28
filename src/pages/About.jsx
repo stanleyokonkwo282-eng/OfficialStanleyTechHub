@@ -181,9 +181,8 @@ export default function About() {
             <h3 className="font-semibold text-xl mb-3 text-yellow-400">
               Get Certified and Grow
             </h3>
-            <p className="text-gray-300">
-              Complete a course and earn a verified certificate recognised worldwide
-              for just 10,000 Naira. Add it to your CV and LinkedIn with confidence.
+              <p className="text-gray-300">
+              Complete a course and earn a verified certificate with a unique ID for just 10,000 Naira. Add it to your CV and LinkedIn with confidence.
             </p>
           </div>
         </div>
@@ -218,14 +217,11 @@ export default function About() {
                   <a href="mailto:support@creatorshubacademy.com" className="flex items-center gap-2 hover:text-yellow-400 transition">
                     <FaEnvelope className="text-yellow-400" /> support@creatorshubacademy.com
                   </a>
-                </div>
-                <div className="flex gap-4 mt-4">
-                  <span className="text-gray-500 text-xs">Social profiles coming soon</span>
-                </div>
               </div>
             </div>
+          </div>
 
-             <div className="md:w-2/3">
+         <div className="md:w-2/3">
                <div className="space-y-6 text-gray-300 leading-relaxed">
                  <p className="text-lg text-white font-medium">
                    Stanley Chukwunonso Okonkwo is a dynamic technologist, ICT Specialist, and Multimedia Expert whose work is defined by the intersection of high-level digital engineering and a commitment to human development. With over eight years of experience managing complex IT infrastructures, financial systems, and multimedia workflows, Stanley has cultivated the technical acumen required to lead in a fast-evolving digital economy.

@@ -188,7 +188,7 @@ export default function Certificate() {
             <p className="text-gray-500 text-sm">
               If you have any questions, contact us on{" "}
               <a href="https://wa.me/2348134438808" className="text-green-400 underline">WhatsApp</a> or{" "}
-              <a href="mailto:creatorshubacademy3@gmail.com" className="text-yellow-400 underline">Email</a>.
+              <a href="mailto:support@creatorshubacademy.com" className="text-yellow-400 underline">Email</a>.
             </p>
           </div>
         )}
@@ -229,7 +229,7 @@ export default function Certificate() {
         <div className="bg-yellow-400 text-black rounded-xl p-4 text-center mb-6">
           <p className="text-sm font-semibold">Amount to Pay</p>
           <p className="text-4xl font-bold">₦10,000</p>
-          <p className="text-xs mt-1">Certificate verified worldwide · Unique ID issued</p>
+          <p className="text-xs mt-1">Certificate issued with unique verification ID</p>
         </div>
 
         <button

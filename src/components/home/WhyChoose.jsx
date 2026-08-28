@@ -21,7 +21,7 @@ export default function WhyChoose() {
       icon: "📜",
       title: "Verified Certificates",
       description:
-        "Complete your course, pass the exam, and earn a certificate verified worldwide for just ₦10,000. Recognized by employers globally.",
+        "Complete your course, pass the exam, and earn a verified certificate for just ₦10,000. Includes a unique certificate ID for verification.",
     },
     {
       icon: "💳",
