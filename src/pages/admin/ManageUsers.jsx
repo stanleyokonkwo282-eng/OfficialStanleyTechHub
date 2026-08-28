@@ -34,6 +34,17 @@ export default function AllUsers() {
     onError: () => toast.error("Failed to promote user"),
   });
 
+  const makeTeacher = useMutation({
+    mutationFn: async (id) => {
+      return await axiosSecure.post(`/admin/teachers`, { userId: id });
+    },
+    onSuccess: () => {
+      toast.success("User promoted to teacher (free access)");
+      queryClient.invalidateQueries(["users"]);
+    },
+    onError: () => toast.error("Failed to promote user to teacher"),
+  });
+
   const handleSearch = (e) => {
     e.preventDefault();
     const text = e.target.search.value.trim();
@@ -54,6 +65,24 @@ export default function AllUsers() {
     }).then((result) => {
       if (result.isConfirmed) {
         makeAdmin.mutate(id);
+      }
+    });
+  };
+
+  const handleMakeTeacher = (id) => {
+    Swal.fire({
+      icon: "question",
+      title: "Make Teacher (Free)?",
+      text: "This will give the user free teacher access without subscription.",
+      showCancelButton: true,
+      confirmButtonText: "Yes, Make Teacher",
+      background: "#18181b",
+      color: "#fff",
+      confirmButtonColor: "#facc15",
+      cancelButtonColor: "#3f3f46",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        makeTeacher.mutate(id);
       }
     });
   };
@@ -108,7 +137,7 @@ export default function AllUsers() {
               <th>Name</th>
               <th>Email</th>
               <th>Role</th>
-              <th>Make Admin</th>
+              <th>Actions</th>
             </tr>
           </thead>
           <tbody>
@@ -137,13 +166,22 @@ export default function AllUsers() {
                   </span>
                 </td>
                 <td>
-                  <button
-                    className="btn btn-sm bg-yellow-400 text-black border-none hover:bg-yellow-500 disabled:opacity-50"
-                    onClick={() => handleMakeAdmin(user._id)}
-                    disabled={user.role === "admin"}
-                  >
-                    {user.role === "admin" ? "Admin" : "Make Admin"}
-                  </button>
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      className="btn btn-sm bg-yellow-400 text-black border-none hover:bg-yellow-500 disabled:opacity-50"
+                      onClick={() => handleMakeAdmin(user._id)}
+                      disabled={user.role === "admin"}
+                    >
+                      {user.role === "admin" ? "Admin" : "Make Admin"}
+                    </button>
+                    <button
+                      className="btn btn-sm bg-green-500 text-white border-none hover:bg-green-600 disabled:opacity-50"
+                      onClick={() => handleMakeTeacher(user._id)}
+                      disabled={user.role === "teacher"}
+                    >
+                      {user.role === "teacher" ? "Teacher" : "Make Teacher"}
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
