@@ -1,9 +1,7 @@
 import { useRef, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { motion } from "framer-motion";
-import { Canvas, useFrame } from "@react-three/fiber";
-import { Points, PointMaterial } from "@react-three/drei";
-import * as THREE from "three";
+import HeroScene3D from "./HeroScene3D";
 
 const AMBER = "#FFC700";
 const skills = [
@@ -17,62 +15,6 @@ const metrics = [
   { icon: "📜", value: "₦10,000", label: "Certificate", sub: "Unique verification ID", span: "" },
   { icon: "🏆", value: "₦5,000", label: "Enrollment", sub: "Instant access via Paystack", span: "sm:col-span-2 sm:col-start-2" },
 ];
-
-function ParticleGlobe({ mouse }) {
-  const pointsRef = useRef();
-  const [sphere] = useState(() => {
-    const count = 1800;
-    const positions = new Float32Array(count * 3);
-    const radius = 2.6;
-    for (let i = 0; i < count; i++) {
-      const phi = Math.acos(2 * Math.random() - 1);
-      const theta = Math.random() * Math.PI * 2;
-      positions[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
-      positions[i * 3 + 1] = radius * Math.sin(phi) * Math.sin(theta);
-      positions[i * 3 + 2] = radius * Math.cos(phi);
-    }
-    const geo = new THREE.BufferGeometry();
-    geo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
-    return geo;
-  });
-
-  useFrame(() => {
-    if (!pointsRef.current) return;
-    pointsRef.current.rotation.y += 0.0025;
-    pointsRef.current.rotation.x += 0.001;
-    const targetY = (mouse.x || 0) * 0.4;
-    const targetX = (mouse.y || 0) * 0.25;
-    pointsRef.current.rotation.y += (targetY - pointsRef.current.rotation.y) * 0.02;
-    pointsRef.current.rotation.x += (targetX - pointsRef.current.rotation.x) * 0.02;
-  });
-
-  return (
-    <Points ref={pointsRef} geometry={sphere} limit={1800}>
-      <PointMaterial
-        color={AMBER}
-        size={0.018}
-        sizeAttenuation
-        depthWrite={false}
-        blending={THREE.AdditiveBlending}
-        transparent
-        opacity={0.85}
-      />
-    </Points>
-  );
-}
-
-const GlobeScene = ({ mouse }) => {
-  return (
-    <Canvas
-      dpr={[1, 2]}
-      camera={{ position: [0, 0, 6], fov: 50 }}
-      style={{ position: "absolute", inset: 0, pointerEvents: "none" }}
-    >
-      <ambientLight intensity={0.6} />
-      <ParticleGlobe mouse={mouse} />
-    </Canvas>
-  );
-};
 
 function useMousePosition() {
   const [pos, setPos] = useState({ x: 0, y: 0 });
@@ -148,62 +90,61 @@ const TiltCard = ({ icon, value, label, sub, hero, span, delay = 0 }) => {
         animate={{ opacity: 1 }}
         transition={{ delay, duration: 0.5, ease: [0.22, 1, 0.35, 1] }}
         className={`${span} h-full`}
-    >
-      <div
-        ref={cardRef}
-        onMouseMove={onMove}
-        onMouseLeave={onLeave}
-        style={{ transform, transformStyle: "preserve-3d" }}
-        className={`
-          group relative flex flex-col justify-between
-          ${hero ? "p-8 ring-1 ring-amber-400/15" : "p-6"}
-          bg-[#0A0A0A]/80 backdrop-blur-md border border-[#1F1F1F] rounded-[1.25rem]
-          hover:border-amber-400/40
-          hover:shadow-[0_25px_60px_rgba(255,199,0,0.1)]
-          transition-[border-color_0.3s_cubic-bezier(0.22,1,0.35,1),box-shadow_0.3s_cubic-bezier(0.22,1,0.35,1)]
-        `}
       >
-        <div style={{ transform: "translateZ(40px)" }} className="flex items-center justify-center mb-6">
-          <div className="p-3 rounded-xl bg-amber-400/10 border border-amber-400/25">
-            <span className="text-3xl">{icon}</span>
+        <div
+          ref={cardRef}
+          onMouseMove={onMove}
+          onMouseLeave={onLeave}
+          style={{ transform, transformStyle: "preserve-3d" }}
+          className={`
+            group relative flex flex-col justify-between
+            ${hero ? "p-8 ring-1 ring-amber-400/15" : "p-6"}
+            bg-[#0A0A0A]/80 backdrop-blur-md border border-[#1F1F1F] rounded-[1.25rem]
+            hover:border-amber-400/40
+            hover:shadow-[0_25px_60px_rgba(255,199,0,0.1)]
+            transition-[border-color_0.3s_cubic-bezier(0.22,1,0.35,1),box-shadow_0.3s_cubic-bezier(0.22,1,0.35,1)]
+          `}
+        >
+          <div style={{ transform: "translateZ(40px)" }} className="flex items-center justify-center mb-6">
+            <div className="p-3 rounded-xl bg-amber-400/10 border border-amber-400/25">
+              <span className="text-3xl">{icon}</span>
+            </div>
+          </div>
+
+          <div style={{ transform: "translateZ(30px)" }}>
+            <h3 className={`font-black ${hero ? "text-5xl" : "text-3xl"} text-[#FFC700] tracking-tight`}>
+              {value}
+            </h3>
+            <p className="mt-1 text-neutral-200 font-semibold text-base">{label}</p>
+            <p className="text-neutral-500 text-sm font-medium">{sub}</p>
+          </div>
+
+          <div
+            aria-hidden
+            className={`absolute -inset-px rounded-[1.25rem] pointer-events-none overflow-hidden ${
+              glare.show ? "opacity-100" : "opacity-0"
+            } transition-opacity`}
+          >
+            <div
+              className="absolute -translate-x-1/2 -translate-y-1/2 w-[140px] h-[140px] bg-white/25 blur-[3px] rounded-full"
+              style={{ left: `${glare.x}%`, top: `${glare.y}%` }}
+            />
           </div>
         </div>
-
-        <div style={{ transform: "translateZ(30px)" }}>
-          <h3 className={`font-black ${hero ? "text-5xl" : "text-3xl"} text-[#FFC700] tracking-tight`}>
-            {value}
-          </h3>
-          <p className="mt-1 text-neutral-200 font-semibold text-base">{label}</p>
-          <p className="text-neutral-500 text-sm font-medium">{sub}</p>
-        </div>
-
-        <div
-          aria-hidden
-          className={`absolute -inset-px rounded-[1.25rem] pointer-events-none overflow-hidden ${
-            glare.show ? "opacity-100" : "opacity-0"
-          } transition-opacity`}
-        >
-          <div
-            className="absolute -translate-x-1/2 -translate-y-1/2 w-[140px] h-[140px] bg-white/25 blur-[3px] rounded-full"
-            style={{ left: `${glare.x}%`, top: `${glare.y}%` }}
-          />
-        </div>
-      </div>
-    </motion.div>
+      </motion.div>
   );
 };
 
 export default function Hero3D() {
   const headline = "Learn. Create. Lead.".split(" ");
   const navigate = useNavigate();
-  const mouse = useMousePosition();
   const handlePrimaryClick = () => navigate("/courses");
 
   return (
     <div className="relative min-h-screen bg-[#000000] text-white overflow-hidden">
       <CursorSpotlight />
-      <div className="absolute inset-0 z-0 opacity-40">
-        <GlobeScene mouse={mouse} />
+      <div className="absolute inset-0 z-0">
+        <HeroScene3D />
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto pt-32 pb-20 px-6 lg:px-12">

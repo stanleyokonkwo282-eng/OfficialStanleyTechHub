@@ -221,6 +221,7 @@
 9. **ImageKit** is used for all image uploads — signature is generated server-side at `/api/get-ik-signature`.
 10. **Firebase API key** should be restricted to `https://creators-hub-academy.vercel.app` in the Firebase console.
 11. **3D dependencies** (`three`, `@react-three/fiber`, `@react-three/drei`) are installed. Bundle size is ~3MB; consider route-based code splitting if performance becomes an issue.
+12. **Classical 3D Hero Scene**: `HeroScene3D.jsx` implements an interactive cinematic aperture/lens with 8-blade mechanical aperture, glass lens element with `MeshTransmissionMaterial` (chromatic aberration, iridescence), floating bokeh particles, HDR environment lighting (`Environment` preset), and `Sparkles` for ambient glow. Includes `Suspense` progressive loading skeleton, `IntersectionObserver`-based `frameloop="demand"` throttling, and SVG/CSS fallback for mobile/low-power devices and `prefers-reduced-motion`.
 
 ---
 

@@ -65,6 +65,37 @@ input[type='number']::-webkit-outer-spin-button {
   transform: rotateY(12deg) rotateX(6deg);
 }
 
+/* HeroScene3D — slow spin animation for SVG fallback aperture */
+.animate-spin-slow {
+  animation: spin 20s linear infinite;
+}
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* HeroScene3D — pulse for SVG fallback */
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* HeroScene3D — canvas container overflow clip */
+#hero-scene {
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* Reduce 3D intensity on low-power devices */
+@media (max-width: 767px) {
+  #hero-scene {
+    display: none;
+  }
+}
+
 /* Course card glassmorphism base */
 .course-glass {
   background: rgba(24, 24, 27, 0.85);
