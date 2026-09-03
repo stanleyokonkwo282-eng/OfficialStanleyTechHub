@@ -1,7 +1,7 @@
 import { useRef, useEffect, useState } from "react";
 import { useNavigate } from "react-router";
 import { motion } from "framer-motion";
-import HeroScene3D from "./HeroScene3D";
+import heroImage from "../../assets/images/banner.jpg";
 
 const AMBER = "#FFC700";
 const skills = [
@@ -85,53 +85,53 @@ const TiltCard = ({ icon, value, label, sub, hero, span, delay = 0 }) => {
   const transform = `rotateX(${tilt.rx}deg) rotateY(${tilt.ry}deg) translateZ(${hero ? 28 : 18}px) scale(${hero ? 1.03 : 1.015})`;
 
   return (
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay, duration: 0.5, ease: [0.22, 1, 0.35, 1] }}
-        className={`${span} h-full`}
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ delay, duration: 0.5, ease: [0.22, 1, 0.35, 1] }}
+      className={`${span} h-full`}
+    >
+      <div
+        ref={cardRef}
+        onMouseMove={onMove}
+        onMouseLeave={onLeave}
+        style={{ transform, transformStyle: "preserve-3d" }}
+        className={`
+          group relative flex flex-col justify-between
+          ${hero ? "p-8 ring-1 ring-amber-400/15" : "p-6"}
+          bg-[#0A0A0A]/80 backdrop-blur-md border border-[#1F1F1F] rounded-[1.25rem]
+          hover:border-amber-400/40
+          hover:shadow-[0_25px_60px_rgba(255,199,0,0.1)]
+          transition-[border-color_0.3s_cubic-bezier(0.22,1,0.35,1),box-shadow_0.3s_cubic-bezier(0.22,1,0.35,1)]
+        `}
       >
-        <div
-          ref={cardRef}
-          onMouseMove={onMove}
-          onMouseLeave={onLeave}
-          style={{ transform, transformStyle: "preserve-3d" }}
-          className={`
-            group relative flex flex-col justify-between
-            ${hero ? "p-8 ring-1 ring-amber-400/15" : "p-6"}
-            bg-[#0A0A0A]/80 backdrop-blur-md border border-[#1F1F1F] rounded-[1.25rem]
-            hover:border-amber-400/40
-            hover:shadow-[0_25px_60px_rgba(255,199,0,0.1)]
-            transition-[border-color_0.3s_cubic-bezier(0.22,1,0.35,1),box-shadow_0.3s_cubic-bezier(0.22,1,0.35,1)]
-          `}
-        >
-          <div style={{ transform: "translateZ(40px)" }} className="flex items-center justify-center mb-6">
-            <div className="p-3 rounded-xl bg-amber-400/10 border border-amber-400/25">
-              <span className="text-3xl">{icon}</span>
-            </div>
-          </div>
-
-          <div style={{ transform: "translateZ(30px)" }}>
-            <h3 className={`font-black ${hero ? "text-5xl" : "text-3xl"} text-[#FFC700] tracking-tight`}>
-              {value}
-            </h3>
-            <p className="mt-1 text-neutral-200 font-semibold text-base">{label}</p>
-            <p className="text-neutral-500 text-sm font-medium">{sub}</p>
-          </div>
-
-          <div
-            aria-hidden
-            className={`absolute -inset-px rounded-[1.25rem] pointer-events-none overflow-hidden ${
-              glare.show ? "opacity-100" : "opacity-0"
-            } transition-opacity`}
-          >
-            <div
-              className="absolute -translate-x-1/2 -translate-y-1/2 w-[140px] h-[140px] bg-white/25 blur-[3px] rounded-full"
-              style={{ left: `${glare.x}%`, top: `${glare.y}%` }}
-            />
+        <div style={{ transform: "translateZ(40px)" }} className="flex items-center justify-center mb-6">
+          <div className="p-3 rounded-xl bg-amber-400/10 border border-amber-400/25">
+            <span className="text-3xl">{icon}</span>
           </div>
         </div>
-      </motion.div>
+
+        <div style={{ transform: "translateZ(30px)" }}>
+          <h3 className={`font-black ${hero ? "text-5xl" : "text-3xl"} text-[#FFC700] tracking-tight`}>
+            {value}
+          </h3>
+          <p className="mt-1 text-neutral-200 font-semibold text-base">{label}</p>
+          <p className="text-neutral-500 text-sm font-medium">{sub}</p>
+        </div>
+
+        <div
+          aria-hidden
+          className={`absolute -inset-px rounded-[1.25rem] pointer-events-none overflow-hidden ${
+            glare.show ? "opacity-100" : "opacity-0"
+          } transition-opacity`}
+        >
+          <div
+            className="absolute -translate-x-1/2 -translate-y-1/2 w-[140px] h-[140px] bg-white/25 blur-[3px] rounded-full"
+            style={{ left: `${glare.x}%`, top: `${glare.y}%` }}
+          />
+        </div>
+      </div>
+    </motion.div>
   );
 };
 
@@ -143,8 +143,25 @@ export default function Hero3D() {
   return (
     <div className="relative min-h-screen bg-[#000000] text-white overflow-hidden">
       <CursorSpotlight />
+
       <div className="absolute inset-0 z-0">
-        <HeroScene3D />
+        <div
+          className="absolute inset-0 bg-cover bg-center opacity-30"
+          style={{ backgroundImage: `url(${heroImage})` }}
+          aria-hidden
+        />
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "radial-gradient(900px circle at 70% 30%, rgba(255,199,0,0.18), transparent 60%)",
+          }}
+          aria-hidden
+        />
+        <div
+          className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/70 to-black"
+          aria-hidden
+        />
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto pt-32 pb-20 px-6 lg:px-12">

@@ -1,6 +1,7 @@
 import HeadTag from "../components/common/HeadTag";
 import QuotesHero from "../components/home/QuotesHero";
 import Hero3D from "../components/home/Hero3D";
+import AdsNotificationCenter from "../components/common/AdsNotificationCenter";
 import TrustedClients from "../components/home/TrustedClients";
 import WhyChoose from "../components/home/WhyChoose";
 import PopularCourses from "../components/home/PopularCourses";
@@ -16,6 +17,7 @@ export default function Home() {
       <HeadTag title="Creators Hub Academy | Learn. Create. Lead." />
       <QuotesHero />
       <Hero3D />
+      <AdsNotificationCenter />
       <TrustedClients />
       <WhyChoose />
       <PopularCourses />
