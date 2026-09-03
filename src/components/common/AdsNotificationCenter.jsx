@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   Megaphone,
   CheckCheck,
@@ -7,10 +8,16 @@ import {
   ChevronRight,
   EyeOff,
 } from "lucide-react";
+import axios from "axios";
 
-const ANNOUNCEMENTS = [
+const axiosPublic = axios.create({
+  baseURL: import.meta.env.VITE_BASE_URL,
+  timeout: 8000,
+});
+
+const FALLBACK_ANNOUNCEMENTS = [
   {
-    id: "ad-001",
+    _id: "fallback-1",
     type: "sponsor",
     sponsorName: "PixelCraft Studio",
     title: "50% Off 3D Assets Pack for Creators",
@@ -19,24 +26,24 @@ const ANNOUNCEMENTS = [
       "Get over 500+ commercial-ready 3D icons, rigged characters, and lighting presets at half price this week only.",
     ctaText: "Claim Discount",
     ctaLink: "https://example.com/promo",
-    date: "Today",
     badgeColor: "from-amber-400 to-amber-600",
+    dateLabel: "Today",
   },
   {
-    id: "update-002",
+    _id: "fallback-2",
     type: "update",
     sponsorName: "Creators Hub Academy",
     title: "New Course Dropped: Blender to WebGL",
     tagline: "Platform update & learning track",
     description:
-      "Learn how to export interactive 3D assets and render them smoothly inside Next.js and Three.js environments.",
+      "Learn how to export interactive 3D assets and render them smoothly inside modern web environments.",
     ctaText: "Start Learning",
     ctaLink: "/courses",
-    date: "Yesterday",
     badgeColor: "from-amber-300 to-amber-500",
+    dateLabel: "Yesterday",
   },
   {
-    id: "ad-003",
+    _id: "fallback-3",
     type: "ad",
     sponsorName: "MicDrop Audio Gear",
     title: "The Ultimate Creator Microphone",
@@ -45,11 +52,11 @@ const ANNOUNCEMENTS = [
       "Clean noise-cancellation with zero latency. Exclusive 20% discount for all Creators Hub Academy members.",
     ctaText: "View Product",
     ctaLink: "https://example.com/gear",
-    date: "2 days ago",
     badgeColor: "from-amber-400 to-orange-500",
+    dateLabel: "2 days ago",
   },
   {
-    id: "update-004",
+    _id: "fallback-4",
     type: "update",
     sponsorName: "Creators Hub Academy",
     title: "Office Hours: Live Q&A with Stanley",
@@ -58,8 +65,8 @@ const ANNOUNCEMENTS = [
       "Join our founder this Saturday for a live mentor session. Ask anything about freelancing, course creation, or building a digital business.",
     ctaText: "Join the Session",
     ctaLink: "/about",
-    date: "3 days ago",
     badgeColor: "from-amber-300 to-amber-500",
+    dateLabel: "3 days ago",
   },
 ];
 
@@ -86,6 +93,20 @@ function saveReadIds(ids) {
   }
 }
 
+function formatDate(d) {
+  if (!d) return "";
+  try {
+    const date = new Date(d);
+    if (Number.isNaN(date.getTime())) return "";
+    return date.toLocaleDateString(undefined, {
+      month: "short",
+      day: "numeric",
+    });
+  } catch {
+    return "";
+  }
+}
+
 export default function AdsNotificationCenter() {
   const [readIds, setReadIds] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -97,6 +118,35 @@ export default function AdsNotificationCenter() {
     setHydrated(true);
   }, []);
 
+  const { data, isLoading } = useQuery({
+    queryKey: ["active-broadcasts"],
+    queryFn: async () => {
+      const res = await axiosPublic.get("/broadcasts/active");
+      return res.data?.data || [];
+    },
+    staleTime: 60_000,
+    refetchOnWindowFocus: false,
+    retry: 1,
+  });
+
+  const announcements = useMemo(() => {
+    if (Array.isArray(data) && data.length > 0) {
+      return data.map((item) => ({
+        _id: item._id,
+        type: item.type || "update",
+        sponsorName: item.sponsorName || "",
+        title: item.title || "",
+        tagline: item.tagline || "",
+        description: item.description || "",
+        ctaText: item.ctaText || "Learn More",
+        ctaLink: item.ctaLink || "#",
+        badgeColor: item.badgeColor || "from-amber-400 to-amber-600",
+        dateLabel: formatDate(item.createdAt),
+      }));
+    }
+    return FALLBACK_ANNOUNCEMENTS;
+  }, [data]);
+
   const markAsRead = (id) => {
     if (readIds.includes(id)) return;
     const updated = [...readIds, id];
@@ -105,19 +155,19 @@ export default function AdsNotificationCenter() {
   };
 
   const markAllAsRead = () => {
-    const allIds = ANNOUNCEMENTS.map((c) => c.id);
+    const allIds = announcements.map((c) => c._id);
     setReadIds(allIds);
     saveReadIds(allIds);
   };
 
-  const displayedList = ANNOUNCEMENTS.filter((item) => {
-    if (filter === "unread") return !readIds.includes(item.id);
+  const displayedList = announcements.filter((item) => {
+    if (filter === "unread") return !readIds.includes(item._id);
     return true;
   });
 
   const safeIndex = Math.min(currentIndex, Math.max(displayedList.length - 1, 0));
   const activeItem = displayedList[safeIndex] || displayedList[0];
-  const unreadCount = ANNOUNCEMENTS.filter((c) => !readIds.includes(c.id)).length;
+  const unreadCount = announcements.filter((c) => !readIds.includes(c._id)).length;
 
   const goPrev = () => {
     if (displayedList.length === 0) return;
@@ -129,7 +179,7 @@ export default function AdsNotificationCenter() {
   };
 
   const isUnreadForActive = activeItem
-    ? !readIds.includes(activeItem.id)
+    ? !readIds.includes(activeItem._id)
     : false;
 
   if (!hydrated) {
@@ -159,7 +209,9 @@ export default function AdsNotificationCenter() {
               Broadcast & Sponsored Hub
             </h2>
             <p className="text-xs text-neutral-400">
-              Daily news, creator product discounts, and updates
+              {isLoading
+                ? "Refreshing live feed…"
+                : "Daily news, creator product discounts, and updates"}
             </p>
           </div>
         </div>
@@ -177,7 +229,7 @@ export default function AdsNotificationCenter() {
                   : "text-neutral-400 hover:text-white"
               }`}
             >
-              All ({ANNOUNCEMENTS.length})
+              All ({announcements.length})
             </button>
             <button
               onClick={() => {
@@ -234,9 +286,11 @@ export default function AdsNotificationCenter() {
                 </span>
 
                 <div className="flex items-center gap-2">
-                  <span className="text-xs text-neutral-400">
-                    {activeItem.date}
-                  </span>
+                  {activeItem.dateLabel && (
+                    <span className="text-xs text-neutral-400">
+                      {activeItem.dateLabel}
+                    </span>
+                  )}
                   {isUnreadForActive ? (
                     <span
                       className="w-2 h-2 rounded-full bg-rose-500"
@@ -286,9 +340,9 @@ export default function AdsNotificationCenter() {
               </div>
 
               <div className="flex items-center gap-2 flex-wrap">
-                {!readIds.includes(activeItem.id) && (
+                {!readIds.includes(activeItem._id) && (
                   <button
-                    onClick={() => markAsRead(activeItem.id)}
+                    onClick={() => markAsRead(activeItem._id)}
                     className="inline-flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-neutral-300 transition"
                   >
                     <CheckCheck className="w-3.5 h-3.5 text-amber-400" />
@@ -299,7 +353,7 @@ export default function AdsNotificationCenter() {
                   href={activeItem.ctaLink}
                   target={activeItem.ctaLink.startsWith("http") ? "_blank" : "_self"}
                   rel="noreferrer"
-                  onClick={() => markAsRead(activeItem.id)}
+                  onClick={() => markAsRead(activeItem._id)}
                   className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-black font-semibold text-xs tracking-wide transition shadow-lg shadow-amber-500/20"
                 >
                   {activeItem.ctaText} <ExternalLink className="w-3.5 h-3.5" />
@@ -314,12 +368,12 @@ export default function AdsNotificationCenter() {
             </p>
             <div className="flex flex-col gap-2 max-h-[340px] overflow-y-auto pr-1">
               {displayedList.map((item, idx) => {
-                const isRead = readIds.includes(item.id);
-                const isSelected = activeItem.id === item.id;
+                const isRead = readIds.includes(item._id);
+                const isSelected = activeItem._id === item._id;
 
                 return (
                   <button
-                    key={item.id}
+                    key={item._id}
                     onClick={() => setCurrentIndex(idx)}
                     className={`text-left p-3.5 rounded-xl border transition-all ${
                       isSelected

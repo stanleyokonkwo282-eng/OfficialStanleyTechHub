@@ -3,6 +3,7 @@ import App from "../App";
 import About from "../pages/About";
 import Contact from "../pages/Contact";
 import ManageCertificates from "../pages/admin/ManageCertificates";
+import ManageBroadcasts from "../pages/admin/ManageBroadcasts";
 import AdminManagePayouts from "../pages/admin/AdminManagePayouts";
 import AdminDailySummary from "../pages/admin/AdminDailySummary";
 import ManageCourses from "../pages/admin/ManageCourses";
@@ -164,6 +165,14 @@ const router = createBrowserRouter([
             element: (
               <RoleBasedRoute allowedRoles={["admin"]}>
                 <AdminNotifications />
+              </RoleBasedRoute>
+            ),
+          },
+          {
+            path: "broadcasts",
+            element: (
+              <RoleBasedRoute allowedRoles={["admin"]}>
+                <ManageBroadcasts />
               </RoleBasedRoute>
             ),
           },
