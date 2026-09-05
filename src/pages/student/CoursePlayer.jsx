@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import LoaderSpinner from "../../components/common/LoaderSpinner";
 import useAuth from "../../hooks/useAuth";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
+import PremiumCourseReader from "../../components/common/PremiumCourseReader";
 
 export default function CoursePlayer() {
   const { courseId } = useParams();
@@ -21,8 +22,6 @@ export default function CoursePlayer() {
   const [videoError, setVideoError] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedFormat, setSelectedFormat] = useState('video');
-  const [pdfLoading, setPdfLoading] = useState(false);
-  const [pdfError, setPdfError] = useState(false);
   
   // --- AI Assistant States ---
   const [aiDrawerOpen, setAiDrawerOpen] = useState(false);
@@ -113,12 +112,6 @@ export default function CoursePlayer() {
       ]);
     }
   }, [chatHistoryData, activeLesson?._id]);
-
-  // --- Reset PDF loading/error when lesson changes ---
-  useEffect(() => {
-    setPdfLoading(false);
-    setPdfError(false);
-  }, [activeLesson?._id]);
 
   // --- Mutations ---
   const markCompleteMutation = useMutation({
@@ -499,14 +492,6 @@ export default function CoursePlayer() {
   const useFallback = videoError && activeLesson;
   const fallbackYoutubeId = getYouTubeId(activeLesson?.videoUrl, activeLesson?.lessonTitle);
 
-  const rawPdfUrl = activeLesson?.pdfUrl;
-  const normalizedPdfUrl = rawPdfUrl
-    ? rawPdfUrl.startsWith("http")
-      ? rawPdfUrl
-      : `${import.meta.env.VITE_BASE_URL || ''}${rawPdfUrl.startsWith("/") ? "" : "/"}${rawPdfUrl}`
-    : null;
-  const canPreview = Boolean(normalizedPdfUrl && (rawPdfUrl.startsWith("http") || rawPdfUrl.startsWith("/uploads/")));
-
   const downloadReceipt = async () => {
     try {
       const res = await axiosSecure.get(`/enrollments/${enrollmentId}/receipt`, {
@@ -620,168 +605,14 @@ export default function CoursePlayer() {
                     )}
                   </div>
                 ) : (
-                  activeLesson?.pdfUrl && canPreview ? (
-                    <div className="w-full h-[600px] flex flex-col bg-zinc-950 p-4 rounded-xl border border-zinc-800">
-                      {pdfLoading && (
-                        <div className="flex-1 flex items-center justify-center">
-                          <span className="loading loading-spinner loading-lg text-yellow-400"></span>
-                        </div>
-                      )}
-                      {!pdfLoading && !pdfError && (
-                        <iframe
-                            src={normalizedPdfUrl}
-                            onLoad={() => setPdfLoading(false)}
-                            onError={() => setPdfError(true)}
-                            className="w-full flex-1 rounded-lg border border-zinc-800 bg-white"
-                            title="Document Reader Panel"
-                          />
-                      )}
-                      {pdfError && (
-                        <div className="flex-1 flex flex-col items-center justify-center gap-3 text-center p-6">
-                          <div className="text-5xl">📄</div>
-                          <h3 className="text-xl font-bold text-white">PDF Preview Unavailable</h3>
-                          <p className="text-gray-400 max-w-md">
-                            We couldn't load the preview for this document. You can still view it using the download button below.
-                          </p>
-                            <a
-                              href={normalizedPdfUrl}
-                              download
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="px-5 py-2.5 bg-yellow-400 hover:bg-yellow-500 text-black font-bold text-sm rounded-lg shadow transition"
-                            >
-                              📥 Download PDF Summary
-                            </a>
-                        </div>
-                      )}
-                      {!pdfError && (
-                        <div className="mt-4 flex justify-center gap-3">
-                            <a
-                              href={normalizedPdfUrl}
-                              download
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="px-5 py-2.5 bg-yellow-400 hover:bg-yellow-500 text-black font-bold text-sm rounded-lg shadow gap-2 transition"
-                            >
-                              📥 Download PDF Summary
-                            </a>
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="w-full bg-zinc-950 text-white rounded-xl border border-zinc-800 overflow-hidden">
-                      {/* Lesson Brief Header */}
-                      <div className="bg-gradient-to-r from-yellow-400/10 to-yellow-400/5 border-b border-zinc-800 p-6">
-                        <div className="flex items-center gap-2 mb-3">
-                          <span className="bg-yellow-400/10 text-yellow-400 border border-yellow-400/20 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider">
-                            Creators Hub Academy
-                          </span>
-                          <span className="bg-zinc-800 text-gray-300 text-xs font-semibold px-3 py-1 rounded-full">
-                            Lesson Document Summary
-                          </span>
-                        </div>
-                        <h2 className="text-xl md:text-2xl font-bold text-white mb-2">
-                          {activeLesson?.lessonTitle || "Lesson Document Summary"}
-                        </h2>
-                        <p className="text-gray-400 text-sm">
-                          Module {activeLesson?.moduleNumber || 1}: {activeLesson?.moduleTitle || "Curriculum"} • Lesson {activeLesson?.lessonNumber || 1} ({activeLesson?.duration || "Lecture"})
-                        </p>
-                      </div>
-
-                      <div className="p-6">
-                        {/* Course Brief */}
-                        <div className="bg-zinc-900/80 border border-zinc-800 rounded-xl p-5 mb-6">
-                          <h3 className="text-yellow-400 font-bold text-base mb-3 flex items-center gap-2">
-                            📌 About This Lesson
-                          </h3>
-                          <p className="text-gray-300 leading-relaxed">
-                            {activeLesson?.lessonDescription || "This lesson provides core principles and step-by-step practical methods for mastering digital skills. Follow along with the video lecture and apply these techniques to build real-world proficiency."}
-                          </p>
-                        </div>
-
-                        {/* What You'll Learn */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                          <div className="bg-zinc-900/60 border border-zinc-800/80 rounded-xl p-5">
-                            <h4 className="text-white font-semibold text-sm mb-3 flex items-center gap-2">
-                              <span className="w-6 h-6 bg-yellow-400/20 text-yellow-400 rounded-full flex items-center justify-center text-xs">🎯</span>
-                              Core Principles
-                            </h4>
-                            <ul className="text-xs text-gray-300 space-y-2">
-                              <li className="flex items-start gap-2">
-                                <span className="text-yellow-400 mt-0.5">▸</span>
-                                Master key concepts and workflows introduced in this video lecture.
-                              </li>
-                              <li className="flex items-start gap-2">
-                                <span className="text-yellow-400 mt-0.5">▸</span>
-                                Apply step-by-step practical techniques demonstrated by the instructor.
-                              </li>
-                              <li className="flex items-start gap-2">
-                                <span className="text-yellow-400 mt-0.5">▸</span>
-                                Observe essential parameters and shortcuts to optimize your results.
-                              </li>
-                            </ul>
-                          </div>
-
-                          <div className="bg-zinc-900/60 border border-zinc-800/80 rounded-xl p-5">
-                            <h4 className="text-white font-semibold text-sm mb-3 flex items-center gap-2">
-                              <span className="w-6 h-6 bg-yellow-400/20 text-yellow-400 rounded-full flex items-center justify-center text-xs">🛠️</span>
-                              Practice Guide
-                            </h4>
-                            <ul className="text-xs text-gray-300 space-y-2">
-                              <li className="flex items-start gap-2">
-                                <span className="text-yellow-400 mt-0.5">▸</span>
-                                Replicate the practical exercise directly in your tool/editor.
-                              </li>
-                              <li className="flex items-start gap-2">
-                                <span className="text-yellow-400 mt-0.5">▸</span>
-                                Save project progress and test key shortcuts taught in the video.
-                              </li>
-                              <li className="flex items-start gap-2">
-                                <span className="text-yellow-400 mt-0.5">▸</span>
-                                Utilize the AI Tutor if you need instant answers or explanations.
-                              </li>
-                            </ul>
-                          </div>
-                        </div>
-
-                        {/* Lesson Metadata */}
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-                          <div className="bg-zinc-900/40 border border-zinc-800/60 rounded-lg p-3 text-center">
-                            <p className="text-gray-500 text-[10px] uppercase tracking-wider mb-1">Module</p>
-                            <p className="text-white font-bold text-sm">{activeLesson?.moduleNumber || 1}</p>
-                          </div>
-                          <div className="bg-zinc-900/40 border border-zinc-800/60 rounded-lg p-3 text-center">
-                            <p className="text-gray-500 text-[10px] uppercase tracking-wider mb-1">Lesson</p>
-                            <p className="text-white font-bold text-sm">{activeLesson?.lessonNumber || 1}</p>
-                          </div>
-                          <div className="bg-zinc-900/40 border border-zinc-800/60 rounded-lg p-3 text-center">
-                            <p className="text-gray-500 text-[10px] uppercase tracking-wider mb-1">Duration</p>
-                            <p className="text-white font-bold text-sm">{activeLesson?.duration || "Lecture"}</p>
-                          </div>
-                          <div className="bg-zinc-900/40 border border-zinc-800/60 rounded-lg p-3 text-center">
-                            <p className="text-gray-500 text-[10px] uppercase tracking-wider mb-1">Format</p>
-                            <p className="text-yellow-400 font-bold text-sm">Video + PDF</p>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Footer Actions */}
-                      <div className="border-t border-zinc-800 p-4 flex flex-wrap items-center justify-between gap-3 bg-zinc-900/30">
-                        <button
-                          onClick={() => window.print()}
-                          className="bg-yellow-400 hover:bg-yellow-500 text-black font-bold text-xs md:text-sm px-4 py-2.5 rounded-lg transition"
-                        >
-                          🖨️ Save / Print Summary
-                        </button>
-                        <button
-                          onClick={() => setAiDrawerOpen(true)}
-                          className="bg-zinc-800 hover:bg-zinc-700 text-white font-semibold text-xs md:text-sm px-4 py-2.5 rounded-lg border border-zinc-700 transition"
-                        >
-                          🤖 Ask AI Tutor for Detailed Notes
-                        </button>
-                      </div>
-                    </div>
-                  )
+                  <PremiumCourseReader
+                    title={activeLesson?.lessonTitle || "Course Document"}
+                    lessonTitle={activeLesson?.lessonTitle}
+                    moduleNumber={activeLesson?.moduleNumber}
+                    lessonNumber={activeLesson?.lessonNumber}
+                    duration={activeLesson?.duration}
+                    pdfUrl={activeLesson?.pdfUrl}
+                  />
                 )}
               </div>
 
