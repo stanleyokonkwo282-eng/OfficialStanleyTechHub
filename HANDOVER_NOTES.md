@@ -1,6 +1,6 @@
 # Creators Hub Academy — Handover Notes
 
-**Last Updated:** 2026-08-28  
+**Last Updated:** 2026-09-05  
 **Status:** Production Live  
 **Frontend Repo:** https://github.com/stanleyokonkwo282-eng/OfficialStanleyTechHub  
 **Backend Repo:** https://github.com/stanleyokonkwo282-eng/creators-hub-academy-backend  
@@ -12,23 +12,19 @@
 ## Recent Deployments
 
 ### Frontend (OfficialStanleyTechHub) — Pushed to `main`
-- **3D Hero Upgrade**: Replaced 2D animated hero with React Three Fiber particle globe (1,800 points) that responds to mouse movement.
-- **3D Course Cards**: Added framer-motion tilt effect (`rotateX`/`rotateY`) + glassmorphism styling on `CourseCard`.
-- **3D Certificate Preview**: Added hover-rotate certificate mockup in `Certificate.jsx` with `preserve-3d` transforms.
-- **Legal Pages**: Added `PrivacyPolicy`, `TermsOfService`, `RefundPolicy`, `Contact` with operator identity and Nigerian governing law.
-- **SEO/Meta**: Added Open Graph tags, Twitter Cards, canonical URL, Organization JSON-LD schema, `robots.txt`, `sitemap.xml`.
-- **Favicon/Manifest**: Added `site.webmanifest`, `apple-touch-icon`, and theme color.
-- **Trust Fixes**: Removed all placeholder social links, standardized support email to `support@creatorshubacademy.com`, added physical address/operator to footer, softened certificate claims.
-- **Accessibility**: Added `prefers-reduced-motion` CSS override.
-- **Payment Flow**: Switched course enrollment to fixed Paystack payment link (`https://paystack.shop/pay/avbg0eyx6c`) with `sessionStorage` handoff for `courseId` and `format`.
-- **Exam UX**: Added WhatsApp contact button for locked exam state.
+- **Static Hero**: Removed 3D WebGL hero scene for performance; replaced with static `banner.jpg` background + amber radial gradient overlay. Bundle reduced from ~3.14MB to ~2.08MB.
+- **Ads & Broadcast Hub**: `AdsNotificationCenter` now fetches live announcements from backend `GET /api/broadcasts/active` via TanStack Query, with static fallback if API is empty. Includes unread counter, mark-as-read persistence in `localStorage`, and prev/next navigation.
+- **Admin Broadcast Manager**: New `/dashboard/broadcasts` page for admins to create, activate/deactivate, and delete sponsored campaigns. Uses existing backend admin auth (`verifyRole(['admin'])`).
+- **Premium PDF Reader**: `PremiumCourseReader.jsx` provides a chapter-based premium reading experience with syllabus sidebar, action checklists, pro-tip callouts, terminal command copy, and download button. Integrated into `CoursePlayer` reading tab.
+- **Standalone PDF Viewer**: `CoursePdfViewer.jsx` offers fullscreen modal, zoom controls, page navigation, loading/error states, and localStorage progress persistence.
+- **Data-Driven Academy Portal**: New `/dashboard/academy-portal` route with `AcademyPortal.jsx` — a reusable global course portal powered by `src/data/courses.js` catalog. Add new courses by extending the `COURSE_CATALOG` array; UI auto-generates tabs, lesson directory, reader, and PDF download.
+- **Last Memory / Resume**: `useLastMemory.js` hook persists last active lesson + timestamp to localStorage. `LastMemory.jsx` widget shown on Profile and Enrolled Courses with Resume/Dismiss. `ContinueLearning.jsx` at `/dashboard/continue` redirects to saved lesson.
+- **Account Deletion**: Self-service `DELETE /api/users/me` endpoint (auth required). Profile page shows red "Delete Account" button with SweetAlert confirmation requiring user to type `DELETE`.
+- **CoursePlayer Crash Fix**: Removed fragile `resumeTargetId` state and `useLocation`-based resume path that caused a temporal dead zone (`Cannot access 'pe' before initialization`) on course open.
 
 ### Backend (creators-hub-academy-backend) — Pushed to `main`
-- **Security**: Removed hardcoded cron secret from source; endpoint validates `process.env.CRON_SECRET` only.
-- **Route Hardening**: `POST /be-teacher` now accepts email from request body instead of URL path.
-- **Payment Verification**: `verifyPaystackPayment` accepts `courseId` and `format` from query params and uses `req.user.email` (from auth token) as primary identity.
-- **Webhook Resilience**: `paystackWebhook` no longer fails hard when Paystack metadata is missing; acknowledges event and defers enrollment to frontend verify flow.
-- **Syntax Fix**: Corrected arrow-function syntax error in `userController.js` (`createNewTeacher`).
+- **Broadcast Model & Routes**: New `Broadcast` MongoDB schema + `broadcastController.js` with `createBroadcast`, `getActiveBroadcasts`, `getAllBroadcasts`, `updateBroadcast`, `deleteBroadcast`. Public `GET /api/broadcasts/active` and admin CRUD under `POST/GET/PATCH/DELETE /api/broadcasts` with `verifyRole(['admin'])`.
+- **Account Deletion**: `deleteOwnAccount` controller + `DELETE /api/users/me` route protected by `verifyToken`. Deletes only the authenticated user's document.
 
 ---
 
@@ -220,8 +216,12 @@
 8. **Profile edit** updates MongoDB via `PATCH /api/users/:email` — frontend uses `encodeURIComponent` for email.
 9. **ImageKit** is used for all image uploads — signature is generated server-side at `/api/get-ik-signature`.
 10. **Firebase API key** should be restricted to `https://creators-hub-academy.vercel.app` in the Firebase console.
-11. **3D dependencies** (`three`, `@react-three/fiber`, `@react-three/drei`) are installed. Bundle size is ~3MB; consider route-based code splitting if performance becomes an issue.
-12. **Classical 3D Hero Scene**: `HeroScene3D.jsx` implements an interactive cinematic aperture/lens with 8-blade mechanical aperture, glass lens element with `MeshTransmissionMaterial` (chromatic aberration, iridescence), floating bokeh particles, HDR environment lighting (`Environment` preset), and `Sparkles` for ambient glow. Includes `Suspense` progressive loading skeleton, `IntersectionObserver`-based `frameloop="demand"` throttling, and SVG/CSS fallback for mobile/low-power devices and `prefers-reduced-motion`.
+11. **3D libraries removed** (`three`, `@react-three/fiber`, `@react-three/drei`, `@splinetool/react-spline`) to reduce bundle size. Hero uses static image + CSS gradient. Course cards use CSS `preserve-3d` transforms only.
+12. **Scalable course catalog** lives in `src/data/courses.js`. Add new courses by appending objects to `COURSE_CATALOG`; `AcademyPortal` auto-generates tabs, lessons, and PDF downloads.
+13. **Broadcast/Ads admin** is at `/dashboard/broadcasts` (admin only). Public feed reads `GET /api/broadcasts/active`.
+14. **Account deletion** is at `DELETE /api/users/me` (auth required). Frontend confirmation requires typing `DELETE`.
+15. **Last memory resume** uses `localStorage` key `cha_last_memory`. `LastMemory` widget appears on Profile and Enrolled Courses. `/dashboard/continue` redirects to saved lesson.
+16. **PDF reader components**: `PremiumCourseReader.jsx` is the main chapter-based reader; `CoursePdfViewer.jsx` is a standalone fullscreen PDF viewer with zoom/page controls.
 
 ---
 
