@@ -18,6 +18,7 @@ import DashBoard from "../pages/common/Dashboard";
 import Profile from "../pages/common/Profile";
 import ProfileEdit from "../pages/common/ProfileEdit";
 import ContinueLearning from "../pages/common/ContinueLearning";
+import AcademyPortal from "../components/common/AcademyPortal";
 import Courses from "../pages/Courses";
 import FAQ from "../pages/Faq";
 import Home from "../pages/Home";
@@ -85,6 +86,14 @@ const router = createBrowserRouter([
             element: (
               <PrivateRoute>
                 <ContinueLearning />
+              </PrivateRoute>
+            ),
+          },
+          {
+            path: "academy-portal",
+            element: (
+              <PrivateRoute>
+                <AcademyPortal />
               </PrivateRoute>
             ),
           },

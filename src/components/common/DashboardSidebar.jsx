@@ -1,4 +1,4 @@
-import { FaBookOpen, FaCertificate, FaBell, FaMoneyBillWave, FaChartBar, FaBullhorn } from "react-icons/fa";
+import { FaBookOpen, FaCertificate, FaBell, FaMoneyBillWave, FaChartBar, FaBullhorn, FaGraduationCap } from "react-icons/fa";
 import { IoIosPerson } from "react-icons/io";
 import { IoDocumentsSharp } from "react-icons/io5";
 import { LuBookUser } from "react-icons/lu";
@@ -83,6 +83,13 @@ export default function DashboardSidebar() {
           <NavLink to="/dashboard/courses" className={linkStyle}>
             <LinkTile title="Enrolled Courses">
               <IoDocumentsSharp />
+            </LinkTile>
+          </NavLink>
+        )}
+        {(user?.role === "student" || user?.role === "teacher") && (
+          <NavLink to="/dashboard/academy-portal" className={linkStyle}>
+            <LinkTile title="Academy Portal">
+              <FaGraduationCap />
             </LinkTile>
           </NavLink>
         )}

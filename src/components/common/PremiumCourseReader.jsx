@@ -107,11 +107,13 @@ export default function PremiumCourseReader({
   lessonNumber = 1,
   duration = "",
   pdfUrl = "/docs/creators-hub-windows11-2026.pdf",
+  lessons: lessonsProp,
 }) {
   const [activeIdx, setActiveIdx] = useState(0);
   const [copied, setCopied] = useState(false);
 
-  const active = CHAPTERS[activeIdx];
+  const lessons = lessonsProp || CHAPTERS;
+  const active = lessons[activeIdx] || lessons[0];
 
   const handleCopy = (cmd) => {
     if (typeof navigator !== "undefined" && navigator.clipboard) {
@@ -168,12 +170,12 @@ export default function PremiumCourseReader({
       <div className="relative z-10 grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
         <div className="flex flex-col gap-2">
           <p className="text-[11px] font-bold uppercase tracking-wider text-neutral-400 px-1 mb-1">
-            Course Syllabus ({CHAPTERS.length} Core Modules)
+            Course Syllabus ({lessons.length} Core Modules)
           </p>
           <div className="flex flex-col gap-2 max-h-[380px] overflow-y-auto pr-1">
-            {CHAPTERS.map((ch, idx) => (
+            {lessons.map((ch, idx) => (
               <button
-                key={ch.id}
+                key={ch.title || ch.id || idx}
                 onClick={() => setActiveIdx(idx)}
                 className={`text-left p-3.5 rounded-xl border transition-all ${
                   activeIdx === idx
@@ -274,16 +276,16 @@ export default function PremiumCourseReader({
             </button>
 
             <span className="text-[11px] text-neutral-400">
-              {activeIdx + 1} of {CHAPTERS.length}
+              {activeIdx + 1} of {lessons.length}
             </span>
 
             <button
               onClick={() =>
                 setActiveIdx((prev) =>
-                  Math.min(CHAPTERS.length - 1, prev + 1)
+                  Math.min(lessons.length - 1, prev + 1)
                 )
               }
-              disabled={activeIdx === CHAPTERS.length - 1}
+              disabled={activeIdx === lessons.length - 1}
               className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-semibold text-neutral-300 disabled:opacity-30 disabled:pointer-events-none transition"
             >
               Next <ChevronRight className="w-3.5 h-3.5" />
