@@ -3,6 +3,7 @@ import { Link } from "react-router";
 import { toast } from "react-toastify";
 import Swal from "sweetalert2";
 import HeadTag from "../../components/common/HeadTag";
+import LastMemory from "../../components/common/LastMemory";
 import useAuth from "../../hooks/useAuth";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
 
@@ -57,6 +58,8 @@ export default function UserProfile() {
             className="w-32 h-32 rounded-full object-cover border-4 border-yellow-400"
           />
           <h2 className="text-2xl font-bold text-white">User Profile</h2>
+
+          <LastMemory />
 
           <div className="flex flex-wrap items-center justify-center gap-3">
             <Link

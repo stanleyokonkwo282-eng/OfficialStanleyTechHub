@@ -17,6 +17,7 @@ import CourseDash from "../pages/common/CourseDash";
 import DashBoard from "../pages/common/Dashboard";
 import Profile from "../pages/common/Profile";
 import ProfileEdit from "../pages/common/ProfileEdit";
+import ContinueLearning from "../pages/common/ContinueLearning";
 import Courses from "../pages/Courses";
 import FAQ from "../pages/Faq";
 import Home from "../pages/Home";
@@ -79,6 +80,14 @@ const router = createBrowserRouter([
         children: [
           { index: true, element: <Profile /> },
           { path: "profile", element: <Profile /> },
+          {
+            path: "continue",
+            element: (
+              <PrivateRoute>
+                <ContinueLearning />
+              </PrivateRoute>
+            ),
+          },
           {
             path: "courses/add",
             element: (

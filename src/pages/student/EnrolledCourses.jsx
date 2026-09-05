@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router";
 import LoaderDotted from "../../components/common/LoaderDotted";
+import LastMemory from "../../components/common/LastMemory";
 import useAuth from "../../hooks/useAuth";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
 
@@ -44,6 +45,7 @@ export default function EnrolledCourses() {
         <h2 className="text-3xl font-bold text-white">My Courses</h2>
         <p className="text-gray-400 mt-1">Track your progress and continue learning</p>
         <div className="h-1 w-16 bg-yellow-400 mt-3 rounded-full"></div>
+        <LastMemory />
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

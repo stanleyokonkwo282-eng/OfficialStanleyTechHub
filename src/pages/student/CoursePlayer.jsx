@@ -1,11 +1,12 @@
 import { useMemo, useCallback, useEffect, useRef, useState } from "react";
-import { useNavigate, useParams, useSearchParams } from "react-router";
+import { useNavigate, useParams, useSearchParams, useLocation } from "react-router";
 import { toast } from "react-toastify";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import LoaderSpinner from "../../components/common/LoaderSpinner";
 import useAuth from "../../hooks/useAuth";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
 import PremiumCourseReader from "../../components/common/PremiumCourseReader";
+import { useLastMemory } from "../../hooks/useLastMemory";
 
 export default function CoursePlayer() {
   const { courseId } = useParams();
@@ -14,7 +15,18 @@ export default function CoursePlayer() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [searchParams] = useSearchParams();
+  const location = useLocation();
   const [activeLesson, setActiveLesson] = useState(null);
+  const [resumeTargetId, setResumeTargetId] = useState(null);
+
+  useEffect(() => {
+    const state = location.state || {};
+    if (state.resumeLessonId) {
+      setResumeTargetId(state.resumeLessonId);
+      navigate(`/dashboard/learn/${courseId}`, { replace: true, state: {} });
+    }
+  }, [location.state, courseId, navigate]);
+
   const [expandedModules, setExpandedModules] = useState({});
   const playerRef = useRef(null);
   const [playerReady, setPlayerReady] = useState(false);
@@ -37,6 +49,20 @@ export default function CoursePlayer() {
   const lastKnownTime = useRef(0);
   const playerContainerId = "youtube-player-container";
   const apiLoadedRef = useRef(false);
+  const { updateMemory: updateLastMemory } = useLastMemory();
+
+  // --- Persist last lesson memory for resume feature ---
+  useEffect(() => {
+    if (!activeLesson || !courseId) return;
+    updateLastMemory({
+      courseId,
+      lessonId: activeLesson._id,
+      lessonTitle: activeLesson.lessonTitle,
+      moduleNumber: activeLesson.moduleNumber,
+      lessonNumber: activeLesson.lessonNumber,
+      courseTitle: activeLesson.lessonTitle,
+    });
+  }, [activeLesson, courseId, updateLastMemory]);
 
   // --- Scroll chat to bottom ---
   useEffect(() => {
@@ -44,6 +70,18 @@ export default function CoursePlayer() {
       chatEndRef.current.scrollIntoView({ behavior: "smooth" });
     }
   }, [chatMessages, aiDrawerOpen]);
+
+  // --- Auto-resume last lesson when data loads ---
+  useEffect(() => {
+    if (!resumeTargetId || !lessonsData?.lessons?.length) return;
+    const found = lessonsData.lessons.find(
+      (l) => l._id === resumeTargetId
+    );
+    if (found) {
+      handleSelectLesson(found);
+      setResumeTargetId(null);
+    }
+  }, [resumeTargetId, lessonsData, handleSelectLesson]);
 
   // --- Data fetching (unchanged) ---
   const { data: lessonsData, isLoading: lessonsLoading } = useQuery({
