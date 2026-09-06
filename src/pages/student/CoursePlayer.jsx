@@ -725,7 +725,7 @@ export default function CoursePlayer() {
 
       <div className="flex flex-1 overflow-hidden relative">
         {/* Video area */}
-        <div className="flex-1 flex flex-col p-4 overflow-y-auto">
+        <div className="flex-1 flex flex-col p-4 overflow-y-auto pb-28">
           {activeLesson ? (
             <>
               <div className="mb-6">
@@ -947,25 +947,25 @@ export default function CoursePlayer() {
         {/* Floating AI Assistant Button */}
         <button
           onClick={() => setAiDrawerOpen(!aiDrawerOpen)}
-          className="fixed bottom-16 right-4 bg-purple-600 text-white p-3 rounded-full shadow-lg z-20 flex items-center gap-2 hover:bg-purple-700 transition"
+          className="fixed bottom-20 right-3 md:right-6 bg-purple-600 text-white p-2 md:p-3 rounded-full shadow-lg z-20 flex items-center gap-1 md:gap-2 hover:bg-purple-700 transition text-xs md:text-sm"
         >
-          🤖 AI Tutor
+          🤖 <span className="hidden md:inline">AI Tutor</span>
         </button>
 
         {/* Floating Notes Button */}
         <button
           onClick={() => setNotesDrawerOpen(!notesDrawerOpen)}
-          className="fixed bottom-16 right-20 bg-amber-400 text-black p-3 rounded-full shadow-lg z-20 flex items-center gap-2 hover:bg-amber-500 transition"
+          className="fixed bottom-20 right-16 md:right-24 bg-amber-400 text-black p-2 md:p-3 rounded-full shadow-lg z-20 flex items-center gap-1 md:gap-2 hover:bg-amber-500 transition text-xs md:text-sm"
         >
-          📝 Notes
+          📝 <span className="hidden md:inline">Notes</span>
         </button>
 
         {/* Floating Q&A Button */}
         <button
           onClick={() => setCommentsDrawerOpen(!commentsDrawerOpen)}
-          className="fixed bottom-16 right-36 bg-emerald-500 text-white p-3 rounded-full shadow-lg z-20 flex items-center gap-2 hover:bg-emerald-600 transition"
+          className="fixed bottom-20 right-28 md:right-44 bg-emerald-500 text-white p-2 md:p-3 rounded-full shadow-lg z-20 flex items-center gap-1 md:gap-2 hover:bg-emerald-600 transition text-xs md:text-sm"
         >
-          💬 Q&A
+          💬 <span className="hidden md:inline">Q&A</span>
         </button>
 
         {/* Floating Course Content Drawer Button (mobile only) */}

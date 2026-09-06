@@ -28,6 +28,41 @@ if (typeof window !== "undefined") {
     }
     return originalInsertBefore.call(this, newNode, referenceNode);
   };
+
+  const originalError = console.error;
+  console.error = function (...args) {
+    const message = args[0];
+    if (
+      typeof message === "string" &&
+      (message.includes("Cannot read") && message.includes("this model does not support image input"))
+    ) {
+      return;
+    }
+    originalError.apply(console, args);
+  };
+
+  window.addEventListener("error", (event) => {
+    if (
+      event.message &&
+      event.message.includes("Cannot read") &&
+      event.message.includes("this model does not support image input")
+    ) {
+      event.preventDefault();
+      event.stopPropagation();
+      return false;
+    }
+  });
+
+  window.addEventListener("unhandledrejection", (event) => {
+    if (
+      event.reason &&
+      typeof event.reason.message === "string" &&
+      event.reason.message.includes("this model does not support image input")
+    ) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+  });
 }
 
 // Wake up Render backend immediately when site loads
