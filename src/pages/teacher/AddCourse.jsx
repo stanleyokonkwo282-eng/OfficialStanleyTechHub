@@ -6,6 +6,7 @@ import { toast } from "react-toastify";
 import useAuth from "../../hooks/useAuth";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
 import handleUpload from "../../utils/ImageUploadApi";
+import { uploadPdf } from "../../utils/PdfUploadApi";
 
 export default function AddCourse() {
   const { user } = useAuth();
@@ -25,6 +26,10 @@ export default function AddCourse() {
 
   const uploadImageMutation = useMutation({
     mutationFn: handleUpload,
+  });
+
+  const uploadPdfMutation = useMutation({
+    mutationFn: uploadPdf,
   });
 
   const saveCourseMutation = useMutation({
@@ -57,7 +62,8 @@ export default function AddCourse() {
         return;
       }
       if (pdfFile) {
-        resourcePdfUrl = await uploadImageMutation.mutateAsync(pdfFile);
+        const pdfUploadResult = await uploadPdfMutation.mutateAsync(pdfFile);
+        resourcePdfUrl = pdfUploadResult.url;
       }
 
       const coursePayload = {

@@ -12,6 +12,7 @@ import {
   ChevronRight,
   BookOpen,
 } from "lucide-react";
+import { getOptimizedPdfUrl } from "../../utils/PdfUploadApi";
 
 const STORAGE_KEY = "cha_pdf_progress";
 
@@ -52,6 +53,7 @@ export default function CoursePdfViewer({
   const totalPages = 0;
   const [zoom, setZoom] = useState(100);
   const iframeRef = useRef(null);
+  const [optimizedPdfUrl, setOptimizedPdfUrl] = useState(null);
 
   const normalizedPdfUrl = useMemo(() => {
     if (!pdfUrl) return null;
@@ -60,15 +62,23 @@ export default function CoursePdfViewer({
     return `${base}${pdfUrl.startsWith("/") ? "" : "/"}${pdfUrl}`;
   }, [pdfUrl]);
 
+  const displayUrl = optimizedPdfUrl || normalizedPdfUrl;
+
   const canPreview = Boolean(
-    normalizedPdfUrl &&
-      (pdfUrl.startsWith("http") || pdfUrl.startsWith("/uploads/"))
+    displayUrl &&
+      (displayUrl.startsWith("http") || displayUrl.startsWith("/uploads/"))
   );
 
   useEffect(() => {
     setPdfLoading(true);
     setPdfError(false);
     setCurrentPage(1);
+    setOptimizedPdfUrl(null);
+  }, [pdfUrl]);
+
+  useEffect(() => {
+    if (!pdfUrl || pdfUrl.startsWith("http")) return;
+    getOptimizedPdfUrl(pdfUrl).then(setOptimizedPdfUrl).catch(() => {});
   }, [pdfUrl]);
 
   useEffect(() => {
@@ -175,7 +185,7 @@ export default function CoursePdfViewer({
             </>
           )}
           <a
-            href={normalizedPdfUrl}
+            href={displayUrl}
             download
             className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-black font-semibold text-xs transition"
           >
@@ -210,7 +220,7 @@ export default function CoursePdfViewer({
               This lesson is available as a downloadable document.
             </p>
             <a
-              href={normalizedPdfUrl}
+              href={displayUrl}
               download
               className="px-5 py-2.5 bg-amber-400 hover:bg-amber-300 text-black font-semibold text-sm rounded-xl transition"
             >
@@ -233,7 +243,7 @@ export default function CoursePdfViewer({
         {canPreview && !pdfError && (
           <iframe
             ref={iframeRef}
-            src={`${normalizedPdfUrl}#toolbar=0&navpanes=0&scrollbar=1`}
+            src={`${displayUrl}#toolbar=0&navpanes=0&scrollbar=1`}
             onLoad={handleIframeLoad}
             onError={handleIframeError}
             title={lessonTitle || title}
@@ -313,7 +323,7 @@ export default function CoursePdfViewer({
           <div className="flex-1 overflow-hidden">
             {canPreview && !pdfError && (
               <iframe
-                src={`${normalizedPdfUrl}#toolbar=1`}
+                src={`${displayUrl}#toolbar=1`}
                 className="w-full h-full border-none bg-white"
                 title="Fullscreen PDF"
               />
@@ -322,7 +332,7 @@ export default function CoursePdfViewer({
               <div className="flex flex-col items-center justify-center gap-4 p-12 text-center">
                 <p className="text-neutral-300">Preview unavailable in fullscreen.</p>
                 <a
-                  href={normalizedPdfUrl}
+                  href={displayUrl}
                   download
                   className="px-5 py-2.5 bg-amber-400 text-black font-semibold text-sm rounded-xl"
                 >

@@ -47,27 +47,22 @@ export default function QuotesHero() {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-black">
       {/* Animated background blobs */}
-      <motion.div
-        animate={{ scale: [1, 1.2, 1], opacity: [0.15, 0.25, 0.15] }}
-        transition={{ duration: 8, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute top-0 left-0 w-[500px] h-[500px] bg-yellow-400 rounded-full blur-[120px] -translate-x-1/2 -translate-y-1/2"
+      <div
+        className="absolute top-0 left-0 w-[500px] h-[500px] bg-yellow-400 rounded-full blur-[120px] -translate-x-1/2 -translate-y-1/2 opacity-15 animate-pulse"
+        style={{ animationDuration: "8s" }}
+        aria-hidden
       />
-      <motion.div
-        animate={{ scale: [1, 1.3, 1], opacity: [0.1, 0.2, 0.1] }}
-        transition={{ duration: 10, repeat: Infinity, ease: "easeInOut" }}
-        className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-purple-600 rounded-full blur-[140px] translate-x-1/3 translate-y-1/3"
+      <div
+        className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-purple-600 rounded-full blur-[140px] translate-x-1/3 translate-y-1/3 opacity-10 animate-pulse"
+        style={{ animationDuration: "10s" }}
+        aria-hidden
       />
 
       {/* Quote content */}
       <div className="relative z-10 max-w-5xl mx-auto px-6 text-center">
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 1, ease: "easeOut" }}
-          className="mb-8"
-        >
+        <div className="mb-8 animate-fade-in">
           <span className="text-6xl md:text-8xl font-black text-yellow-400/20 select-none">“</span>
-        </motion.div>
+        </div>
 
         <AnimatePresence mode="wait">
           <motion.div
@@ -82,7 +77,7 @@ export default function QuotesHero() {
               {quote.text}
             </p>
             <p className="text-yellow-400 text-lg md:text-xl font-semibold tracking-wide">
-              — {quote.author}
+               — {quote.author}
             </p>
           </motion.div>
         </AnimatePresence>
@@ -102,19 +97,14 @@ export default function QuotesHero() {
         </div>
 
         {/* CTA */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.8, duration: 0.6 }}
-          className="mt-16"
-        >
+        <div className="mt-16 animate-fade-in" style={{ animationDelay: "0.8s" }}>
           <a
             href="/courses"
             className="inline-block bg-yellow-400 text-black px-10 py-4 rounded-xl font-bold text-lg hover:bg-yellow-500 transition shadow-lg shadow-yellow-400/20"
           >
              Start Learning Now
           </a>
-        </motion.div>
+        </div>
       </div>
     </section>
   );

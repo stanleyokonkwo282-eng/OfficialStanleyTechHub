@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
 import handleUpload from "../../utils/ImageUploadApi";
+import { uploadPdf } from "../../utils/PdfUploadApi";
 
 const UpdateCourse = ({ isOpen, setIsOpen, course, refetch }) => {
   const axiosSecure = useAxiosSecure();
@@ -21,6 +22,10 @@ const UpdateCourse = ({ isOpen, setIsOpen, course, refetch }) => {
 
   const uploadImageMutation = useMutation({
     mutationFn: handleUpload,
+  });
+
+  const uploadPdfMutation = useMutation({
+    mutationFn: uploadPdf,
   });
 
   const updateCourseMutation = useMutation({
@@ -56,7 +61,8 @@ const UpdateCourse = ({ isOpen, setIsOpen, course, refetch }) => {
           toast.error("PDF file is too large. Please keep it under 10MB.");
           return;
         }
-        resourcePdfUrl = await uploadImageMutation.mutateAsync(pdfFile);
+        const pdfUploadResult = await uploadPdfMutation.mutateAsync(pdfFile);
+        resourcePdfUrl = pdfUploadResult.url;
       }
 
       const payload = {

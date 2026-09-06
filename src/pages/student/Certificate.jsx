@@ -92,6 +92,20 @@ export default function Certificate() {
     },
   });
 
+  const generateCertImageMutation = useMutation({
+    mutationFn: async () => {
+      const res = await axiosSecure.get(`/certificates/${certificate._id}/generate-image`);
+      return res.data;
+    },
+    onSuccess: () => {
+      toast.success("Certificate generated!");
+      queryClient.invalidateQueries(["certificate", courseId, user?.email]);
+    },
+    onError: () => {
+      toast.error("Failed to generate certificate image.");
+    },
+  });
+
   useEffect(() => {
     if (paystackReference && !paystackVerifyMutation.isPending && !paystackVerifyMutation.isSuccess) {
       paystackVerifyMutation.mutate(paystackReference);
@@ -185,11 +199,20 @@ export default function Certificate() {
               <p className="text-gray-400 text-sm">Certificate ID</p>
               <p className="text-yellow-400 font-bold font-mono">{certificate.certificateId}</p>
             </div>
-            <p className="text-gray-500 text-sm">
-              If you have any questions, contact us on{" "}
-              <a href="https://wa.me/2348134438808" className="text-green-400 underline">WhatsApp</a> or{" "}
-              <a href="mailto:support@creatorshubacademy.com" className="text-yellow-400 underline">Email</a>.
-            </p>
+            <div className="flex flex-col gap-3">
+              <button
+                onClick={() => generateCertImageMutation.mutate()}
+                disabled={generateCertImageMutation.isPending}
+                className="bg-yellow-400 text-black px-6 py-3 rounded-lg font-bold hover:bg-yellow-500 disabled:opacity-50"
+              >
+                {generateCertImageMutation.isPending ? "Generating..." : "Generate Certificate Image"}
+              </button>
+              <p className="text-gray-500 text-sm">
+                If you have any questions, contact us on{" "}
+                <a href="https://wa.me/2348134438808" className="text-green-400 underline">WhatsApp</a> or{" "}
+                <a href="mailto:support@creatorshubacademy.com" className="text-yellow-400 underline">Email</a>.
+              </p>
+            </div>
           </div>
         )}
       </div>

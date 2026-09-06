@@ -1,48 +1,63 @@
 import { createBrowserRouter } from "react-router";
+import { lazy } from "react";
 import App from "../App";
-import About from "../pages/About";
-import Contact from "../pages/Contact";
-import ManageCertificates from "../pages/admin/ManageCertificates";
-import ManageBroadcasts from "../pages/admin/ManageBroadcasts";
-import AdminManagePayouts from "../pages/admin/AdminManagePayouts";
-import AdminDailySummary from "../pages/admin/AdminDailySummary";
-import ManageCourses from "../pages/admin/ManageCourses";
-import AdminNotifications from "../pages/admin/AdminNotifications";
-import ManageTeachers from "../pages/admin/ManageTeachers";
-import ManageUsers from "../pages/admin/ManageUsers";
-import ManageVisits from "../pages/admin/ManageVisits";  // ✅ ADDED
-import BeTeacher from "../pages/BeTeacher";
-import CategoryCourses from "../pages/CategoryCourses";
-import CourseDash from "../pages/common/CourseDash";
-import DashBoard from "../pages/common/Dashboard";
-import Profile from "../pages/common/Profile";
-import ProfileEdit from "../pages/common/ProfileEdit";
-import ContinueLearning from "../pages/common/ContinueLearning";
-import AcademyPortal from "../components/common/AcademyPortal";
-import Courses from "../pages/Courses";
-import FAQ from "../pages/Faq";
 import Home from "../pages/Home";
 import Login from "../pages/Login";
-import NotFound from "../pages/NotFound";
-import PrivacyPolicy from "../pages/PrivacyPolicy";
-import TermsOfService from "../pages/TermsOfService";
-import RefundPolicy from "../pages/RefundPolicy";
 import Signup from "../pages/Signup";
-import Unauthorized from "../pages/Unauthorized";
-import VerifyCertificate from "../pages/VerifyCertificate";
-import RouteErrorPage from "../pages/common/RouteErrorPage";
-import CourseAssignments from "../pages/student/CourseAssignments";
-import Certificate from "../pages/student/Certificate";
+import Courses from "../pages/Courses";
 import CourseDetails from "../pages/student/CourseDetails";
 import CoursePlayer from "../pages/student/CoursePlayer";
-import ExamPage from "../pages/student/ExamPage";
-import StripeWrapper from "../pages/student/StripeWrapper";
-import AddCourse from "../pages/teacher/AddCourse";
-import CourseSummery from "../pages/teacher/CourseSummery";
-import TeacherPayout from "../pages/teacher/TeacherPayout";
-import TeacherSubscription from "../pages/teacher/TeacherSubscription";
+import DashBoard from "../pages/common/Dashboard";
 import PrivateRoute from "./PrivateRoute";
 import RoleBasedRoute from "./RoleBasedRoute";
+import RouteErrorPage from "../pages/common/RouteErrorPage";
+import LazyPage from "../components/common/LazyPage";
+
+const lazyImport = (importFn) => {
+  const Component = lazy(importFn);
+  return () => (
+    <LazyPage>
+      <Component />
+    </LazyPage>
+  );
+};
+
+const About = lazyImport(() => import("../pages/About"));
+const Contact = lazyImport(() => import("../pages/Contact"));
+const ManageCertificates = lazyImport(() => import("../pages/admin/ManageCertificates"));
+const ManageBroadcasts = lazyImport(() => import("../pages/admin/ManageBroadcasts"));
+const AdminManagePayouts = lazyImport(() => import("../pages/admin/AdminManagePayouts"));
+const AdminDailySummary = lazyImport(() => import("../pages/admin/AdminDailySummary"));
+const ManageCourses = lazyImport(() => import("../pages/admin/ManageCourses"));
+const AdminNotifications = lazyImport(() => import("../pages/admin/AdminNotifications"));
+const ManageTeachers = lazyImport(() => import("../pages/admin/ManageTeachers"));
+const ManageUsers = lazyImport(() => import("../pages/admin/ManageUsers"));
+const ManageVisits = lazyImport(() => import("../pages/admin/ManageVisits"));
+const BulkImportCourses = lazyImport(() => import("../pages/admin/BulkImportCourses"));
+const ManageCohorts = lazyImport(() => import("../pages/admin/ManageCohorts"));
+const BeTeacher = lazyImport(() => import("../pages/BeTeacher"));
+const CategoryCourses = lazyImport(() => import("../pages/CategoryCourses"));
+const CourseDash = lazyImport(() => import("../pages/common/CourseDash"));
+const Profile = lazyImport(() => import("../pages/common/Profile"));
+const ProfileEdit = lazyImport(() => import("../pages/common/ProfileEdit"));
+const ContinueLearning = lazyImport(() => import("../pages/common/ContinueLearning"));
+const AcademyPortal = lazyImport(() => import("../components/common/AcademyPortal"));
+const FAQ = lazyImport(() => import("../pages/Faq"));
+const NotFound = lazyImport(() => import("../pages/NotFound"));
+const PrivacyPolicy = lazyImport(() => import("../pages/PrivacyPolicy"));
+const TermsOfService = lazyImport(() => import("../pages/TermsOfService"));
+const RefundPolicy = lazyImport(() => import("../pages/RefundPolicy"));
+const Unauthorized = lazyImport(() => import("../pages/Unauthorized"));
+const VerifyCertificate = lazyImport(() => import("../pages/VerifyCertificate"));
+const CourseAssignments = lazyImport(() => import("../pages/student/CourseAssignments"));
+const Certificate = lazyImport(() => import("../pages/student/Certificate"));
+const ExamPage = lazyImport(() => import("../pages/student/ExamPage"));
+const Referrals = lazyImport(() => import("../pages/student/Referrals"));
+const StripeWrapper = lazyImport(() => import("../pages/student/StripeWrapper"));
+const AddCourse = lazyImport(() => import("../pages/teacher/AddCourse"));
+const CourseSummery = lazyImport(() => import("../pages/teacher/CourseSummery"));
+const TeacherPayout = lazyImport(() => import("../pages/teacher/TeacherPayout"));
+const TeacherSubscription = lazyImport(() => import("../pages/teacher/TeacherSubscription"));
 
 const router = createBrowserRouter([
   {
@@ -65,19 +80,35 @@ const router = createBrowserRouter([
       { path: "/verify", element: <VerifyCertificate /> },
       {
         path: "/become-teacher",
-        element: <PrivateRoute><BeTeacher /></PrivateRoute>,
+        element: (
+          <PrivateRoute>
+            <BeTeacher />
+          </PrivateRoute>
+        ),
       },
       {
         path: "/courses/:id",
-        element: <PrivateRoute><CourseDetails /></PrivateRoute>,
+        element: (
+          <PrivateRoute>
+            <CourseDetails />
+          </PrivateRoute>
+        ),
       },
       {
         path: "/payment/:id",
-        element: <PrivateRoute><StripeWrapper /></PrivateRoute>,
+        element: (
+          <PrivateRoute>
+            <StripeWrapper />
+          </PrivateRoute>
+        ),
       },
       {
         path: "/dashboard",
-        element: <PrivateRoute><DashBoard /></PrivateRoute>,
+        element: (
+          <PrivateRoute>
+            <DashBoard />
+          </PrivateRoute>
+        ),
         children: [
           { index: true, element: <Profile /> },
           { path: "profile", element: <Profile /> },
@@ -94,6 +125,14 @@ const router = createBrowserRouter([
             element: (
               <PrivateRoute>
                 <AcademyPortal />
+              </PrivateRoute>
+            ),
+          },
+          {
+            path: "referrals",
+            element: (
+              <PrivateRoute>
+                <Referrals />
               </PrivateRoute>
             ),
           },
@@ -171,7 +210,7 @@ const router = createBrowserRouter([
             ),
           },
           {
-            path: "visits",                                    // ✅ ADDED
+            path: "visits",
             element: (
               <RoleBasedRoute allowedRoles={["admin"]}>
                 <ManageVisits />
@@ -194,7 +233,24 @@ const router = createBrowserRouter([
               </RoleBasedRoute>
             ),
           },
-          { path: "profile/edit",
+          {
+            path: "courses/bulk-import",
+            element: (
+              <RoleBasedRoute allowedRoles={["admin"]}>
+                <BulkImportCourses />
+              </RoleBasedRoute>
+            ),
+          },
+          {
+            path: "admin/cohorts",
+            element: (
+              <RoleBasedRoute allowedRoles={["admin", "teacher"]}>
+                <ManageCohorts />
+              </RoleBasedRoute>
+            ),
+          },
+          {
+            path: "profile/edit",
             element: (
               <PrivateRoute>
                 <ProfileEdit />

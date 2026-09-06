@@ -1,7 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { FaImage, FaLock, FaMailBulk, FaUser } from "react-icons/fa";
-import { Link, useLocation, useNavigate } from "react-router";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router";
 import { toast } from "react-toastify";
 import { motion } from "framer-motion";
 import HeadTag from "../components/common/HeadTag";
@@ -19,7 +19,9 @@ const errorMap = {
 export default function Signup() {
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
   const axiosSecure = useAxiosSecure();
+  const referrerEmail = searchParams.get("ref");
 
   const { userSignup, setUser, updateUserProfile, isUserLoading } = useAuth();
 
@@ -45,6 +47,21 @@ export default function Signup() {
         photoURL: user.photoURL,
         displayName: user.displayName,
       });
+
+      // Track referral if present
+      if (referrerEmail && referrerEmail !== user.email) {
+        try {
+          await axiosSecure.post("/referrals", {
+            referrerEmail,
+            refereeEmail: user.email,
+            refereeName: user.displayName || user.email,
+            courseId: null,
+            metadata: { source: "signup" },
+          });
+        } catch {
+          // non-blocking
+        }
+      }
 
       setUser({ ...user, role: "student" });
       reset();

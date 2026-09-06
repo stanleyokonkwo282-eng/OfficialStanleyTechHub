@@ -106,7 +106,7 @@ export default function PremiumCourseReader({
   moduleNumber = 1,
   lessonNumber = 1,
   duration = "",
-  pdfUrl = "/docs/creators-hub-windows11-2026.pdf",
+  pdfUrl = "",
   lessons: lessonsProp,
 }) {
   const [activeIdx, setActiveIdx] = useState(0);
@@ -159,7 +159,7 @@ export default function PremiumCourseReader({
         </div>
 
         <a
-          href={pdfUrl || "/docs/creators-hub-windows11-2026.pdf"}
+          href={pdfUrl || "#"}
           download
           className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-black font-bold text-xs tracking-wide transition shadow-lg shadow-amber-500/20 active:scale-95"
         >

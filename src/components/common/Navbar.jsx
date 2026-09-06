@@ -1,6 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { MdArrowRight, MdNotificationsActive } from "react-icons/md";
 import { TiThMenu } from "react-icons/ti";
+import { FaSun, FaMoon } from "react-icons/fa";
 import { Link, NavLink } from "react-router";
 import { toast } from "react-toastify";
 import { motion, useScroll, useTransform } from "framer-motion";
@@ -8,10 +9,12 @@ import logo from "../../assets/logo.png";
 import useAuth from "../../hooks/useAuth";
 import { NotificationContext } from "../../providers/NotificationContext";
 import { useContext, useEffect, useRef, useState } from "react";
+import { useTheme } from "../../context/ThemeContext";
 
 export default function Navbar() {
   const { user, isUserLoading, userLogout } = useAuth();
   const { notifications, unreadCount, refreshNotifications } = useContext(NotificationContext);
+  const { theme, toggleTheme } = useTheme();
   const { scrollY } = useScroll();
   const navBackground = useTransform(scrollY, [0, 100], ["rgba(0,0,0,0.8)", "rgba(0,0,0,0.95)"]);
   const navBlur = useTransform(scrollY, [0, 100], ["blur(0px)", "blur(12px)"]);
@@ -176,6 +179,13 @@ export default function Navbar() {
         </div>
 
         <div className="navbar-end">
+          <button
+            onClick={toggleTheme}
+            className="p-2 text-white hover:text-yellow-400 transition-colors"
+            aria-label="Toggle theme"
+          >
+            {theme === "dark" ? <FaSun className="text-xl" /> : <FaMoon className="text-xl" />}
+          </button>
           <UserData
             user={user}
             isUserLoading={isUserLoading}

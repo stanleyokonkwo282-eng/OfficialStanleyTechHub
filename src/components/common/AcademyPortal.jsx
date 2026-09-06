@@ -88,13 +88,15 @@ export default function AcademyPortal() {
             </div>
           </div>
 
-          <a
-            href={`/docs/${activeCourse.pdfFileName}`}
-            download
-            className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-black font-bold text-xs tracking-wide transition shadow-lg shadow-amber-500/20 active:scale-95"
-          >
-            <Download className="w-4 h-4" /> Download PDF Manual
-          </a>
+          {activeCourse.pdfFileName && (
+            <a
+              href={`/docs/${activeCourse.pdfFileName}`}
+              download
+              className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-black font-bold text-xs tracking-wide transition shadow-lg shadow-amber-500/20 active:scale-95"
+            >
+              <Download className="w-4 h-4" /> Download PDF Manual
+            </a>
+          )}
         </div>
 
         {/* Reader Stage */}

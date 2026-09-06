@@ -2,11 +2,14 @@ import { useMemo, useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router";
 import { toast } from "react-toastify";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Copy, Check } from "lucide-react";
 import LoaderSpinner from "../../components/common/LoaderSpinner";
 import useAuth from "../../hooks/useAuth";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
 import PremiumCourseReader from "../../components/common/PremiumCourseReader";
+import CourseCohorts from "../../components/common/CourseCohorts";
 import { useLastMemory } from "../../hooks/useLastMemory";
+import { getYouTubeId, getVimeoId, isDirectVideo, getVideoProvider } from "../../utils/VideoPlayerApi";
 
 export default function CoursePlayer() {
   const { courseId } = useParams();
@@ -23,6 +26,7 @@ export default function CoursePlayer() {
   const [videoError, setVideoError] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedFormat, setSelectedFormat] = useState('video');
+  const [copiedCodeId, setCopiedCodeId] = useState(null);
   
   // --- AI Assistant States ---
   const [aiDrawerOpen, setAiDrawerOpen] = useState(false);
@@ -32,6 +36,16 @@ export default function CoursePlayer() {
   const [chatInput, setChatInput] = useState("");
   const [aiLoading, setAiLoading] = useState(false);
   const chatEndRef = useRef(null);
+
+  const [notes, setNotes] = useState([]);
+  const [noteInput, setNoteInput] = useState("");
+  const [notesDrawerOpen, setNotesDrawerOpen] = useState(false);
+
+  const [comments, setComments] = useState([]);
+  const [commentText, setCommentText] = useState("");
+  const [commentReplyTo, setCommentReplyTo] = useState(null);
+  const [commentsDrawerOpen, setCommentsDrawerOpen] = useState(false);
+  const [commentsLoading, setCommentsLoading] = useState(false);
 
   const watchInterval = useRef(null);
   const completedRef = useRef(false);
@@ -52,6 +66,119 @@ export default function CoursePlayer() {
       courseTitle: activeLesson.lessonTitle,
     });
   }, [activeLesson, courseId, updateLastMemory]);
+
+  // --- Load notes for active lesson ---
+  useEffect(() => {
+    if (!activeLesson?._id) return;
+    try {
+      const saved = window.localStorage.getItem(`cha_notes_${activeLesson._id}`);
+      setNotes(saved ? JSON.parse(saved) : []);
+    } catch {
+      setNotes([]);
+    }
+  }, [activeLesson?._id]);
+
+  // --- Save notes when they change ---
+  useEffect(() => {
+    if (!activeLesson?._id) return;
+    try {
+      window.localStorage.setItem(`cha_notes_${activeLesson._id}`, JSON.stringify(notes));
+    } catch {
+      // ignore quota errors
+    }
+  }, [notes, activeLesson?._id]);
+
+  useEffect(() => {
+    if (commentsDrawerOpen && activeLesson?._id) {
+      fetchComments();
+    }
+  }, [commentsDrawerOpen, activeLesson?._id]);
+
+  const addNote = () => {
+    if (!noteInput.trim() || !playerRef.current) return;
+    const currentTime = playerRef.current.getCurrentTime?.() || 0;
+    const newNote = {
+      id: Date.now().toString(),
+      time: currentTime,
+      text: noteInput.trim(),
+      createdAt: new Date().toISOString(),
+    };
+    setNotes((prev) => [...prev, newNote].sort((a, b) => a.time - b.time));
+    setNoteInput("");
+  };
+
+  const deleteNote = (noteId) => {
+    setNotes((prev) => prev.filter((n) => n.id !== noteId));
+  };
+
+  const seekToNote = (time) => {
+    if (playerRef.current && playerRef.current.seekTo) {
+      playerRef.current.seekTo(time, true);
+      if (!document.hidden) {
+        playerRef.current.playVideo?.();
+      }
+    }
+  };
+
+  const formatTime = (seconds) => {
+    if (!seconds || isNaN(seconds)) return "0:00";
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
+  };
+
+  const fetchComments = async () => {
+    if (!activeLesson?._id) return;
+    setCommentsLoading(true);
+    try {
+      const res = await axiosSecure.get(`/lessons/comments/${activeLesson._id}`);
+      setComments(res.data.data || []);
+    } catch {
+      toast.error("Failed to load discussion");
+    } finally {
+      setCommentsLoading(false);
+    }
+  };
+
+  const postComment = async () => {
+    if (!commentText.trim() || !activeLesson) return;
+    try {
+      const res = await axiosSecure.post("/lessons/comments", {
+        lessonId: activeLesson._id,
+        courseId,
+        text: commentText.trim(),
+        parentId: commentReplyTo,
+      });
+      setComments((prev) => {
+        if (commentReplyTo) {
+          return prev.map((c) =>
+            c._id === commentReplyTo
+              ? { ...c, replies: [...(c.replies || []), res.data.data] }
+              : c
+          );
+        }
+        return [res.data.data, ...prev];
+      });
+      setCommentText("");
+      setCommentReplyTo(null);
+      toast.success("Comment posted");
+    } catch {
+      toast.error("Failed to post comment");
+    }
+  };
+
+  const deleteCommentApi = async (commentId) => {
+    try {
+      await axiosSecure.delete(`/lessons/comments/${commentId}`);
+      setComments((prev) => {
+        const remove = (list) => list.filter((c) => c._id !== commentId && !c.replies?.some((r) => r._id === commentId));
+        return remove(prev.map((c) => ({ ...c, replies: remove(c.replies || []) })));
+      });
+      toast.success("Comment deleted");
+    } catch {
+      toast.error("Failed to delete comment");
+    }
+  };
 
   // --- Scroll chat to bottom ---
   useEffect(() => {
@@ -507,7 +634,19 @@ export default function CoursePlayer() {
   const hasPassed = attempts.some(a => a.passed);
   const isLocked = attempts.length >= 2 && !hasPassed;
   const useFallback = videoError && activeLesson;
+  const videoProvider = getVideoProvider(activeLesson?.videoUrl);
   const fallbackYoutubeId = getYouTubeId(activeLesson?.videoUrl, activeLesson?.lessonTitle);
+  const fallbackVimeoId = getVimeoId(activeLesson?.videoUrl);
+  const isDirect = isDirectVideo(activeLesson?.videoUrl);
+
+  const { data: cohortsData } = useQuery({
+    queryKey: ["cohorts", courseId],
+    queryFn: async () => {
+      const res = await axiosSecure.get(`/cohorts/course/${courseId}`);
+      return res.data.data || [];
+    },
+    enabled: !!courseId,
+  });
 
   const downloadReceipt = async () => {
     try {
@@ -526,9 +665,11 @@ export default function CoursePlayer() {
     }
   };
 
-  // YouTube watch link for fallback
   const youtubeWatchUrl = fallbackYoutubeId
     ? `https://www.youtube.com/watch?v=${fallbackYoutubeId}`
+    : null;
+  const vimeoWatchUrl = fallbackVimeoId
+    ? `https://vimeo.com/${fallbackVimeoId}`
     : null;
 
   return (
@@ -569,6 +710,14 @@ export default function CoursePlayer() {
           hasPassed ? "bg-green-900 text-green-300" : isLocked ? "bg-red-900 text-red-300" : "bg-yellow-900 text-yellow-300"
         }`}>
           {hasPassed ? "You passed! Click Get Certificate." : isLocked ? "Exam locked. Contact admin." : "All lessons done! Take the exam."}
+          {hasPassed && cohortsData?.length > 0 && (
+            <button
+              onClick={() => window.open(cohortsData[0].whatsappGroupLink, "_blank")}
+              className="ml-3 px-3 py-1 bg-green-600 text-white rounded-lg text-xs hover:bg-green-500 transition"
+            >
+              Join WhatsApp Cohort
+            </button>
+          )}
         </div>
       )}
 
@@ -591,46 +740,162 @@ export default function CoursePlayer() {
                   >
                     📄 PDF Document Summary
                   </button>
+                  <button 
+                    onClick={() => setSelectedFormat('assets')} 
+                    className={`tab flex-1 gap-2 ${selectedFormat === 'assets' ? 'tab-active font-semibold' : ''}`}
+                  >
+                    🧩 Assets & Code
+                  </button>
                 </div>
 
-                 {selectedFormat === 'video' ? (
-                  <div className="w-full aspect-video bg-zinc-900 rounded-xl overflow-hidden mb-4">
-                    {!useFallback ? (
-                      <div id={playerContainerId} className="w-full h-full" />
-                    ) : (
-                      fallbackYoutubeId ? (
-                        <div className="w-full h-full flex flex-col items-center justify-center gap-4 p-6 text-center">
-                          <div className="text-5xl">⚠️</div>
-                          <h3 className="text-xl font-bold text-white">Video Playback Unavailable</h3>
-                          <p className="text-gray-400 max-w-md">
-                            The embedded player could not load this video. You can still watch it directly on YouTube.
-                          </p>
-                          <a
-                            href={youtubeWatchUrl}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition"
-                          >
-                            ▶ Watch on YouTube
-                          </a>
-                        </div>
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <p className="text-gray-400">Invalid video URL</p>
-                        </div>
-                      )
-                    )}
-                  </div>
-                ) : (
-                  <PremiumCourseReader
-                    title={activeLesson?.lessonTitle || "Course Document"}
-                    lessonTitle={activeLesson?.lessonTitle}
-                    moduleNumber={activeLesson?.moduleNumber}
-                    lessonNumber={activeLesson?.lessonNumber}
-                    duration={activeLesson?.duration}
-                    pdfUrl={activeLesson?.pdfUrl}
-                  />
-                )}
+                  {selectedFormat === 'video' ? (
+                   <div className="w-full aspect-video bg-zinc-900 rounded-xl overflow-hidden mb-4">
+                     {!useFallback ? (
+                       <div id={playerContainerId} className="w-full h-full" />
+                     ) : (
+                       <>
+                         {videoProvider === "vimeo" && fallbackVimeoId && (
+                           <iframe
+                             src={`https://player.vimeo.com/video/${fallbackVimeoId}?autoplay=1`}
+                             className="w-full h-full"
+                             allow="autoplay; fullscreen"
+                             allowFullScreen
+                             title="Vimeo Fallback Player"
+                           />
+                         )}
+                         {videoProvider === "direct" && (
+                           <video
+                             src={activeLesson?.videoUrl}
+                             controls
+                             autoPlay
+                             className="w-full h-full"
+                             title="Direct Video Fallback"
+                           >
+                             Your browser does not support the video tag.
+                           </video>
+                         )}
+                         {(videoProvider === "youtube" || videoProvider === "unknown") && (
+                           <div className="w-full h-full flex flex-col items-center justify-center gap-4 p-6 text-center">
+                             <div className="text-5xl">⚠️</div>
+                             <h3 className="text-xl font-bold text-white">Video Playback Unavailable</h3>
+                             <p className="text-gray-400 max-w-md">
+                               The embedded player could not load this video. You can still watch it directly on YouTube.
+                             </p>
+                             <div className="flex flex-wrap gap-3 justify-center">
+                               {youtubeWatchUrl && (
+                                 <a
+                                   href={youtubeWatchUrl}
+                                   target="_blank"
+                                   rel="noreferrer"
+                                   className="px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg transition"
+                                 >
+                                   ▶ Watch on YouTube
+                                 </a>
+                               )}
+                               {vimeoWatchUrl && (
+                                 <a
+                                   href={vimeoWatchUrl}
+                                   target="_blank"
+                                   rel="noreferrer"
+                                   className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition"
+                                 >
+                                   ▶ Watch on Vimeo
+                                 </a>
+                               )}
+                               <button
+                                 onClick={() => {
+                                   setVideoError(false);
+                                   setPlayerReady(false);
+                                 }}
+                                 className="px-6 py-3 bg-zinc-700 hover:bg-zinc-600 text-white font-bold rounded-lg transition"
+                               >
+                                 ↻ Retry Player
+                               </button>
+                             </div>
+                           </div>
+                         )}
+                       </>
+                     )}
+                   </div>
+                 ) : selectedFormat === 'reading' ? (
+                   <PremiumCourseReader
+                     title={activeLesson?.lessonTitle || "Course Document"}
+                     lessonTitle={activeLesson?.lessonTitle}
+                     moduleNumber={activeLesson?.moduleNumber}
+                     lessonNumber={activeLesson?.lessonNumber}
+                     duration={activeLesson?.duration}
+                     pdfUrl={activeLesson?.pdfUrl}
+                   />
+                 ) : (
+                   <div className="w-full bg-zinc-900 rounded-xl p-6 mb-4">
+                     <h3 className="text-lg font-bold text-white mb-4">🧩 Assets & Code</h3>
+                     {activeLesson?.assets?.length === 0 ? (
+                       <p className="text-gray-400 text-center py-8">No assets available for this lesson yet.</p>
+                     ) : (
+                       <div className="space-y-4">
+                         {activeLesson?.assets?.map((asset, idx) => (
+                           <div key={asset._id || idx} className="bg-zinc-950 border border-zinc-800 rounded-xl p-4">
+                             <div className="flex items-center justify-between mb-2">
+                               <div>
+                                 <span className="text-xs font-bold text-amber-400 uppercase tracking-wider">{asset.type}</span>
+                                 <h4 className="text-white font-semibold">{asset.name}</h4>
+                                 {asset.description && <p className="text-gray-400 text-xs mt-1">{asset.description}</p>}
+                               </div>
+                               {asset.type === "code" && (
+                                 <button
+                                   onClick={async () => {
+                                     await navigator.clipboard.writeText(asset.content);
+                                     setCopiedCodeId(asset._id || idx);
+                                     toast.success("Code copied!");
+                                     setTimeout(() => setCopiedCodeId(null), 2000);
+                                   }}
+                                   className="p-2 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-neutral-300 transition"
+                                   title="Copy code"
+                                 >
+                                   {copiedCodeId === (asset._id || idx) ? <Check className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                                 </button>
+                               )}
+                               {asset.type === "download" && (
+                                 <a
+                                   href={asset.content}
+                                   download
+                                   className="px-4 py-2 bg-amber-400 text-black rounded-lg font-semibold text-xs hover:bg-amber-300 transition"
+                                 >
+                                   Download
+                                 </a>
+                               )}
+                               {asset.type === "github" && (
+                                 <a
+                                   href={asset.content}
+                                   target="_blank"
+                                   rel="noreferrer"
+                                   className="px-4 py-2 bg-zinc-800 text-white rounded-lg font-semibold text-xs hover:bg-zinc-700 transition"
+                                 >
+                                   View on GitHub
+                                 </a>
+                               )}
+                               {asset.type === "link" && (
+                                 <a
+                                   href={asset.content}
+                                   target="_blank"
+                                   rel="noreferrer"
+                                   className="px-4 py-2 bg-purple-600 text-white rounded-lg font-semibold text-xs hover:bg-purple-500 transition"
+                                 >
+                                   Open Link
+                                 </a>
+                               )}
+                             </div>
+                             {asset.type === "code" && (
+                               <pre className="bg-black border border-zinc-800 rounded-lg p-3 overflow-x-auto text-xs text-gray-300 font-mono">
+                                 <code>{asset.content}</code>
+                               </pre>
+                             )}
+                           </div>
+                         ))}
+                       </div>
+                     )}
+                   </div>
+                 )}
               </div>
 
               {playerReady && !isCompleted(activeLesson._id) && watchPercent > 0 && watchPercent < 90 && (
@@ -675,12 +940,30 @@ export default function CoursePlayer() {
           )}
         </div>
 
+        <CourseCohorts courseId={courseId} />
+
         {/* Floating AI Assistant Button */}
         <button
           onClick={() => setAiDrawerOpen(!aiDrawerOpen)}
           className="fixed bottom-16 right-4 bg-purple-600 text-white p-3 rounded-full shadow-lg z-20 flex items-center gap-2 hover:bg-purple-700 transition"
         >
           🤖 AI Tutor
+        </button>
+
+        {/* Floating Notes Button */}
+        <button
+          onClick={() => setNotesDrawerOpen(!notesDrawerOpen)}
+          className="fixed bottom-16 right-20 bg-amber-400 text-black p-3 rounded-full shadow-lg z-20 flex items-center gap-2 hover:bg-amber-500 transition"
+        >
+          📝 Notes
+        </button>
+
+        {/* Floating Q&A Button */}
+        <button
+          onClick={() => setCommentsDrawerOpen(!commentsDrawerOpen)}
+          className="fixed bottom-16 right-36 bg-emerald-500 text-white p-3 rounded-full shadow-lg z-20 flex items-center gap-2 hover:bg-emerald-600 transition"
+        >
+          💬 Q&A
         </button>
 
         {/* Floating Course Content Drawer Button (mobile only) */}
@@ -729,6 +1012,136 @@ export default function CoursePlayer() {
               />
               <button type="submit" disabled={aiLoading} className="bg-yellow-400 text-black px-4 py-2 rounded-lg font-semibold text-sm hover:bg-yellow-500 disabled:opacity-50">
                 Send
+              </button>
+            </form>
+          </div>
+        )}
+
+        {/* Timestamped Notes Drawer */}
+        {notesDrawerOpen && (
+          <div className="fixed inset-y-0 right-0 w-80 sm:w-96 bg-zinc-950 border-l border-zinc-800 flex flex-col z-40 shadow-2xl">
+            <div className="p-4 border-b border-zinc-800 flex justify-between items-center bg-zinc-900">
+              <h3 className="text-white font-semibold flex items-center gap-2">📝 Timestamped Notes</h3>
+              <button onClick={() => setNotesDrawerOpen(false)} aria-label="Close notes" className="text-gray-400 text-xl hover:text-white">&times;</button>
+            </div>
+
+            <div className="flex-1 p-4 overflow-y-auto space-y-3">
+              {notes.length === 0 && (
+                <p className="text-gray-500 text-sm text-center py-8">
+                  No notes yet. Add your first timestamped note below.
+                </p>
+              )}
+              {notes.map((note) => (
+                <div key={note.id} className="bg-zinc-900 border border-zinc-800 rounded-xl p-3">
+                  <div className="flex items-center justify-between mb-1">
+                    <button
+                      onClick={() => seekToNote(note.time)}
+                      className="text-xs font-mono bg-amber-400/15 text-amber-400 px-2 py-0.5 rounded hover:bg-amber-400/25 transition"
+                    >
+                      {formatTime(note.time)}
+                    </button>
+                    <button
+                      onClick={() => deleteNote(note.id)}
+                      className="text-gray-500 hover:text-red-400 text-xs transition"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                  <p className="text-gray-300 text-sm">{note.text}</p>
+                </div>
+              ))}
+            </div>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                addNote();
+              }}
+              className="p-3 border-t border-zinc-800 bg-zinc-900 flex gap-2"
+            >
+              <input
+                type="text"
+                value={noteInput}
+                onChange={(e) => setNoteInput(e.target.value)}
+                placeholder="Add a note at current timestamp..."
+                className="flex-1 bg-zinc-800 border border-zinc-700 text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-yellow-400"
+              />
+              <button type="submit" disabled={!noteInput.trim()} className="bg-amber-400 text-black px-4 py-2 rounded-lg font-semibold text-sm hover:bg-amber-500 disabled:opacity-50">
+                Add
+              </button>
+            </form>
+          </div>
+        )}
+
+        {/* Peer Q&A Drawer */}
+        {commentsDrawerOpen && (
+          <div className="fixed inset-y-0 right-0 w-80 sm:w-96 bg-zinc-950 border-l border-zinc-800 flex flex-col z-40 shadow-2xl">
+            <div className="p-4 border-b border-zinc-800 flex justify-between items-center bg-zinc-900">
+              <h3 className="text-white font-semibold flex items-center gap-2">💬 Peer Q&A</h3>
+              <button onClick={() => setCommentsDrawerOpen(false)} aria-label="Close Q&A" className="text-gray-400 text-xl hover:text-white">&times;</button>
+            </div>
+
+            <div className="flex-1 p-4 overflow-y-auto space-y-3">
+              {commentsLoading && <p className="text-gray-500 text-sm text-center">Loading discussion...</p>}
+              {!commentsLoading && comments.length === 0 && (
+                <p className="text-gray-500 text-sm text-center py-8">
+                  No questions yet. Be the first to ask!
+                </p>
+              )}
+              {comments.map((comment) => (
+                <div key={comment._id} className={`bg-zinc-900 border border-zinc-800 rounded-xl p-3 ${comment.isPinned ? "border-amber-400/50" : ""}`}>
+                  {comment.isPinned && <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider">Pinned</span>}
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs font-semibold text-gray-300">{comment.userName}</span>
+                    <span className="text-[10px] text-gray-500">{new Date(comment.createdAt).toLocaleDateString()}</span>
+                  </div>
+                  <p className="text-gray-300 text-sm">{comment.text}</p>
+                  {comment.replies?.length > 0 && (
+                    <div className="mt-2 ml-4 space-y-2 border-l border-zinc-700 pl-3">
+                      {comment.replies.map((reply) => (
+                        <div key={reply._id} className="text-sm">
+                          <span className="text-xs font-semibold text-gray-400">{reply.userName}</span>
+                          <p className="text-gray-400">{reply.text}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  <div className="flex gap-2 mt-2">
+                    <button
+                      onClick={() => { setCommentReplyTo(comment._id); setCommentText(""); }}
+                      className="text-[11px] text-amber-400 hover:text-amber-300 transition"
+                    >
+                      Reply
+                    </button>
+                    {(comment.userEmail === user?.email || user?.role === "admin" || user?.role === "teacher") && (
+                      <button
+                        onClick={() => deleteCommentApi(comment._id)}
+                        className="text-[11px] text-red-400 hover:text-red-300 transition"
+                      >
+                        Delete
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                postComment();
+              }}
+              className="p-3 border-t border-zinc-800 bg-zinc-900 flex gap-2"
+            >
+              <input
+                type="text"
+                value={commentText}
+                onChange={(e) => setCommentText(e.target.value)}
+                placeholder={commentReplyTo ? "Write a reply..." : "Ask a question..."}
+                className="flex-1 bg-zinc-800 border border-zinc-700 text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-yellow-400"
+              />
+              <button type="submit" disabled={!commentText.trim()} className="bg-amber-400 text-black px-4 py-2 rounded-lg font-semibold text-sm hover:bg-amber-500 disabled:opacity-50">
+                Post
               </button>
             </form>
           </div>

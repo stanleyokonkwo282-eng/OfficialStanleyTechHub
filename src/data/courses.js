@@ -4,7 +4,6 @@ const COURSE_CATALOG = [
     title: "Windows 11 Creator OS & Workstation Manual",
     category: "System & OS",
     level: "Masterclass",
-    pdfFileName: "creators-hub-windows11-2026.pdf",
     badgeAccent: "#FFC700",
     lessons: [
       {
@@ -56,7 +55,6 @@ const COURSE_CATALOG = [
     title: "Canva Pro for High-Converting Brands",
     category: "Design & 3D",
     level: "Beginner",
-    pdfFileName: "canva-creator-mastery-2026.pdf",
     badgeAccent: "#FFC700",
     lessons: [
       {

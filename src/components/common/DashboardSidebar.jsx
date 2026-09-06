@@ -1,14 +1,16 @@
-import { FaBookOpen, FaCertificate, FaBell, FaMoneyBillWave, FaChartBar, FaBullhorn, FaGraduationCap } from "react-icons/fa";
+import { FaBookOpen, FaCertificate, FaBell, FaMoneyBillWave, FaChartBar, FaBullhorn, FaGraduationCap, FaSun, FaMoon, FaUsers } from "react-icons/fa";
 import { IoIosPerson } from "react-icons/io";
 import { IoDocumentsSharp } from "react-icons/io5";
-import { LuBookUser } from "react-icons/lu";
-import { MdAddToPhotos } from "react-icons/md";
+import { LuBookUser, LuShare2 } from "react-icons/lu";
+import { MdAddToPhotos, MdUpload } from "react-icons/md";
 import { PiChalkboardTeacherBold } from "react-icons/pi";
 import { NavLink } from "react-router";
 import useAuth from "../../hooks/useAuth";
+import { useTheme } from "../../context/ThemeContext";
 
 export default function DashboardSidebar() {
   const { user } = useAuth();
+  const { theme, toggleTheme } = useTheme();
 
   const linkStyle = ({ isActive }) =>
     isActive
@@ -77,6 +79,27 @@ export default function DashboardSidebar() {
             </LinkTile>
           </NavLink>
         )}
+        {user?.role === "admin" && (
+          <NavLink to="/dashboard/courses/bulk-import" className={linkStyle}>
+            <LinkTile title="Bulk Import">
+              <MdUpload />
+            </LinkTile>
+          </NavLink>
+        )}
+        {user?.role === "admin" && (
+          <NavLink to="/dashboard/visits" className={linkStyle}>
+            <LinkTile title="Site Visits">
+              <FaChartBar />
+            </LinkTile>
+          </NavLink>
+        )}
+        {(user?.role === "admin" || user?.role === "teacher") && (
+          <NavLink to="/dashboard/admin/cohorts" className={linkStyle}>
+            <LinkTile title="Manage Cohorts">
+              <FaUsers />
+            </LinkTile>
+          </NavLink>
+        )}
 
         {/* Student Links */}
         {user?.role === "student" && (
@@ -90,6 +113,13 @@ export default function DashboardSidebar() {
           <NavLink to="/dashboard/academy-portal" className={linkStyle}>
             <LinkTile title="Academy Portal">
               <FaGraduationCap />
+            </LinkTile>
+          </NavLink>
+        )}
+        {user?.role === "student" && (
+          <NavLink to="/dashboard/referrals" className={linkStyle}>
+            <LinkTile title="My Referrals">
+              <LuShare2 />
             </LinkTile>
           </NavLink>
         )}
@@ -130,6 +160,15 @@ export default function DashboardSidebar() {
             <IoIosPerson />
           </LinkTile>
         </NavLink>
+
+        {/* Theme Toggle */}
+        <button
+          onClick={toggleTheme}
+          className="flex items-center gap-3 text-base font-medium text-gray-300 hover:text-yellow-400 hover:bg-zinc-800 rounded-lg px-3 py-2 transition-all w-full"
+        >
+          {theme === "dark" ? <FaSun className="text-lg" /> : <FaMoon className="text-lg" />}
+          {theme === "dark" ? "Light Mode" : "Dark Mode"}
+        </button>
       </nav>
     </div>
   );
