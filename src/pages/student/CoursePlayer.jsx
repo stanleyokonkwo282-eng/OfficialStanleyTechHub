@@ -377,19 +377,19 @@ export default function CoursePlayer() {
 
   // --- Initialize player when activeLesson changes ---
   useEffect(() => {
-    if (!activeLesson || !window.YT) return;
+    if (!activeLesson) return;
 
     const youtubeId = getYouTubeId(activeLesson.videoUrl, activeLesson.lessonTitle);
     if (!youtubeId) {
       setVideoError(true);
       return;
     }
+
     setVideoError(false);
     setWatchPercent(0);
     completedRef.current = false;
     lastKnownTime.current = 0;
 
-    // Cleanup previous player instance if it exists
     if (playerRef.current && playerRef.current.destroy) {
       try {
         playerRef.current.destroy();
@@ -399,7 +399,6 @@ export default function CoursePlayer() {
       playerRef.current = null;
     }
 
-    // Create new player with safe parameters
     const onPlayerReady = (event) => {
       setPlayerReady(true);
       const startTime = activeLesson.lastWatchedTime || 0;
@@ -451,35 +450,52 @@ export default function CoursePlayer() {
       }
     };
 
-    // Small delay to ensure container is ready
-    const timer = setTimeout(() => {
-      try {
-        if (!window.YT || !window.YT.Player) {
-          console.error("YouTube API not loaded");
+    let retryCount = 0;
+    const maxRetries = 20;
+    const retryInterval = setInterval(() => {
+      if (!window.YT || !window.YT.Player) {
+        retryCount++;
+        if (retryCount >= maxRetries) {
+          clearInterval(retryInterval);
           setVideoError(true);
-          return;
+          toast.error("Video player failed to load. Please check your connection and try again.");
         }
-        const newPlayer = new window.YT.Player(playerContainerId, {
+        return;
+      }
+
+      clearInterval(retryInterval);
+
+      const container = document.getElementById(playerContainerId);
+      if (!container) {
+        setVideoError(true);
+        return;
+      }
+
+      try {
+        playerRef.current = new window.YT.Player(playerContainerId, {
           videoId: youtubeId,
           playerVars: {
-            rel: 0,
+            autoplay: 1,
             modestbranding: 1,
-            start: activeLesson.lastWatchedTime || 0,
+            rel: 0,
+            fs: 1,
             playsinline: 1,
-            controls: 1,
           },
-          events: { onReady: onPlayerReady, onStateChange: onPlayerStateChange, onError: onPlayerError },
+          events: {
+            onReady: onPlayerReady,
+            onStateChange: onPlayerStateChange,
+            onError: onPlayerError,
+          },
         });
-        playerRef.current = newPlayer;
         setPlayerReady(false);
       } catch (err) {
         console.error("Failed to create YouTube player:", err);
         setVideoError(true);
       }
-    }, 100);
+    }, 200);
 
     return () => {
-      clearTimeout(timer);
+      clearInterval(retryInterval);
       if (watchInterval.current) clearInterval(watchInterval.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps

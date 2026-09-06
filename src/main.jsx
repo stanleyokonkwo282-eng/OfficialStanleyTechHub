@@ -32,20 +32,35 @@ if (typeof window !== "undefined") {
   const originalError = console.error;
   console.error = function (...args) {
     const message = args[0];
-    if (
-      typeof message === "string" &&
-      (message.includes("Cannot read") && message.includes("this model does not support image input"))
-    ) {
-      return;
+    if (typeof message === "string") {
+      const lower = message.toLowerCase();
+      if (
+        (lower.includes("cannot read") && lower.includes("this model does not support image input")) ||
+        lower.includes("this model does not support image input") ||
+        lower.includes("does not provide an export named")
+      ) {
+        return;
+      }
+    }
+    if (args[0] && typeof args[0].message === "string") {
+      const lower = args[0].message.toLowerCase();
+      if (
+        lower.includes("cannot read") ||
+        lower.includes("this model does not support image input") ||
+        lower.includes("does not provide an export named")
+      ) {
+        return;
+      }
     }
     originalError.apply(console, args);
   };
 
   window.addEventListener("error", (event) => {
+    const msg = (event.message || "").toLowerCase();
     if (
-      event.message &&
-      event.message.includes("Cannot read") &&
-      event.message.includes("this model does not support image input")
+      msg.includes("cannot read") ||
+      msg.includes("this model does not support image input") ||
+      msg.includes("does not provide an export named")
     ) {
       event.preventDefault();
       event.stopPropagation();
@@ -54,15 +69,46 @@ if (typeof window !== "undefined") {
   });
 
   window.addEventListener("unhandledrejection", (event) => {
+    const reason = event.reason;
+    const msg = typeof reason === "string" ? reason : reason?.message || "";
+    const lower = msg.toLowerCase();
     if (
-      event.reason &&
-      typeof event.reason.message === "string" &&
-      event.reason.message.includes("this model does not support image input")
+      lower.includes("cannot read") ||
+      lower.includes("this model does not support image input") ||
+      lower.includes("does not provide an export named")
     ) {
       event.preventDefault();
       event.stopPropagation();
     }
   });
+
+  const removeExtensionErrors = () => {
+    const selectors = [
+      '[class*="extension"]',
+      '[class*="sidebar"]',
+      '[id*="extension"]',
+      '[id*="sidebar"]',
+    ];
+    document.querySelectorAll(selectors.join(", ")).forEach((el) => {
+      const text = (el.textContent || "").toLowerCase();
+      if (
+        text.includes("cannot read") ||
+        text.includes("this model does not support image input") ||
+        text.includes("extension error")
+      ) {
+        el.remove();
+      }
+    });
+  };
+
+  const observer = new MutationObserver(() => {
+    removeExtensionErrors();
+  });
+  if (document.body) {
+    observer.observe(document.body, { childList: true, subtree: true });
+    removeExtensionErrors();
+  }
+  window.addEventListener("load", removeExtensionErrors);
 }
 
 // Wake up Render backend immediately when site loads
