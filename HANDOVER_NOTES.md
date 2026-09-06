@@ -222,6 +222,7 @@
 14. **Account deletion** is at `DELETE /api/users/me` (auth required). Frontend confirmation requires typing `DELETE`.
 15. **Last memory resume** uses `localStorage` key `cha_last_memory`. `LastMemory` widget appears on Profile and Enrolled Courses. `/dashboard/continue` redirects to saved lesson.
 16. **PDF reader components**: `PremiumCourseReader.jsx` is the main chapter-based reader; `CoursePdfViewer.jsx` is a standalone fullscreen PDF viewer with zoom/page controls.
+17. **Course reassignment**: Admin can reassign all courses from one teacher email to another via `/dashboard/courses` → "Reassign Teacher" button, which calls `POST /api/courses/reassign-teacher` (admin only).
 
 ---
 
