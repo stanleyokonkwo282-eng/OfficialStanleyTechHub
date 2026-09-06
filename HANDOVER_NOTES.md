@@ -35,9 +35,11 @@
 |----------|---------|
 | `PAYSTACK_SECRET_KEY` | Paystack live secret key |
 | `PAYSTACK_PUBLIC_KEY` | Paystack live public key |
+| `IMAGEKIT_ID` | ImageKit account ID |
 | `IMAGEKIT_PUBLIC_KEY` | ImageKit uploads |
 | `IMAGEKIT_PRIVATE_KEY` | ImageKit signature generation |
 | `IMAGEKIT_URL_ENDPOINT` | ImageKit CDN URL |
+| `IMAGEKIT_ID` | ImageKit account ID required for initialization |
 | `EMAIL_USER` | Gmail sender address |
 | `EMAIL_PASS` | Gmail app password |
 | `ADMIN_EMAIL` | Admin notification email |
