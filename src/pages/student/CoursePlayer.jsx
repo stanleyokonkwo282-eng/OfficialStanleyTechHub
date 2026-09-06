@@ -512,7 +512,9 @@ export default function CoursePlayer() {
       setPlayerReady(false);
     } else if (selectedFormat === 'video') {
       if (playerRef.current && playerRef.current.playVideo) {
-        try { playerRef.current.playVideo(); } catch (err) { console.debug(err); }
+        setTimeout(() => {
+          try { playerRef.current.playVideo(); } catch (err) { console.debug(err); }
+        }, 150);
       }
     }
   }, [selectedFormat]);
