@@ -38,6 +38,51 @@ export default function ManageCourses() {
     },
   });
 
+  const reassignMutation = useMutation({
+    mutationFn: async ({ toEmail }) => {
+      await axiosSecure.post("/courses/reassign-teacher", {
+        fromEmail: "christkingdomministries99@gmail.com",
+        toEmail,
+      });
+    },
+    onSuccess: () => {
+      toast.success("Course reassigned to new teacher");
+      queryClient.invalidateQueries(["admin-courses"]);
+    },
+    onError: (err) => {
+      toast.error(err?.response?.data?.message || "Failed to reassign course");
+    },
+  });
+
+  const handleReassign = (_courseId, courseTitle) => {
+    Swal.fire({
+      title: "Reassign teacher email",
+      text: `This will move: ${courseTitle || "this course"}`,
+      input: "email",
+      inputLabel: "New teacher email",
+      placeholder: "creatorshubacademy3@gmail.com",
+      showCancelButton: true,
+      confirmButtonColor: "#facc15",
+      cancelButtonColor: "#3f3f46",
+      confirmButtonText: "Reassign",
+      background: "#18181b",
+      color: "#fff",
+      inputAttributes: {
+        "aria-label": "New teacher email",
+      },
+      preConfirm: (value) => {
+        if (!value || !value.includes("@")) {
+          Swal.showValidationMessage("Please enter a valid email");
+        }
+        return value.trim();
+      },
+    }).then((result) => {
+      if (result.isConfirmed && result.value) {
+        reassignMutation.mutate({ toEmail: result.value });
+      }
+    });
+  };
+
   const handleStatusChange = (id, status) => {
     Swal.fire({
       title: `Are you sure to ${status}?`,
@@ -145,6 +190,12 @@ export default function ManageCourses() {
                     onClick={() => handleStatusChange(course._id, "rejected")}
                   >
                     Reject
+                  </button>
+                  <button
+                    className="btn btn-xs bg-white/10 text-white hover:bg-white/20 border border-white/10 ml-2"
+                    onClick={() => handleReassign(course._id, course.title)}
+                  >
+                    Reassign Teacher
                   </button>
                 </td>
               </tr>
