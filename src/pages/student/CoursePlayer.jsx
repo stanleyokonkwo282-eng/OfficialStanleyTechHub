@@ -468,7 +468,9 @@ export default function CoursePlayer() {
       setChatMessages(prev => [...prev, { sender: "ai", text: res.data.reply }]);
     } catch (error) {
       console.debug(error);
-      setChatMessages(prev => [...prev, { sender: "ai", text: "Sorry, I encountered an error connecting to the AI. Please try again." }]);
+      const backendMessage = error?.response?.data?.error;
+      const fallback = "Sorry, I encountered an error connecting to the AI. Please try again.";
+      setChatMessages(prev => [...prev, { sender: "ai", text: backendMessage || fallback }]);
     } finally {
       setAiLoading(false);
     }

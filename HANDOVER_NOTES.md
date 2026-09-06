@@ -35,6 +35,7 @@
 |----------|---------|
 | `PAYSTACK_SECRET_KEY` | Paystack live secret key |
 | `PAYSTACK_PUBLIC_KEY` | Paystack live public key |
+| `GEMINI_API_KEY` | Google Gemini API key for AI Course Assistant |
 | `IMAGEKIT_ID` | ImageKit account ID |
 | `IMAGEKIT_PUBLIC_KEY` | ImageKit uploads |
 | `IMAGEKIT_PRIVATE_KEY` | ImageKit signature generation |
@@ -225,6 +226,7 @@
 15. **Last memory resume** uses `localStorage` key `cha_last_memory`. `LastMemory` widget appears on Profile and Enrolled Courses. `/dashboard/continue` redirects to saved lesson.
 16. **PDF reader components**: `PremiumCourseReader.jsx` is the main chapter-based reader; `CoursePdfViewer.jsx` is a standalone fullscreen PDF viewer with zoom/page controls.
 17. **Course reassignment**: Admin can reassign all courses from one teacher email to another via `/dashboard/courses` → "Reassign Teacher" button, which calls `POST /api/courses/reassign-teacher` (admin only).
+18. **AI Course Assistant**: `POST /api/ai/chat` uses Google Gemini (`gemini-flash-latest`). Requires `GEMINI_API_KEY` env var on Render. Frontend now surfaces backend AI errors instead of generic fallback.
 
 ---
 
