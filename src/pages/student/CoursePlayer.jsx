@@ -85,7 +85,7 @@ export default function CoursePlayer() {
   )?._id;
 
   // --- Fetch saved AI chat history for the active lesson ---
-  const { data: chatHistoryData } = useQuery({
+  const { data: chatHistoryData, dataUpdatedAt } = useQuery({
     queryKey: ["ai-chat-history", courseId, activeLesson?._id, user?.email],
     queryFn: async () => {
       const res = await axiosSecure.get(
@@ -98,16 +98,19 @@ export default function CoursePlayer() {
 
   // --- Populate chat with saved history when lesson changes ---
   useEffect(() => {
-    if (chatHistoryData?.messages?.length > 0) {
+    if (!activeLesson?._id) return;
+
+    const messages = chatHistoryData?.messages;
+    if (messages?.length > 0) {
       setChatMessages(
-        chatHistoryData.messages.map((m) => ({ sender: m.sender, text: m.text }))
+        messages.map((m) => ({ sender: m.sender, text: m.text }))
       );
     } else {
       setChatMessages([
         { sender: "ai", text: "Hello! I'm your AI Course Assistant. Ask me anything about this lesson or course!" }
       ]);
     }
-  }, [chatHistoryData, activeLesson?._id]);
+  }, [activeLesson?._id, dataUpdatedAt]);
 
   // --- Mutations ---
   const markCompleteMutation = useMutation({
