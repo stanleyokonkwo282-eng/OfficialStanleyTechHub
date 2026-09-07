@@ -2,12 +2,11 @@ import { useMemo, useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams, useSearchParams } from "react-router";
 import { toast } from "react-toastify";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Copy, Check } from "lucide-react";
+import { Copy, Check, Sparkles } from "lucide-react";
 import LoaderSpinner from "../../components/common/LoaderSpinner";
 import useAuth from "../../hooks/useAuth";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
 import PremiumCourseReader from "../../components/common/PremiumCourseReader";
-import CourseCohorts from "../../components/common/CourseCohorts";
 import { useLastMemory } from "../../hooks/useLastMemory";
 import { getYouTubeId, getVimeoId, isDirectVideo, getVideoProvider } from "../../utils/VideoPlayerApi";
 
@@ -27,184 +26,6 @@ export default function CoursePlayer() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [selectedFormat, setSelectedFormat] = useState('video');
   const [copiedCodeId, setCopiedCodeId] = useState(null);
-  
-  // --- AI Assistant States ---
-  const [aiDrawerOpen, setAiDrawerOpen] = useState(false);
-  const [chatMessages, setChatMessages] = useState([
-    { sender: "ai", text: "Hello! I'm your AI Course Assistant. Ask me anything about this lesson or course!" }
-  ]);
-  const [chatInput, setChatInput] = useState("");
-  const [aiLoading, setAiLoading] = useState(false);
-  const chatEndRef = useRef(null);
-
-  const [notes, setNotes] = useState([]);
-  const [noteInput, setNoteInput] = useState("");
-  const [notesDrawerOpen, setNotesDrawerOpen] = useState(false);
-
-  const [comments, setComments] = useState([]);
-  const [commentText, setCommentText] = useState("");
-  const [commentReplyTo, setCommentReplyTo] = useState(null);
-  const [commentsDrawerOpen, setCommentsDrawerOpen] = useState(false);
-  const [commentsLoading, setCommentsLoading] = useState(false);
-
-  const [showCohortBanner, setShowCohortBanner] = useState(() => {
-    try {
-      return !localStorage.getItem("cha_hide_cohort_banner");
-    } catch {
-      return true;
-    }
-  });
-
-  const dismissCohort = () => {
-    setShowCohortBanner(false);
-    try {
-      localStorage.setItem("cha_hide_cohort_banner", "true");
-    } catch {
-      // ignore
-    }
-  };
-
-  const [playerInitToken, setPlayerInitToken] = useState(0);
-
-  const watchInterval = useRef(null);
-  const completedRef = useRef(false);
-  const lastKnownTime = useRef(0);
-  const playerContainerId = "youtube-player-container";
-  const apiLoadedRef = useRef(false);
-  const { updateMemory: updateLastMemory } = useLastMemory();
-
-  // --- Persist last lesson memory for resume feature ---
-  useEffect(() => {
-    if (!activeLesson || !courseId) return;
-    updateLastMemory({
-      courseId,
-      lessonId: activeLesson._id,
-      lessonTitle: activeLesson.lessonTitle,
-      moduleNumber: activeLesson.moduleNumber,
-      lessonNumber: activeLesson.lessonNumber,
-      courseTitle: activeLesson.lessonTitle,
-    });
-  }, [activeLesson, courseId, updateLastMemory]);
-
-  // --- Load notes for active lesson ---
-  useEffect(() => {
-    if (!activeLesson?._id) return;
-    try {
-      const saved = window.localStorage.getItem(`cha_notes_${activeLesson._id}`);
-      setNotes(saved ? JSON.parse(saved) : []);
-    } catch {
-      setNotes([]);
-    }
-  }, [activeLesson?._id]);
-
-  // --- Save notes when they change ---
-  useEffect(() => {
-    if (!activeLesson?._id) return;
-    try {
-      window.localStorage.setItem(`cha_notes_${activeLesson._id}`, JSON.stringify(notes));
-    } catch {
-      // ignore quota errors
-    }
-  }, [notes, activeLesson?._id]);
-
-  useEffect(() => {
-    if (commentsDrawerOpen && activeLesson?._id) {
-      fetchComments();
-    }
-  }, [commentsDrawerOpen, activeLesson?._id]);
-
-  const addNote = () => {
-    if (!noteInput.trim() || !playerRef.current) return;
-    const currentTime = playerRef.current.getCurrentTime?.() || 0;
-    const newNote = {
-      id: Date.now().toString(),
-      time: currentTime,
-      text: noteInput.trim(),
-      createdAt: new Date().toISOString(),
-    };
-    setNotes((prev) => [...prev, newNote].sort((a, b) => a.time - b.time));
-    setNoteInput("");
-  };
-
-  const deleteNote = (noteId) => {
-    setNotes((prev) => prev.filter((n) => n.id !== noteId));
-  };
-
-  const seekToNote = (time) => {
-    if (playerRef.current && playerRef.current.seekTo) {
-      playerRef.current.seekTo(time, true);
-      if (!document.hidden) {
-        playerRef.current.playVideo?.();
-      }
-    }
-  };
-
-  const formatTime = (seconds) => {
-    if (!seconds || isNaN(seconds)) return "0:00";
-    const mins = Math.floor(seconds / 60);
-    const secs = Math.floor(seconds % 60);
-    return `${mins}:${secs.toString().padStart(2, "0")}`;
-  };
-
-  const fetchComments = async () => {
-    if (!activeLesson?._id) return;
-    setCommentsLoading(true);
-    try {
-      const res = await axiosSecure.get(`/lessons/comments/${activeLesson._id}`);
-      setComments(res.data.data || []);
-    } catch {
-      toast.error("Failed to load discussion");
-    } finally {
-      setCommentsLoading(false);
-    }
-  };
-
-  const postComment = async () => {
-    if (!commentText.trim() || !activeLesson) return;
-    try {
-      const res = await axiosSecure.post("/lessons/comments", {
-        lessonId: activeLesson._id,
-        courseId,
-        text: commentText.trim(),
-        parentId: commentReplyTo,
-      });
-      setComments((prev) => {
-        if (commentReplyTo) {
-          return prev.map((c) =>
-            c._id === commentReplyTo
-              ? { ...c, replies: [...(c.replies || []), res.data.data] }
-              : c
-          );
-        }
-        return [res.data.data, ...prev];
-      });
-      setCommentText("");
-      setCommentReplyTo(null);
-      toast.success("Comment posted");
-    } catch {
-      toast.error("Failed to post comment");
-    }
-  };
-
-  const deleteCommentApi = async (commentId) => {
-    try {
-      await axiosSecure.delete(`/lessons/comments/${commentId}`);
-      setComments((prev) => {
-        const remove = (list) => list.filter((c) => c._id !== commentId && !c.replies?.some((r) => r._id === commentId));
-        return remove(prev.map((c) => ({ ...c, replies: remove(c.replies || []) })));
-      });
-      toast.success("Comment deleted");
-    } catch {
-      toast.error("Failed to delete comment");
-    }
-  };
-
-  // --- Scroll chat to bottom ---
-  useEffect(() => {
-    if (aiDrawerOpen && chatEndRef.current) {
-      chatEndRef.current.scrollIntoView({ behavior: "smooth" });
-    }
-  }, [chatMessages, aiDrawerOpen]);
 
   // --- Data fetching (unchanged) ---
   const { data: lessonsData, isLoading: lessonsLoading } = useQuery({
@@ -544,7 +365,7 @@ export default function CoursePlayer() {
       if (watchInterval.current) clearInterval(watchInterval.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeLesson, playerInitToken]);
+  }, [activeLesson]);
 
   // --- Cleanup on unmount ---
   useEffect(() => {
@@ -1004,54 +825,17 @@ export default function CoursePlayer() {
           )}
         </div>
 
-        {showCohortBanner && (
-          <div className="relative mx-4 mb-4 p-4 rounded-2xl bg-slate-900/90 border border-white/10 shadow-2xl flex items-start justify-between gap-4 z-20">
-            <div>
-              <div className="flex items-center gap-2 text-white font-bold text-sm mb-1">
-                <span>🎓</span>
-                <h4>Learning Cohorts</h4>
-              </div>
-              <p className="text-xs text-slate-400">
-                Join a WhatsApp cohort to connect with fellow students, ask questions, and get peer support.
-              </p>
-            </div>
-            <button
-              onClick={dismissCohort}
-              className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition"
-              aria-label="Close"
-            >
-              ✕
-            </button>
-          </div>
-        )}
-
-        <div className="px-4 pb-4">
-          <CourseCohorts courseId={courseId} />
-        </div>
-
         {/* Floating AI Assistant Button */}
-        <button
-          onClick={() => setAiDrawerOpen(!aiDrawerOpen)}
-          className="fixed bottom-20 right-3 md:right-6 bg-purple-600 text-white p-2 md:p-3 rounded-full shadow-lg z-20 flex items-center gap-1 md:gap-2 hover:bg-purple-700 transition text-xs md:text-sm"
-        >
-          🤖 <span className="hidden md:inline">AI Tutor</span>
-        </button>
-
-        {/* Floating Notes Button */}
-        <button
-          onClick={() => setNotesDrawerOpen(!notesDrawerOpen)}
-          className="fixed bottom-20 right-16 md:right-24 bg-amber-400 text-black p-2 md:p-3 rounded-full shadow-lg z-20 flex items-center gap-1 md:gap-2 hover:bg-amber-500 transition text-xs md:text-sm"
-        >
-          📝 <span className="hidden md:inline">Notes</span>
-        </button>
-
-        {/* Floating Q&A Button */}
-        <button
-          onClick={() => setCommentsDrawerOpen(!commentsDrawerOpen)}
-          className="fixed bottom-20 right-28 md:right-44 bg-emerald-500 text-white p-2 md:p-3 rounded-full shadow-lg z-20 flex items-center gap-1 md:gap-2 hover:bg-emerald-600 transition text-xs md:text-sm"
-        >
-          💬 <span className="hidden md:inline">Q&A</span>
-        </button>
+        <div className="fixed bottom-6 right-6 z-40">
+          <button
+            onClick={() => setAiDrawerOpen(true)}
+            className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs shadow-xl shadow-purple-900/40 transition active:scale-95"
+            aria-label="Open AI Tutor"
+          >
+            <Sparkles className="w-4 h-4 text-purple-200" />
+            <span>AI Tutor</span>
+          </button>
+        </div>
 
         {/* Floating Course Content Drawer Button (mobile only) */}
         <button
@@ -1103,138 +887,6 @@ export default function CoursePlayer() {
             </form>
           </div>
         )}
-
-        {/* Timestamped Notes Drawer */}
-        {notesDrawerOpen && (
-          <div className="fixed inset-y-0 right-0 w-80 sm:w-96 bg-zinc-950 border-l border-zinc-800 flex flex-col z-40 shadow-2xl">
-            <div className="p-4 border-b border-zinc-800 flex justify-between items-center bg-zinc-900">
-              <h3 className="text-white font-semibold flex items-center gap-2">📝 Timestamped Notes</h3>
-              <button onClick={() => setNotesDrawerOpen(false)} aria-label="Close notes" className="text-gray-400 text-xl hover:text-white">&times;</button>
-            </div>
-
-            <div className="flex-1 p-4 overflow-y-auto space-y-3">
-              {notes.length === 0 && (
-                <p className="text-gray-500 text-sm text-center py-8">
-                  No notes yet. Add your first timestamped note below.
-                </p>
-              )}
-              {notes.map((note) => (
-                <div key={note.id} className="bg-zinc-900 border border-zinc-800 rounded-xl p-3">
-                  <div className="flex items-center justify-between mb-1">
-                    <button
-                      onClick={() => seekToNote(note.time)}
-                      className="text-xs font-mono bg-amber-400/15 text-amber-400 px-2 py-0.5 rounded hover:bg-amber-400/25 transition"
-                    >
-                      {formatTime(note.time)}
-                    </button>
-                    <button
-                      onClick={() => deleteNote(note.id)}
-                      className="text-gray-500 hover:text-red-400 text-xs transition"
-                    >
-                      Delete
-                    </button>
-                  </div>
-                  <p className="text-gray-300 text-sm">{note.text}</p>
-                </div>
-              ))}
-            </div>
-
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                addNote();
-              }}
-              className="p-3 border-t border-zinc-800 bg-zinc-900 flex gap-2"
-            >
-              <input
-                type="text"
-                value={noteInput}
-                onChange={(e) => setNoteInput(e.target.value)}
-                placeholder="Add a note at current timestamp..."
-                className="flex-1 bg-zinc-800 border border-zinc-700 text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-yellow-400"
-              />
-              <button type="submit" disabled={!noteInput.trim()} className="bg-amber-400 text-black px-4 py-2 rounded-lg font-semibold text-sm hover:bg-amber-500 disabled:opacity-50">
-                Add
-              </button>
-            </form>
-          </div>
-        )}
-
-        {/* Peer Q&A Drawer */}
-        {commentsDrawerOpen && (
-          <div className="fixed inset-y-0 right-0 w-80 sm:w-96 bg-zinc-950 border-l border-zinc-800 flex flex-col z-40 shadow-2xl">
-            <div className="p-4 border-b border-zinc-800 flex justify-between items-center bg-zinc-900">
-              <h3 className="text-white font-semibold flex items-center gap-2">💬 Peer Q&A</h3>
-              <button onClick={() => setCommentsDrawerOpen(false)} aria-label="Close Q&A" className="text-gray-400 text-xl hover:text-white">&times;</button>
-            </div>
-
-            <div className="flex-1 p-4 overflow-y-auto space-y-3">
-              {commentsLoading && <p className="text-gray-500 text-sm text-center">Loading discussion...</p>}
-              {!commentsLoading && comments.length === 0 && (
-                <p className="text-gray-500 text-sm text-center py-8">
-                  No questions yet. Be the first to ask!
-                </p>
-              )}
-              {comments.map((comment) => (
-                <div key={comment._id} className={`bg-zinc-900 border border-zinc-800 rounded-xl p-3 ${comment.isPinned ? "border-amber-400/50" : ""}`}>
-                  {comment.isPinned && <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider">Pinned</span>}
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs font-semibold text-gray-300">{comment.userName}</span>
-                    <span className="text-[10px] text-gray-500">{new Date(comment.createdAt).toLocaleDateString()}</span>
-                  </div>
-                  <p className="text-gray-300 text-sm">{comment.text}</p>
-                  {comment.replies?.length > 0 && (
-                    <div className="mt-2 ml-4 space-y-2 border-l border-zinc-700 pl-3">
-                      {comment.replies.map((reply) => (
-                        <div key={reply._id} className="text-sm">
-                          <span className="text-xs font-semibold text-gray-400">{reply.userName}</span>
-                          <p className="text-gray-400">{reply.text}</p>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  <div className="flex gap-2 mt-2">
-                    <button
-                      onClick={() => { setCommentReplyTo(comment._id); setCommentText(""); }}
-                      className="text-[11px] text-amber-400 hover:text-amber-300 transition"
-                    >
-                      Reply
-                    </button>
-                    {(comment.userEmail === user?.email || user?.role === "admin" || user?.role === "teacher") && (
-                      <button
-                        onClick={() => deleteCommentApi(comment._id)}
-                        className="text-[11px] text-red-400 hover:text-red-300 transition"
-                      >
-                        Delete
-                      </button>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                postComment();
-              }}
-              className="p-3 border-t border-zinc-800 bg-zinc-900 flex gap-2"
-            >
-              <input
-                type="text"
-                value={commentText}
-                onChange={(e) => setCommentText(e.target.value)}
-                placeholder={commentReplyTo ? "Write a reply..." : "Ask a question..."}
-                className="flex-1 bg-zinc-800 border border-zinc-700 text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-yellow-400"
-              />
-              <button type="submit" disabled={!commentText.trim()} className="bg-amber-400 text-black px-4 py-2 rounded-lg font-semibold text-sm hover:bg-amber-500 disabled:opacity-50">
-                Post
-              </button>
-            </form>
-          </div>
-        )}
-
-        {/* Sidebar as drawer on mobile */}
         <div className={`
           fixed md:static top-0 right-0 h-full w-80 bg-zinc-950 border-l border-zinc-800 overflow-y-auto z-30 transition-transform duration-300
           ${drawerOpen ? 'translate-x-0' : 'translate-x-full md:translate-x-0'}
