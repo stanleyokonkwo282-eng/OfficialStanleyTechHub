@@ -20,6 +20,11 @@ export default function CoursePlayer() {
   const [activeLesson, setActiveLesson] = useState(null);
   const [expandedModules, setExpandedModules] = useState({});
   const playerRef = useRef(null);
+  const watchInterval = useRef(null);
+  const completedRef = useRef(false);
+  const lastKnownTime = useRef(0);
+  const playerContainerId = "youtube-player-container";
+  const apiLoadedRef = useRef(false);
   const [playerReady, setPlayerReady] = useState(false);
   const [watchPercent, setWatchPercent] = useState(0);
   const [videoError, setVideoError] = useState(false);
