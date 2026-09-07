@@ -540,15 +540,6 @@ export default function CoursePlayer() {
   const fallbackVimeoId = getVimeoId(activeLesson?.videoUrl);
   const isDirect = isDirectVideo(activeLesson?.videoUrl);
 
-  const { data: cohortsData } = useQuery({
-    queryKey: ["cohorts", courseId],
-    queryFn: async () => {
-      const res = await axiosSecure.get(`/cohorts/course/${courseId}`);
-      return res.data.data || [];
-    },
-    enabled: !!courseId,
-  });
-
   const downloadReceipt = async () => {
     try {
       const res = await axiosSecure.get(`/enrollments/${enrollmentId}/receipt`, {
@@ -611,14 +602,6 @@ export default function CoursePlayer() {
           hasPassed ? "bg-green-900 text-green-300" : isLocked ? "bg-red-900 text-red-300" : "bg-yellow-900 text-yellow-300"
         }`}>
           {hasPassed ? "You passed! Click Get Certificate." : isLocked ? "Exam locked. Contact admin." : "All lessons done! Take the exam."}
-          {hasPassed && cohortsData?.length > 0 && (
-            <button
-              onClick={() => window.open(cohortsData[0].whatsappGroupLink, "_blank")}
-              className="ml-3 px-3 py-1 bg-green-600 text-white rounded-lg text-xs hover:bg-green-500 transition"
-            >
-              Join WhatsApp Cohort
-            </button>
-          )}
         </div>
       )}
 

@@ -34,7 +34,6 @@ const ManageTeachers = lazyImport(() => import("../pages/admin/ManageTeachers"))
 const ManageUsers = lazyImport(() => import("../pages/admin/ManageUsers"));
 const ManageVisits = lazyImport(() => import("../pages/admin/ManageVisits"));
 const BulkImportCourses = lazyImport(() => import("../pages/admin/BulkImportCourses"));
-const ManageCohorts = lazyImport(() => import("../pages/admin/ManageCohorts"));
 const BeTeacher = lazyImport(() => import("../pages/BeTeacher"));
 const CategoryCourses = lazyImport(() => import("../pages/CategoryCourses"));
 const CourseDash = lazyImport(() => import("../pages/common/CourseDash"));
@@ -238,14 +237,6 @@ const router = createBrowserRouter([
             element: (
               <RoleBasedRoute allowedRoles={["admin"]}>
                 <BulkImportCourses />
-              </RoleBasedRoute>
-            ),
-          },
-          {
-            path: "admin/cohorts",
-            element: (
-              <RoleBasedRoute allowedRoles={["admin", "teacher"]}>
-                <ManageCohorts />
               </RoleBasedRoute>
             ),
           },

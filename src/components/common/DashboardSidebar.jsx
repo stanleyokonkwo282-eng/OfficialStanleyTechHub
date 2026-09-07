@@ -1,4 +1,4 @@
-import { FaBookOpen, FaCertificate, FaBell, FaMoneyBillWave, FaChartBar, FaBullhorn, FaGraduationCap, FaSun, FaMoon, FaUsers } from "react-icons/fa";
+import { FaBookOpen, FaCertificate, FaBell, FaMoneyBillWave, FaChartBar, FaBullhorn, FaGraduationCap, FaSun, FaMoon } from "react-icons/fa";
 import { IoIosPerson } from "react-icons/io";
 import { IoDocumentsSharp } from "react-icons/io5";
 import { LuBookUser, LuShare2 } from "react-icons/lu";
@@ -90,13 +90,6 @@ export default function DashboardSidebar() {
           <NavLink to="/dashboard/visits" className={linkStyle}>
             <LinkTile title="Site Visits">
               <FaChartBar />
-            </LinkTile>
-          </NavLink>
-        )}
-        {(user?.role === "admin" || user?.role === "teacher") && (
-          <NavLink to="/dashboard/admin/cohorts" className={linkStyle}>
-            <LinkTile title="Manage Cohorts">
-              <FaUsers />
             </LinkTile>
           </NavLink>
         )}
