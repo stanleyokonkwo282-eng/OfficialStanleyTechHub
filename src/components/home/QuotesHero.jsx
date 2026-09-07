@@ -38,72 +38,79 @@ export default function QuotesHero() {
   useEffect(() => {
     const timer = setInterval(() => {
       setIndex((prev) => (prev + 1) % quotes.length);
-               }, QUOTE_DISPLAY_MS);
+    }, QUOTE_DISPLAY_MS);
     return () => clearInterval(timer);
   }, []);
 
   const quote = quotes[index];
 
   return (
-    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-black">
-      {/* Animated background blobs */}
-      <div
-        className="absolute top-0 left-0 w-[500px] h-[500px] bg-yellow-400 rounded-full blur-[120px] -translate-x-1/2 -translate-y-1/2 opacity-15 animate-pulse"
-        style={{ animationDuration: "8s" }}
-        aria-hidden
-      />
-      <div
-        className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-purple-600 rounded-full blur-[140px] translate-x-1/3 translate-y-1/3 opacity-10 animate-pulse"
-        style={{ animationDuration: "10s" }}
-        aria-hidden
-      />
+    <section className="relative overflow-hidden bg-[#030b17] text-white">
+      <div className="absolute inset-0">
+        <div className="absolute -left-24 top-0 h-80 w-80 rounded-full bg-amber-400/20 blur-[120px]" aria-hidden />
+        <div className="absolute bottom-0 right-0 h-[28rem] w-[28rem] rounded-full bg-sky-500/10 blur-[140px]" aria-hidden />
+        <div className="absolute inset-0 opacity-20" style={{ backgroundImage: "linear-gradient(rgba(255,255,255,0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.08) 1px, transparent 1px)", backgroundSize: "54px 54px" }} aria-hidden />
+      </div>
 
-      {/* Quote content */}
-      <div className="relative z-10 max-w-5xl mx-auto px-6 text-center">
-        <div className="mb-8 animate-fade-in">
-          <span className="text-6xl md:text-8xl font-black text-yellow-400/20 select-none">“</span>
-        </div>
+      <div className="relative z-10 mx-auto max-w-6xl px-6 py-20 md:py-28">
+        <motion.div
+          initial={{ opacity: 0, y: -14 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="mb-8 inline-flex items-center gap-3 rounded-full border border-amber-400/30 bg-white/5 px-4 py-2 backdrop-blur-md"
+        >
+          <span className="h-2.5 w-2.5 rounded-full bg-amber-300 shadow-[0_0_18px_rgba(253,224,71,0.8)]" />
+          <span className="text-[10px] font-semibold uppercase tracking-[0.28em] text-slate-200">
+            Growth mindset
+          </span>
+        </motion.div>
 
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={index}
-            initial="enter"
-            animate="center"
-            exit="exit"
-            variants={fadeVariants}
-            transition={{ duration: 0.7, ease: "easeInOut" }}
-          >
-            <p className="text-2xl md:text-5xl font-bold text-white leading-tight mb-8 tracking-tight">
-              {quote.text}
-            </p>
-            <p className="text-yellow-400 text-lg md:text-xl font-semibold tracking-wide">
+        <div className="rounded-[2rem] border border-white/10 bg-white/5 p-6 shadow-[0_30px_90px_rgba(0,0,0,0.38)] backdrop-blur-xl md:p-10">
+          <div className="mb-6 text-center">
+            <span className="text-6xl font-black text-amber-300/30 md:text-8xl">“</span>
+          </div>
+
+          <AnimatePresence mode="wait">
+            <motion.div
+             key={index}
+             initial="enter"
+             animate="center"
+             exit="exit"
+             variants={fadeVariants}
+             transition={{ duration: 0.7, ease: "easeInOut" }}
+             className="text-center"
+            >
+             <p className="mb-6 text-2xl font-bold leading-tight tracking-tight text-white md:text-4xl lg:text-5xl">
+               {quote.text}
+             </p>
+             <p className="text-base font-semibold tracking-[0.26em] text-amber-300 md:text-lg">
                — {quote.author}
-            </p>
-          </motion.div>
-        </AnimatePresence>
+             </p>
+            </motion.div>
+          </AnimatePresence>
 
-        {/* Dots indicator */}
-        <div className="flex justify-center gap-2 mt-12 flex-wrap">
-          {quotes.slice(0, 20).map((_, i) => (
-            <button
-              key={i}
-              onClick={() => setIndex(i)}
-              className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                i === index ? "bg-yellow-400 w-6" : "bg-zinc-700 hover:bg-zinc-500"
-              }`}
-              aria-label={`Go to quote ${i + 1}`}
-            />
-          ))}
-        </div>
+          <div className="mt-10 flex flex-wrap justify-center gap-2">
+            {quotes.slice(0, 20).map((_, i) => (
+             <button
+               key={i}
+               onClick={() => setIndex(i)}
+               className={`h-2.5 rounded-full transition-all duration-300 ${
+                 i === index ? "w-8 bg-amber-300" : "w-2.5 bg-zinc-600 hover:bg-zinc-400"
+               }`}
+               aria-label={`Go to quote ${i + 1}`}
+             />
+            ))}
+          </div>
 
-        {/* CTA */}
-        <div className="mt-16 animate-fade-in" style={{ animationDelay: "0.8s" }}>
-          <a
-            href="/courses"
-            className="inline-block bg-yellow-400 text-black px-10 py-4 rounded-xl font-bold text-lg hover:bg-yellow-500 transition shadow-lg shadow-yellow-400/20"
-          >
+          <div className="mt-10 flex justify-center">
+            <a
+             href="/courses"
+             className="inline-flex items-center gap-3 rounded-xl bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-500 px-8 py-4 text-base font-black text-slate-950 shadow-[0_18px_40px_rgba(250,204,21,0.28)] transition-transform hover:-translate-y-0.5"
+            >
              Start Learning Now
-          </a>
+             <span aria-hidden>→</span>
+            </a>
+          </div>
         </div>
       </div>
     </section>

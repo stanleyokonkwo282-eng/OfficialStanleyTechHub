@@ -141,7 +141,7 @@ export default function Hero3D() {
   const handlePrimaryClick = () => navigate("/courses");
 
   return (
-    <div className="relative min-h-screen bg-[#000000] text-white overflow-hidden">
+    <div className="relative min-h-screen overflow-hidden bg-[#030b17] text-white">
       <CursorSpotlight />
 
       <div className="absolute inset-0 z-0">
@@ -154,20 +154,29 @@ export default function Hero3D() {
           className="absolute inset-0"
           style={{
             background:
-              "radial-gradient(900px circle at 70% 30%, rgba(255,199,0,0.18), transparent 60%)",
+              "radial-gradient(800px circle at 72% 28%, rgba(255,199,0,0.18), transparent 56%), linear-gradient(120deg, rgba(2,6,23,0.85) 0%, rgba(3,11,23,0.72) 40%, rgba(2,6,23,0.92) 100%)",
           }}
           aria-hidden
         />
-        <div
-          className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/70 to-black"
-          aria-hidden
-        />
+        <div className="absolute inset-x-0 bottom-0 h-32 bg-gradient-to-t from-[#030b17] to-transparent" aria-hidden />
       </div>
 
-      <div className="relative z-10 max-w-7xl mx-auto pt-32 pb-20 px-6 lg:px-12">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
-          <div className="lg:col-span-7 space-y-10">
-            <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black tracking-tighter leading-[1.02] select-none">
+      <div className="relative z-10 mx-auto max-w-7xl px-6 pb-20 pt-16 lg:px-12 lg:pt-20">
+        <motion.div
+          initial={{ opacity: 0, y: -16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+          className="mb-8 inline-flex items-center gap-3 rounded-full border border-amber-400/30 bg-white/5 px-4 py-2 backdrop-blur-md"
+        >
+          <span className="h-2.5 w-2.5 rounded-full bg-amber-300 shadow-[0_0_20px_rgba(253,224,71,0.8)]" />
+          <span className="text-xs font-semibold uppercase tracking-[0.28em] text-slate-200">
+            Creative learning for modern careers
+          </span>
+        </motion.div>
+
+        <div className="grid items-center gap-10 lg:grid-cols-12 lg:gap-12">
+          <div className="space-y-8 lg:col-span-7">
+            <h1 className="select-none text-5xl font-black leading-[0.96] tracking-[-0.05em] sm:text-6xl md:text-7xl lg:text-[5.4rem]">
               {headline.map((word, i) => (
                 <motion.span
                   key={word}
@@ -177,7 +186,9 @@ export default function Hero3D() {
                   className="inline-block"
                 >
                   {word === "Create." || word === "Lead." ? (
-                    <span className="text-[#FFC700]">{word}&nbsp;</span>
+                    <span className="bg-gradient-to-r from-amber-200 via-amber-400 to-yellow-500 bg-clip-text text-transparent">
+                      {word}&nbsp;
+                    </span>
                   ) : (
                     <>{word}&nbsp;</>
                   )}
@@ -185,17 +196,17 @@ export default function Hero3D() {
               ))}
             </h1>
 
-            <p className="text-neutral-300 text-lg md:text-xl max-w-xl leading-relaxed">
+            <p className="max-w-xl text-lg leading-relaxed text-slate-300 md:text-xl">
               Master profitable digital skills — Graphic Design, Video Editing,
               Digital Marketing, AI Tools, and more. Enroll for ₦5,000 and earn a
               verified certificate with a unique ID.
             </p>
 
-            <div className="flex flex-wrap gap-2 max-w-xl">
+            <div className="flex max-w-xl flex-wrap gap-2">
               {skills.map((skill) => (
                 <span
                   key={skill}
-                  className="px-4 py-2 text-xs font-semibold bg-[#0A0A0A]/80 backdrop-blur border border-[#1F1F1F] text-neutral-400 rounded-full cursor-default hover:border-amber-400/40 hover:text-neutral-100 transition-all duration-300 hover:scale-[1.03]"
+                  className="cursor-default rounded-full border border-white/10 bg-white/5 px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-200 transition-all duration-300 hover:-translate-y-0.5 hover:border-amber-400/50 hover:text-white"
                 >
                   {skill}
                 </span>
@@ -207,63 +218,111 @@ export default function Hero3D() {
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={handlePrimaryClick}
-                className="group relative overflow-hidden bg-[#FFC700] text-black text-lg font-black px-8 py-4 rounded-xl flex items-center gap-3 hover:shadow-[0_0_35px_rgba(255,199,0,0.35)] transition-shadow"
+                className="group relative overflow-hidden rounded-xl bg-gradient-to-r from-amber-300 via-yellow-400 to-amber-500 px-8 py-4 text-lg font-black text-slate-950 shadow-[0_22px_50px_rgba(250,204,21,0.32)] transition-shadow hover:shadow-[0_26px_60px_rgba(250,204,21,0.42)]"
               >
-                <span className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/25 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-700 pointer-events-none" />
                 <span className="relative z-10">Explore Courses</span>
-                <span className="relative z-10 group-hover:translate-x-0.5 transition-transform">→</span>
+                <span className="relative z-10 ml-2 transition-transform group-hover:translate-x-1">→</span>
               </motion.button>
 
               <motion.button
                 whileHover={{ scale: 1.03 }}
                 onClick={() => navigate("/about")}
-                className="relative overflow-hidden border border-[#1F1F1F] hover:border-amber-400/40 text-neutral-200 hover:text-white font-semibold px-8 py-4 rounded-xl transition-all bg-[#0A0A0A]/60 backdrop-blur"
+                className="relative overflow-hidden rounded-xl border border-white/15 bg-[#0b1522]/70 px-8 py-4 font-semibold text-slate-200 transition-all hover:border-amber-400/60 hover:text-white"
               >
-                <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/0 hover:via-white/5 to-transparent transition-all" />
-                Learn More
+                <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent transition-all" />
+                <span className="relative z-10">Learn More</span>
               </motion.button>
             </div>
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-4 pt-3">
               <div className="flex -space-x-3">
                 {Array.from({ length: 4 }).map((_, i) => (
                   <div
                     key={i}
-                    className="w-10 h-10 rounded-full border-2 border-[#0A0A0A] flex items-center justify-center text-white font-black text-sm"
+                    className="flex h-11 w-11 items-center justify-center rounded-full border-2 border-[#030b17] text-sm font-black text-white shadow-lg"
                     style={{
                       background: "linear-gradient(135deg, #1a6b1a 0%, #008000 50%, #1a6b1a 100%)",
                     }}
                   >
-                    {["C", "E", "F", "O"][i]}
+                    {['C', 'E', 'F', 'O'][i]}
                   </div>
                 ))}
               </div>
               <div>
-                <p className="text-white font-bold text-lg">3,000+ Students</p>
-                <p className="text-neutral-500 text-sm">Students learning daily</p>
+                <p className="text-lg font-bold text-white">3,000+ Students</p>
+                <p className="text-sm text-slate-400">Students learning daily</p>
               </div>
             </div>
           </div>
 
           <div className="lg:col-span-5">
-            <div
-              className="grid grid-cols-1 sm:grid-cols-3 gap-6 items-stretch"
-              style={{ perspective: "1200px" }}
+            <motion.div
+              initial={{ opacity: 0, y: 26 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.2 }}
+              className="rounded-[2rem] border border-white/10 bg-[#071321]/80 p-4 shadow-[0_30px_80px_rgba(0,0,0,0.45)] backdrop-blur-xl"
             >
-              {metrics.map((m, i) => (
-                <TiltCard
-                  key={m.label}
-                  icon={m.icon}
-                  value={m.value}
-                  label={m.label}
-                  sub={m.sub}
-                  hero={m.hero}
-                  span={m.span}
-                  delay={i * 0.1}
+              <div className="relative overflow-hidden rounded-[1.5rem] border border-white/10">
+                <img
+                  src={heroImage}
+                  alt="Students learning creative skills"
+                  className="h-[420px] w-full object-cover"
                 />
-              ))}
-            </div>
+                <div className="absolute inset-0 bg-gradient-to-t from-[#071321] via-[#071321]/15 to-transparent" />
+
+                <div className="absolute left-5 top-5 rounded-full border border-amber-300/30 bg-[#091827]/70 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.28em] text-amber-200 backdrop-blur-sm">
+                  Since 2021
+                </div>
+
+                <div className="absolute inset-x-0 bottom-0 p-6">
+                  <div className="rounded-2xl border border-white/10 bg-[#091827]/80 p-4 shadow-lg backdrop-blur-md">
+                    <p className="text-amber-300">Creative careers. Real results.</p>
+                    <div className="mt-2 flex items-center justify-between gap-6">
+                      <div>
+                        <p className="text-2xl font-black tracking-tight text-white">12k+</p>
+                        <p className="text-xs uppercase tracking-[0.18em] text-slate-400">Skill hours</p>
+                      </div>
+                      <div className="h-12 w-px bg-white/10" />
+                      <div>
+                        <p className="text-2xl font-black tracking-tight text-white">94%</p>
+                        <p className="text-xs uppercase tracking-[0.18em] text-slate-400">Satisfaction</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                  <p className="text-2xl font-black text-amber-300">25+</p>
+                  <p className="mt-1 text-xs uppercase tracking-[0.18em] text-slate-400">Courses</p>
+                </div>
+                <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                  <p className="text-2xl font-black text-amber-300">90+</p>
+                  <p className="mt-1 text-xs uppercase tracking-[0.18em] text-slate-400">Lessons</p>
+                </div>
+                <div className="rounded-2xl border border-white/10 bg-white/5 p-4">
+                  <p className="text-2xl font-black text-amber-300">₦5k</p>
+                  <p className="mt-1 text-xs uppercase tracking-[0.18em] text-slate-400">Enrollment</p>
+                </div>
+              </div>
+            </motion.div>
           </div>
+        </div>
+
+        <div className="mt-12 grid grid-cols-1 gap-6 sm:grid-cols-3" style={{ perspective: "1200px" }}>
+          {metrics.map((m, i) => (
+            <TiltCard
+              key={m.label}
+              icon={m.icon}
+              value={m.value}
+              label={m.label}
+              sub={m.sub}
+              hero={m.hero}
+              span={m.span}
+              delay={i * 0.1}
+            />
+          ))}
         </div>
       </div>
     </div>

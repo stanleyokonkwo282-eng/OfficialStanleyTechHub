@@ -139,66 +139,90 @@ export default function Navbar() {
   );
 
   return (
-    <motion.nav
-      style={{ backgroundColor: navBackground, backdropFilter: navBlur }}
-      className="sticky top-0 z-50 border-b border-zinc-800 shadow-lg px-4"
-    >
-      <div className="navbar">
-        <div className="navbar-start">
-          <div className="dropdown">
-            <div
-              tabIndex={0}
-              role="button"
-              className="btn btn-ghost lg:hidden text-2xl text-white"
-            >
-              <TiThMenu />
-            </div>
-            <ul
-              tabIndex={0}
-              className="menu menu-sm dropdown-content bg-zinc-950 border border-zinc-800 rounded-box z-50 w-52 p-2 shadow"
-            >
-              {links}
-            </ul>
+    <>
+      <div className="hidden md:block border-b border-[#0f172a] bg-[#08111d] text-[11px] font-medium text-slate-300">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-2.5 lg:px-8">
+          <div className="flex items-center gap-5 text-slate-300/90">
+            <span>📍 Lagos, Nigeria</span>
+            <span>📞 +234 8134438808</span>
+            <span>✉️ hello@creatorshubacademy.com</span>
           </div>
-
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-2">
-            <img
-              src={logo}
-              alt="Creators Hub Academy"
-              className="w-10 h-10 rounded-full object-cover"
-            />
-            <span className="text-lg font-bold text-white hidden sm:block">
-              Creators Hub <span className="text-yellow-400">Academy</span>
+          <div className="flex items-center gap-3">
+            <span className="rounded-full border border-amber-400/30 bg-amber-400/10 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-amber-300">
+              Admissions Open
             </span>
-          </Link>
-        </div>
-
-        <div className="navbar-center hidden lg:flex">
-          <ul className="menu menu-horizontal px-1">{links}</ul>
-        </div>
-
-        <div className="navbar-end">
-          <button
-            onClick={toggleTheme}
-            className="p-2 text-white hover:text-yellow-400 transition-colors"
-            aria-label="Toggle theme"
-          >
-            {theme === "dark" ? <FaSun className="text-xl" /> : <FaMoon className="text-xl" />}
-          </button>
-          <UserData
-            user={user}
-            isUserLoading={isUserLoading}
-            logoutMutation={logoutMutation}
-            notifications={notifications}
-            unreadCount={unreadCount}
-            setShowDropdown={setShowDropdown}
-            showDropdown={showDropdown}
-            dropdownRef={dropdownRef}
-          />
+            <Link to="/login" className="text-amber-300 transition hover:text-amber-200">
+              Student Portal
+            </Link>
+          </div>
         </div>
       </div>
-    </motion.nav>
+
+      <motion.nav
+        style={{ backgroundColor: navBackground, backdropFilter: navBlur }}
+        className="sticky top-0 z-50 border-b border-white/10 shadow-[0_12px_35px_rgba(0,0,0,0.26)] px-4"
+      >
+        <div className="navbar mx-auto max-w-7xl">
+          <div className="navbar-start">
+            <div className="dropdown">
+              <div
+                tabIndex={0}
+                role="button"
+                className="btn btn-ghost lg:hidden text-2xl text-white"
+              >
+                <TiThMenu />
+              </div>
+              <ul
+                tabIndex={0}
+                className="menu menu-sm dropdown-content bg-[#08111d] border border-white/10 rounded-box z-50 w-52 p-2 shadow-2xl"
+              >
+                {links}
+              </ul>
+            </div>
+
+            <Link to="/" className="flex items-center gap-3">
+              <img
+                src={logo}
+                alt="Creators Hub Academy"
+                className="h-11 w-11 rounded-full border border-amber-300/40 bg-[#0b1220] object-cover p-1 shadow-lg shadow-amber-500/10"
+              />
+              <div className="leading-none">
+                <span className="block text-lg font-black tracking-tight text-white">
+                  Creators Hub
+                </span>
+                <span className="block text-[10px] font-semibold uppercase tracking-[0.28em] text-amber-300">
+                  Academy
+                </span>
+              </div>
+            </Link>
+          </div>
+
+          <div className="navbar-center hidden lg:flex">
+            <ul className="menu menu-horizontal items-center gap-1 px-1">{links}</ul>
+          </div>
+
+          <div className="navbar-end">
+            <button
+              onClick={toggleTheme}
+              className="p-2 text-white transition hover:text-amber-300"
+              aria-label="Toggle theme"
+            >
+              {theme === "dark" ? <FaSun className="text-xl" /> : <FaMoon className="text-xl" />}
+            </button>
+            <UserData
+              user={user}
+              isUserLoading={isUserLoading}
+              logoutMutation={logoutMutation}
+              notifications={notifications}
+              unreadCount={unreadCount}
+              setShowDropdown={setShowDropdown}
+              showDropdown={showDropdown}
+              dropdownRef={dropdownRef}
+            />
+          </div>
+        </div>
+      </motion.nav>
+    </>
   );
 }
 
