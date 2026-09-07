@@ -45,7 +45,7 @@ export default function Signup() {
       await axiosSecure.post(`/users`, {
         email: user.email,
         photoURL: user.photoURL,
-        displayName: user.displayName,
+        name: user.displayName,
       });
 
       // Track referral if present

@@ -7,8 +7,7 @@ import LoaderSpinner from "../../components/common/LoaderSpinner";
 import useAuth from "../../hooks/useAuth";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
 import PremiumCourseReader from "../../components/common/PremiumCourseReader";
-import { useLastMemory } from "../../hooks/useLastMemory";
-import { getYouTubeId, getVimeoId, isDirectVideo, getVideoProvider } from "../../utils/VideoPlayerApi";
+import { getVimeoId, getVideoProvider } from "../../utils/VideoPlayerApi";
 
 export default function CoursePlayer() {
   const { courseId } = useParams();
@@ -26,6 +25,7 @@ export default function CoursePlayer() {
   const playerContainerId = "youtube-player-container";
   const apiLoadedRef = useRef(false);
   const [playerReady, setPlayerReady] = useState(false);
+  const [playerInitToken, setPlayerInitToken] = useState(0);
   const [watchPercent, setWatchPercent] = useState(0);
   const [videoError, setVideoError] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -110,7 +110,7 @@ export default function CoursePlayer() {
         { sender: "ai", text: "Hello! I'm your AI Course Assistant. Ask me anything about this lesson or course!" }
       ]);
     }
-  }, [activeLesson?._id, dataUpdatedAt]);
+  }, [activeLesson?._id, chatHistoryData?.messages, dataUpdatedAt]);
 
   // --- Mutations ---
   const markCompleteMutation = useMutation({
@@ -135,7 +135,7 @@ export default function CoursePlayer() {
   });
 
   const updateLastWatchedMutation = useMutation({
-    mutationFn: async (lessonId, currentTimeSec = 0) => {
+    mutationFn: async ({ lessonId, currentTimeSec = 0 }) => {
       await axiosSecure.post("/lessons/last-watched", {
         lessonId,
         courseId,
@@ -291,7 +291,10 @@ export default function CoursePlayer() {
             const percent = (currentTime / duration) * 100;
             setWatchPercent(Math.min(100, percent));
             if (Math.floor(currentTime) % 10 === 0 && currentTime > 0) {
-              updateLastWatchedMutationRef.current.mutate(activeLesson._id, currentTime);
+              updateLastWatchedMutationRef.current.mutate({
+                lessonId: activeLesson._id,
+                currentTimeSec: currentTime,
+              });
             }
             if (percent >= 90 && !completedRef.current) {
               clearInterval(watchInterval.current);
@@ -303,7 +306,12 @@ export default function CoursePlayer() {
         if (watchInterval.current) clearInterval(watchInterval.current);
         if (playerRef.current && playerReady && playerRef.current.getCurrentTime) {
           const currentTime = playerRef.current.getCurrentTime();
-          if (currentTime > 0) updateLastWatchedMutationRef.current.mutate(activeLesson._id, currentTime);
+          if (currentTime > 0) {
+            updateLastWatchedMutationRef.current.mutate({
+              lessonId: activeLesson._id,
+              currentTimeSec: currentTime,
+            });
+          }
         }
       }
     };
@@ -382,7 +390,7 @@ export default function CoursePlayer() {
       if (watchInterval.current) clearInterval(watchInterval.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeLesson]);
+  }, [activeLesson, playerInitToken]);
 
   // --- Cleanup on unmount ---
   useEffect(() => {
@@ -442,7 +450,10 @@ export default function CoursePlayer() {
       try {
         const currentTime = playerRef.current.getCurrentTime();
         if (currentTime > 0) {
-          updateLastWatchedMutationRef.current.mutate(activeLesson._id, currentTime);
+          updateLastWatchedMutationRef.current.mutate({
+            lessonId: activeLesson._id,
+            currentTimeSec: currentTime,
+          });
         }
       } catch (err) {
         console.debug("Error saving watch time on lesson switch:", err);
@@ -538,7 +549,6 @@ export default function CoursePlayer() {
   const videoProvider = getVideoProvider(activeLesson?.videoUrl);
   const fallbackYoutubeId = getYouTubeId(activeLesson?.videoUrl, activeLesson?.lessonTitle);
   const fallbackVimeoId = getVimeoId(activeLesson?.videoUrl);
-  const isDirect = isDirectVideo(activeLesson?.videoUrl);
 
   const downloadReceipt = async () => {
     try {

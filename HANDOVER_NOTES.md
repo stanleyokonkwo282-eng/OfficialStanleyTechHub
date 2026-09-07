@@ -13,6 +13,7 @@
 
 ### Frontend (OfficialStanleyTechHub) — Pushed to `main`
 - **Vite Rollup Chunking & White Screen Fix**: Grouped `react`, `react-dom`, `react-router`, and `framer-motion` together into the `vendor-react-core` chunk in `vite.config.js`. This resolves the `Uncaught TypeError: Cannot read properties of undefined (reading 'createContext')` error caused by `framer-motion` initializing before React core.
+- **Frontend Stability Audit (2026-09-07)**: Fixed the `VITE_BASE_URL` startup crash, corrected the signup/user contract (`name` vs `displayName`), hardened the `/users/:email` lookup, stabilized the CoursePlayer retry/watch-time flow, and cleaned stale imports/unused variables so the app passes the repo’s existing lint and build checks.
 - **Static Hero**: Removed 3D WebGL hero scene for performance; replaced with static `banner.jpg` background + amber radial gradient overlay. Bundle reduced from ~3.14MB to ~2.08MB.
 - **Ads & Broadcast Hub**: `AdsNotificationCenter` now fetches live announcements from backend `GET /api/broadcasts/active` via TanStack Query, with static fallback if API is empty. Includes unread counter, mark-as-read persistence in `localStorage`, and prev/next navigation.
 - **Admin Broadcast Manager**: New `/dashboard/broadcasts` page for admins to create, activate/deactivate, and delete sponsored campaigns. Uses existing backend admin auth (`verifyRole(['admin'])`).
@@ -63,7 +64,7 @@
 ## Payment Architecture
 
 ### Course Enrollment (₦5,000)
-- **Frontend**: Clicking "Enroll Now" redirects to fixed Paystack payment link `https://paystack.shop/pay/avbg0eyx6c`.
+- **Frontend**: Clicking "Enroll Now" redirects to `VITE_PAYSTACK_COURSE_URL` (default: `https://paystack.shop/pay/avbg0eyx6c`).
 - **Handoff**: `sessionStorage` stores `enrollmentCourseId` and `enrollmentFormat`.
 - **Return Flow**: Paystack redirects back to site with `?reference=...`. Frontend reads stored `courseId`/`format` and calls `GET /api/courses/verify-payment/:reference?courseId=...&format=...`.
 - **Backend**: Verifies payment with Paystack, creates `Enrollment` with `enrolledFormat`, records `Transaction`, updates teacher earnings (90% / 10% commission).
@@ -212,7 +213,7 @@
 ## Notes for Next Developer
 
 1. **Teacher subscription is Paystack-based**, not Stripe. The old Stripe code still exists but course payments now use Paystack too.
-2. **Payments are in LIVE mode.** Backend uses `sk_live_...` for Paystack secret and `pk_live_...` for public key. Do NOT use test keys.
+2. **Payments are in LIVE mode.** Backend uses the live Paystack secret in the deployment environment and `pk_live_15b415df90f55aed4082c964b0fcb61daa642d41` for the public key. Do NOT use test keys.
 3. **Commission is hardcoded at 10%** in `enrollmentController.js` (`PLATFORM_COMMISSION_RATE`).
 4. **Daily summary cron** is configured at https://console.cron-job.org/jobs/8309933. The cron calls the backend `/api/cron/daily-login-summary` endpoint with the secret from Render env vars.
 5. **Local development**: set `VITE_BASE_URL` in frontend `.env` to `https://creators-hub-academy-backend.onrender.com/api` to test against live backend, or `http://localhost:5000/api` for local backend.

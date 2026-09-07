@@ -229,7 +229,7 @@ GEMINI_API_KEY=AIzaSy...
 IMAGEKIT_PUBLIC_KEY=public_D8Ael8MK3U2LxGKzmYwsvaOPzuQ=
 IMAGEKIT_PRIVATE_KEY=private_MCqXuUTgOP9SwUnQsJZu5HNRat8=
 IMAGEKIT_URL_ENDPOINT=https://ik.imagekit.io/jakariya
-PAYSTACK_SECRET_KEY=sk_live_...
+PAYSTACK_SECRET_KEY=YOUR_PAYSTACK_SECRET_KEY
 SENTRY_DSN=https://...
 ```
 
@@ -263,12 +263,24 @@ TWILIO_WHATSAPP_FROM=whatsapp:+14155238886
 
 ## 10. Payment Gateway
 
-**Paystack** is integrated for certificate fee payments.
+**All active payment flows in the platform use Paystack in two ways:**
 
-- **Live Secret Key**: Configured in Render environment variables
-- **Frontend calls**: `/api/certificates/paystack/initialize` and `/api/certificates/paystack/verify/:reference`
-- **Amount**: ₦10,000 per certificate
-- **Flow**: Student pays → Paystack redirects with reference → Backend verifies → Certificate marked approved
+1. **Course Enrollment Payment**
+   - **Frontend link**: `https://paystack.shop/pay/avbg0eyx6c`
+   - **Use case**: Paid course enrollment checkout for normal course purchases.
+   - **Flow**: Student clicks “Enroll Now” → redirect to fixed Paystack shop link → return with `?reference=...` → frontend reads stored course context and verifies the payment via backend enrollment verification route.
+
+2. **Certificate Payment**
+   - **Frontend calls**: `/api/certificates/paystack/initialize` and `/api/certificates/paystack/verify/:reference`
+   - **Use case**: Certificate purchase for completed courses.
+   - **Amount**: ₦10,000 per certificate
+   - **Flow**: Student pays → Paystack redirects with reference → Backend verifies → Certificate marked approved
+
+**Paystack configuration**:
+- **Live Secret Key**: stored only in the backend deployment environment (`PAYSTACK_SECRET_KEY`), never in the repo
+- **Live Public Key**: `pk_live_15b415df90f55aed4082c964b0fcb61daa642d41`
+- **Course enrollment checkout**: `VITE_PAYSTACK_COURSE_URL` (default: `https://paystack.shop/pay/avbg0eyx6c`)
+- **Backend verification**: `/api/courses/verify-payment/:reference?...` for enrollment and `/api/certificates/paystack/verify/:reference` for certificate payments
 
 **Manual Bank Transfer Option**:
 - **Opay**: 8134438808 (Nonso Stanley Okonkwo)
@@ -462,6 +474,26 @@ The PDF summary view provides a professional lesson brief when no actual PDF is 
    - Added Theology & Christian Living course
    - Removed duplicate courses from backend seed data
    - Total: 23+ unique courses across 15+ categories
+
+### Frontend Stability Audit (2026-09-07)
+1. **Runtime Safety & Startup Guardrails**:
+   - Guarded the Render wake-up fetch in `src/main.jsx` so the app does not crash when `VITE_BASE_URL` is unset during local or partial builds.
+   - Prevented null/undefined startup flows from taking down the app before the router mounts.
+
+2. **Course Player & Video Reliability**:
+   - Fixed retry-state handling for the YouTube player and removed dead imports/unused variables that were causing lint failures.
+   - Corrected watch-time persistence so `last-watched` updates are sent with the correct lesson ID and time value instead of silently storing zeroed progress.
+   - Preserved the player retry flow with a stable token-based re-init path.
+
+3. **Auth & Data Contract Corrections**:
+   - Fixed the signup/user-save contract mismatch by sending `name` instead of `displayName` to the backend user creation route.
+   - Encoded email values in the Mongo fetch route to prevent malformed `/users/:email` requests.
+   - Kept the app resilient when the backend is temporarily unavailable and avoided route crashes caused by missing config.
+
+4. **Lint/Build Cleanup**:
+   - Resolved React Refresh export warnings in `ThemeContext.jsx`.
+   - Removed unused helper parameters and stale imports across the frontend.
+   - Confirmed the codebase passes the repo’s existing `npm run lint` and `npm run build` checks.
 
 ### Backend Improvements
 1. **Schema Updates**:

@@ -1,4 +1,4 @@
-function getYouTubeId(url, title) {
+function getYouTubeId(url) {
   if (!url) return null;
   try {
     const patterns = [

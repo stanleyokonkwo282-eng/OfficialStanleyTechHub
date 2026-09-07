@@ -61,7 +61,7 @@ const AuthProvider = ({ children }) => {
 
   const fetchMongoUser = async (email) => {
     const res = await axios.get(
-      `${import.meta.env.VITE_BASE_URL}/users/${email}`
+      `${import.meta.env.VITE_BASE_URL}/users/${encodeURIComponent(email)}`
     );
     return res.data;
   };

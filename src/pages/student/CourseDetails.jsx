@@ -45,6 +45,9 @@ const CourseDetails = () => {
     (e) => e.studentEmail === user?.email
   );
 
+  const paystackCourseUrl =
+    import.meta.env.VITE_PAYSTACK_COURSE_URL || "https://paystack.shop/pay/avbg0eyx6c";
+
   const handleEnrollClick = () => {
     if (!user) {
       navigate("/login", {
@@ -58,7 +61,7 @@ const CourseDetails = () => {
     }
     sessionStorage.setItem("enrollmentFormat", selectedFormat);
     sessionStorage.setItem("enrollmentCourseId", id);
-    window.location.href = "https://paystack.shop/pay/avbg0eyx6c";
+    window.location.href = paystackCourseUrl;
   };
 
   const getButtonClass = () => {

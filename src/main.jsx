@@ -118,11 +118,14 @@ if (typeof window !== "undefined") {
   window.addEventListener("load", removeExtensionErrors);
 }
 
-// Wake up Render backend immediately when site loads
-// This prevents the 50-second cold start delay when students try to enroll
-fetch(`${import.meta.env.VITE_BASE_URL.replace("/api", "")}`)
-  .then(() => console.log("Backend is awake"))
-  .catch(() => console.log("Backend waking up..."));
+// Wake up Render backend immediately when site loads. Local builds without an
+// API URL should still be able to render the public frontend.
+const apiBaseUrl = import.meta.env.VITE_BASE_URL;
+if (apiBaseUrl) {
+  fetch(apiBaseUrl.replace(/\/api\/?$/, ""))
+    .then(() => console.log("Backend is awake"))
+    .catch(() => console.log("Backend waking up..."));
+}
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
