@@ -45,14 +45,22 @@ export default function AddCourse() {
       navigate("/dashboard/courses");
     },
     onError: (error) => {
-      toast.error("Failed to add course");
-      console.log(error);
+      const message =
+        error?.response?.data?.message ||
+        error?.message ||
+        "Failed to add course.";
+      toast.error(message);
+      console.error(error);
     },
   });
 
   const onSubmit = async (data) => {
     try {
-      const imageFile = data.image[0];
+      const imageFile = data.image?.[0];
+      if (!imageFile) {
+        throw new Error("Please choose a course thumbnail before saving.");
+      }
+
       const imageUrl = await uploadImageMutation.mutateAsync(imageFile);
       data.image = imageUrl;
 
@@ -81,13 +89,16 @@ export default function AddCourse() {
       }
       saveCourseMutation.mutate(coursePayload);
     } catch (err) {
-      toast.error("Failed to process course uploads");
-      console.error(err);
+      const message = err?.message || "Failed to process course uploads";
+      toast.error(message);
+      console.error("Course upload failed:", err);
     }
   };
 
   const isLoading =
-    uploadImageMutation.isPending || saveCourseMutation.isPending;
+    uploadImageMutation.isPending ||
+    uploadPdfMutation.isPending ||
+    saveCourseMutation.isPending;
 
   return (
     <div className="min-h-screen bg-black text-white p-6">
@@ -299,8 +310,10 @@ export default function AddCourse() {
               <>
                 <span className="loading loading-spinner loading-sm"></span>
                 {uploadImageMutation.isPending
-                  ? "Uploading..."
-                  : "Saving Course..."}
+                  ? "Uploading thumbnail..."
+                  : uploadPdfMutation.isPending
+                    ? "Uploading PDF..."
+                    : "Saving Course..."}
               </>
             ) : (
               "Add Course"

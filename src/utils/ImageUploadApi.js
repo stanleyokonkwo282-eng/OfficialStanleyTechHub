@@ -1,33 +1,49 @@
 async function handleUpload(imageFile) {
   if (!imageFile) {
-    throw new Error("No image file provided");
+    throw new Error("No image file provided.");
+  }
+
+  if (!import.meta.env.VITE_BASE_URL) {
+    throw new Error("VITE_BASE_URL is not configured. Set the backend API URL first.");
   }
 
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 30000);
 
-  const res = await fetch(`${import.meta.env.VITE_BASE_URL}/get-ik-signature`, {
-    method: "GET",
-    signal: controller.signal,
-  });
-  clearTimeout(timeout);
+  let res;
+  try {
+    res = await fetch(`${import.meta.env.VITE_BASE_URL}/get-ik-signature`, {
+      method: "GET",
+      signal: controller.signal,
+    });
+  } catch (error) {
+    throw new Error(
+      `Image upload service is unavailable. Check the backend and VITE_BASE_URL. ${error?.message || ""}`.trim()
+    );
+  } finally {
+    clearTimeout(timeout);
+  }
 
   if (!res.ok) {
     const detail = await res.text().catch(() => "");
     throw new Error(
-      `Signature request failed (${res.status}): ${detail || res.statusText}`
+      `Image upload signature request failed (${res.status}). ${detail || res.statusText || "Check the backend /get-ik-signature route."}`
     );
   }
 
-  const { signature, expire, token, publicKey } = await res.json();
+  const payload = await res.json();
+  const { signature, expire, token, publicKey } = payload || {};
+
+  if (!signature || !expire || !token) {
+    throw new Error("Invalid ImageKit signature response. The backend did not return a valid upload token.");
+  }
 
   const ikPublicKey =
     publicKey || import.meta.env.VITE_IMAGEKIT_PUBLIC_KEY;
 
   if (!ikPublicKey) {
     throw new Error(
-      "ImageKit public key is missing. Have the backend return { publicKey } in /get-ik-signature, " +
-        "or set VITE_IMAGEKIT_PUBLIC_KEY in the frontend environment."
+      "ImageKit public key is missing. Set VITE_IMAGEKIT_PUBLIC_KEY in the frontend environment or have the backend return { publicKey } in /get-ik-signature."
     );
   }
 
@@ -47,7 +63,9 @@ async function handleUpload(imageFile) {
 
   if (!uploadRes.ok) {
     const detail = await uploadRes.text().catch(() => "");
-    throw new Error(`Upload failed (${uploadRes.status}): ${detail || uploadRes.statusText}`);
+    throw new Error(
+      `Image upload failed (${uploadRes.status}). ${detail || uploadRes.statusText || "Check your ImageKit credentials and file."}`
+    );
   }
 
   const uploadData = await uploadRes.json();
