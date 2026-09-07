@@ -1,6 +1,6 @@
 # Creators Hub Academy — Handover Notes
 
-**Last Updated:** 2026-09-05  
+**Last Updated:** 2026-09-07  
 **Status:** Production Live  
 **Frontend Repo:** https://github.com/stanleyokonkwo282-eng/OfficialStanleyTechHub  
 **Backend Repo:** https://github.com/stanleyokonkwo282-eng/creators-hub-academy-backend  
@@ -12,6 +12,7 @@
 ## Recent Deployments
 
 ### Frontend (OfficialStanleyTechHub) — Pushed to `main`
+- **Vite Rollup Chunking & White Screen Fix**: Grouped `react`, `react-dom`, `react-router`, and `framer-motion` together into the `vendor-react-core` chunk in `vite.config.js`. This resolves the `Uncaught TypeError: Cannot read properties of undefined (reading 'createContext')` error caused by `framer-motion` initializing before React core.
 - **Static Hero**: Removed 3D WebGL hero scene for performance; replaced with static `banner.jpg` background + amber radial gradient overlay. Bundle reduced from ~3.14MB to ~2.08MB.
 - **Ads & Broadcast Hub**: `AdsNotificationCenter` now fetches live announcements from backend `GET /api/broadcasts/active` via TanStack Query, with static fallback if API is empty. Includes unread counter, mark-as-read persistence in `localStorage`, and prev/next navigation.
 - **Admin Broadcast Manager**: New `/dashboard/broadcasts` page for admins to create, activate/deactivate, and delete sponsored campaigns. Uses existing backend admin auth (`verifyRole(['admin'])`).
@@ -25,6 +26,7 @@
 ### Backend (creators-hub-academy-backend) — Pushed to `main`
 - **Broadcast Model & Routes**: New `Broadcast` MongoDB schema + `broadcastController.js` with `createBroadcast`, `getActiveBroadcasts`, `getAllBroadcasts`, `updateBroadcast`, `deleteBroadcast`. Public `GET /api/broadcasts/active` and admin CRUD under `POST/GET/PATCH/DELETE /api/broadcasts` with `verifyRole(['admin'])`.
 - **Account Deletion**: `deleteOwnAccount` controller + `DELETE /api/users/me` route protected by `verifyToken`. Deletes only the authenticated user's document.
+
 
 ---
 
