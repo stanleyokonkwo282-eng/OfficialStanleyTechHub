@@ -60,7 +60,9 @@ if (typeof window !== "undefined") {
     if (
       msg.includes("cannot read") ||
       msg.includes("this model does not support image input") ||
-      msg.includes("does not provide an export named")
+      msg.includes("does not provide an export named") ||
+      msg.includes("reading 'starttime'") ||
+      (event.filename && event.filename.includes("chrome-extension"))
     ) {
       event.preventDefault();
       event.stopPropagation();
