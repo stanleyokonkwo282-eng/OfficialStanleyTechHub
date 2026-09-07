@@ -27,6 +27,15 @@ export default function CoursePlayer() {
   const [selectedFormat, setSelectedFormat] = useState('video');
   const [copiedCodeId, setCopiedCodeId] = useState(null);
 
+  // --- AI Assistant States ---
+  const [aiDrawerOpen, setAiDrawerOpen] = useState(false);
+  const [chatMessages, setChatMessages] = useState([
+    { sender: "ai", text: "Hello! I'm your AI Course Assistant. Ask me anything about this lesson or course!" }
+  ]);
+  const [chatInput, setChatInput] = useState("");
+  const [aiLoading, setAiLoading] = useState(false);
+  const chatEndRef = useRef(null);
+
   // --- Data fetching (unchanged) ---
   const { data: lessonsData, isLoading: lessonsLoading } = useQuery({
     queryKey: ["lessons", courseId],
