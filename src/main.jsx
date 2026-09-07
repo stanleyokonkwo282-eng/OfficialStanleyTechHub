@@ -57,18 +57,21 @@ if (typeof window !== "undefined") {
 
   window.addEventListener("error", (event) => {
     const msg = (event.message || "").toLowerCase();
+    const filename = (event.filename || "").toLowerCase();
     if (
       msg.includes("cannot read") ||
       msg.includes("this model does not support image input") ||
       msg.includes("does not provide an export named") ||
       msg.includes("reading 'starttime'") ||
-      (event.filename && event.filename.includes("chrome-extension"))
+      filename.includes("chrome-extension") ||
+      filename.includes("content.js") ||
+      filename.includes("installhook.js")
     ) {
+      event.stopImmediatePropagation();
       event.preventDefault();
       event.stopPropagation();
-      return false;
     }
-  });
+  }, true);
 
   window.addEventListener("unhandledrejection", (event) => {
     const reason = event.reason;
@@ -77,12 +80,14 @@ if (typeof window !== "undefined") {
     if (
       lower.includes("cannot read") ||
       lower.includes("this model does not support image input") ||
-      lower.includes("does not provide an export named")
+      lower.includes("does not provide an export named") ||
+      lower.includes("reading 'starttime'")
     ) {
+      event.stopImmediatePropagation();
       event.preventDefault();
       event.stopPropagation();
     }
-  });
+  }, true);
 
   const removeExtensionErrors = () => {
     const selectors = [
