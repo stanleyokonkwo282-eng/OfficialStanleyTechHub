@@ -266,7 +266,7 @@ TWILIO_WHATSAPP_FROM=whatsapp:+14155238886
 **All active payment flows in the platform use Paystack in two ways:**
 
 1. **Course Enrollment Payment**
-   - **Frontend link**: `https://paystack.shop/pay/avbg0eyx6c`
+   - **Frontend link**: `https://paystack.shop/pay/CreatorsHubAcademy`
    - **Use case**: Paid course enrollment checkout for normal course purchases.
    - **Flow**: Student clicks “Enroll Now” → redirect to fixed Paystack shop link → return with `?reference=...` → frontend reads stored course context and verifies the payment via backend enrollment verification route.
 
@@ -279,7 +279,7 @@ TWILIO_WHATSAPP_FROM=whatsapp:+14155238886
 **Paystack configuration**:
 - **Live Secret Key**: stored only in the backend deployment environment (`PAYSTACK_SECRET_KEY`), never in the repo
 - **Live Public Key**: `pk_live_15b415df90f55aed4082c964b0fcb61daa642d41`
-- **Course enrollment checkout**: `VITE_PAYSTACK_COURSE_URL` (default: `https://paystack.shop/pay/avbg0eyx6c`)
+- **Course enrollment checkout**: `VITE_PAYSTACK_COURSE_URL` (default: `https://paystack.shop/pay/CreatorsHubAcademy`)
 - **Backend verification**: `/api/courses/verify-payment/:reference?...` for enrollment and `/api/certificates/paystack/verify/:reference` for certificate payments
 
 **Manual Bank Transfer Option**:

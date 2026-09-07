@@ -64,7 +64,7 @@
 ## Payment Architecture
 
 ### Course Enrollment (₦5,000)
-- **Frontend**: Clicking "Enroll Now" redirects to `VITE_PAYSTACK_COURSE_URL` (default: `https://paystack.shop/pay/avbg0eyx6c`).
+- **Frontend**: Clicking "Enroll Now" redirects to `VITE_PAYSTACK_COURSE_URL` (default: `https://paystack.shop/pay/CreatorsHubAcademy`).
 - **Handoff**: `sessionStorage` stores `enrollmentCourseId` and `enrollmentFormat`.
 - **Return Flow**: Paystack redirects back to site with `?reference=...`. Frontend reads stored `courseId`/`format` and calls `GET /api/courses/verify-payment/:reference?courseId=...&format=...`.
 - **Backend**: Verifies payment with Paystack, creates `Enrollment` with `enrolledFormat`, records `Transaction`, updates teacher earnings (90% / 10% commission).

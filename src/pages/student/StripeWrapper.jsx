@@ -25,7 +25,7 @@ const StripeWrapper = () => {
   });
 
   const paystackCourseUrl =
-    import.meta.env.VITE_PAYSTACK_COURSE_URL || "https://paystack.shop/pay/avbg0eyx6c";
+    import.meta.env.VITE_PAYSTACK_COURSE_URL || "https://paystack.shop/pay/CreatorsHubAcademy";
 
   const verifyMutation = useMutation({
     mutationFn: async ({ reference, courseId, format }) => {

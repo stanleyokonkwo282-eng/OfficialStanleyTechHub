@@ -46,7 +46,7 @@ const CourseDetails = () => {
   );
 
   const paystackCourseUrl =
-    import.meta.env.VITE_PAYSTACK_COURSE_URL || "https://paystack.shop/pay/avbg0eyx6c";
+    import.meta.env.VITE_PAYSTACK_COURSE_URL || "https://paystack.shop/pay/CreatorsHubAcademy";
 
   const handleEnrollClick = () => {
     if (!user) {
