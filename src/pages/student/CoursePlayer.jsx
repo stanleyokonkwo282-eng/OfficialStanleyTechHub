@@ -47,6 +47,25 @@ export default function CoursePlayer() {
   const [commentsDrawerOpen, setCommentsDrawerOpen] = useState(false);
   const [commentsLoading, setCommentsLoading] = useState(false);
 
+  const [showCohortBanner, setShowCohortBanner] = useState(() => {
+    try {
+      return !localStorage.getItem("cha_hide_cohort_banner");
+    } catch {
+      return true;
+    }
+  });
+
+  const dismissCohort = () => {
+    setShowCohortBanner(false);
+    try {
+      localStorage.setItem("cha_hide_cohort_banner", "true");
+    } catch {
+      // ignore
+    }
+  };
+
+  const [playerInitToken, setPlayerInitToken] = useState(0);
+
   const watchInterval = useRef(null);
   const completedRef = useRef(false);
   const lastKnownTime = useRef(0);
@@ -377,19 +396,19 @@ export default function CoursePlayer() {
 
   // --- Initialize player when activeLesson changes ---
   useEffect(() => {
-    if (!activeLesson) return;
+    if (!activeLesson || !window.YT) return;
 
     const youtubeId = getYouTubeId(activeLesson.videoUrl, activeLesson.lessonTitle);
     if (!youtubeId) {
       setVideoError(true);
       return;
     }
-
     setVideoError(false);
     setWatchPercent(0);
     completedRef.current = false;
     lastKnownTime.current = 0;
 
+    // Cleanup previous player instance if it exists
     if (playerRef.current && playerRef.current.destroy) {
       try {
         playerRef.current.destroy();
@@ -399,6 +418,7 @@ export default function CoursePlayer() {
       playerRef.current = null;
     }
 
+    // Create new player with safe parameters
     const onPlayerReady = (event) => {
       setPlayerReady(true);
       const startTime = activeLesson.lastWatchedTime || 0;
@@ -450,56 +470,81 @@ export default function CoursePlayer() {
       }
     };
 
+    // Small delay to ensure container is ready
     let retryCount = 0;
     const maxRetries = 20;
-    const retryInterval = setInterval(() => {
+    let retryInterval = null;
+
+    const createPlayer = () => {
+      const container = document.getElementById(playerContainerId);
+      if (!container) {
+        setVideoError(true);
+        return false;
+      }
+
+      try {
+        const newPlayer = new window.YT.Player(playerContainerId, {
+          videoId: youtubeId,
+          playerVars: {
+            rel: 0,
+            modestbranding: 1,
+            start: activeLesson.lastWatchedTime || 0,
+            playsinline: 1,
+            controls: 1,
+            autoplay: 1,
+          },
+          events: { onReady: onPlayerReady, onStateChange: onPlayerStateChange, onError: onPlayerError },
+        });
+        playerRef.current = newPlayer;
+        setPlayerReady(false);
+        return true;
+      } catch (err) {
+        console.error("Failed to create YouTube player:", err);
+        setVideoError(true);
+        return false;
+      }
+    };
+
+    const tryCreatePlayer = () => {
       if (!window.YT || !window.YT.Player) {
         retryCount++;
         if (retryCount >= maxRetries) {
-          clearInterval(retryInterval);
           setVideoError(true);
           toast.error("Video player failed to load. Please check your connection and try again.");
         }
         return;
       }
 
-      clearInterval(retryInterval);
+      createPlayer();
+    };
 
-      const container = document.getElementById(playerContainerId);
-      if (!container) {
-        setVideoError(true);
-        return;
-      }
+    if (window.YT && window.YT.Player) {
+      tryCreatePlayer();
+    } else {
+      retryInterval = setInterval(() => {
+        if (!window.YT || !window.YT.Player) {
+          retryCount++;
+          if (retryCount >= maxRetries) {
+            clearInterval(retryInterval);
+            retryInterval = null;
+            setVideoError(true);
+            toast.error("Video player failed to load. Please check your connection and try again.");
+          }
+          return;
+        }
 
-      try {
-        playerRef.current = new window.YT.Player(playerContainerId, {
-          videoId: youtubeId,
-          playerVars: {
-            autoplay: 1,
-            modestbranding: 1,
-            rel: 0,
-            fs: 1,
-            playsinline: 1,
-          },
-          events: {
-            onReady: onPlayerReady,
-            onStateChange: onPlayerStateChange,
-            onError: onPlayerError,
-          },
-        });
-        setPlayerReady(false);
-      } catch (err) {
-        console.error("Failed to create YouTube player:", err);
-        setVideoError(true);
-      }
-    }, 200);
+        clearInterval(retryInterval);
+        retryInterval = null;
+        createPlayer();
+      }, 200);
+    }
 
     return () => {
-      clearInterval(retryInterval);
+      if (retryInterval) clearInterval(retryInterval);
       if (watchInterval.current) clearInterval(watchInterval.current);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeLesson]);
+  }, [activeLesson, playerInitToken]);
 
   // --- Cleanup on unmount ---
   useEffect(() => {
@@ -820,15 +865,16 @@ export default function CoursePlayer() {
                                    ▶ Watch on Vimeo
                                  </a>
                                )}
-                               <button
-                                 onClick={() => {
-                                   setVideoError(false);
-                                   setPlayerReady(false);
-                                 }}
-                                 className="px-6 py-3 bg-zinc-700 hover:bg-zinc-600 text-white font-bold rounded-lg transition"
-                               >
-                                 ↻ Retry Player
-                               </button>
+                                <button
+                                  onClick={() => {
+                                    setVideoError(false);
+                                    setPlayerReady(false);
+                                    setPlayerInitToken((prev) => prev + 1);
+                                  }}
+                                  className="px-6 py-3 bg-zinc-700 hover:bg-zinc-600 text-white font-bold rounded-lg transition"
+                                >
+                                  ↻ Retry Player
+                                </button>
                              </div>
                            </div>
                          )}
@@ -958,7 +1004,30 @@ export default function CoursePlayer() {
           )}
         </div>
 
-        <CourseCohorts courseId={courseId} />
+        {showCohortBanner && (
+          <div className="relative mx-4 mb-4 p-4 rounded-2xl bg-slate-900/90 border border-white/10 shadow-2xl flex items-start justify-between gap-4 z-20">
+            <div>
+              <div className="flex items-center gap-2 text-white font-bold text-sm mb-1">
+                <span>🎓</span>
+                <h4>Learning Cohorts</h4>
+              </div>
+              <p className="text-xs text-slate-400">
+                Join a WhatsApp cohort to connect with fellow students, ask questions, and get peer support.
+              </p>
+            </div>
+            <button
+              onClick={dismissCohort}
+              className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-white/10 transition"
+              aria-label="Close"
+            >
+              ✕
+            </button>
+          </div>
+        )}
+
+        <div className="px-4 pb-4">
+          <CourseCohorts courseId={courseId} />
+        </div>
 
         {/* Floating AI Assistant Button */}
         <button
