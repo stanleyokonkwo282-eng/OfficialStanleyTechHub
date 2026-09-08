@@ -1,14 +1,15 @@
 import axios from "axios";
 import {
   createUserWithEmailAndPassword,
+  getRedirectResult,
   onAuthStateChanged,
   signInWithEmailAndPassword,
-  signInWithPopup,
+  signInWithRedirect,
   signOut,
   updateProfile,
 } from "firebase/auth";
 import { createContext, useEffect, useState, useMemo, useCallback } from "react";
-import { auth, provider } from "../../firebase.config";
+import { auth, provider, hasFirebaseConfig } from "../../firebase.config";
 
 const AuthContext = createContext(null);
 
@@ -18,6 +19,30 @@ const AuthProvider = ({ children }) => {
   const [firebaseUser, setFirebaseUser] = useState(null);
 
   useEffect(() => {
+    if (!auth || !hasFirebaseConfig) {
+      setUser(null);
+      setFirebaseUser(null);
+      setIsUserLoading(false);
+      return undefined;
+    }
+
+    const syncGoogleRedirect = async () => {
+      try {
+        const result = await getRedirectResult(auth);
+        if (!result?.user?.email) return;
+
+        await axios.post(`${import.meta.env.VITE_BASE_URL}/users`, {
+          email: result.user.email,
+          photoURL: result.user.photoURL,
+          name: result.user.displayName,
+        }).catch(() => undefined);
+      } catch (error) {
+        console.error("Google redirect sync failed:", error);
+      }
+    };
+
+    syncGoogleRedirect();
+
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       if (currentUser) {
         setFirebaseUser(currentUser);
@@ -67,15 +92,29 @@ const AuthProvider = ({ children }) => {
   };
 
   const userSignup = (email, password) => {
+    if (!auth || !hasFirebaseConfig) {
+      return Promise.reject(new Error("Firebase authentication is not configured. Please set the VITE_FIREBASE_* environment variables."));
+    }
     return createUserWithEmailAndPassword(auth, email, password);
   };
 
   const userLogin = (email, password) => {
+    if (!auth || !hasFirebaseConfig) {
+      return Promise.reject(new Error("Firebase authentication is not configured. Please set the VITE_FIREBASE_* environment variables."));
+    }
     return signInWithEmailAndPassword(auth, email, password);
   };
 
   const loginWithGoogle = () => {
-    return signInWithPopup(auth, provider);
+    if (!auth || !provider || !hasFirebaseConfig) {
+      return Promise.reject(new Error("Google sign-in is unavailable because Firebase authentication is not configured."));
+    }
+
+    provider.setCustomParameters({
+      prompt: "select_account",
+    });
+
+    return signInWithRedirect(auth, provider);
   };
 
   const updateUserProfile = (user, name, photoURL) => {
@@ -100,6 +139,10 @@ const AuthProvider = ({ children }) => {
       }
     } catch (notifyErr) {
       console.error("Logout notification failed:", notifyErr.message);
+    }
+
+    if (!auth || !hasFirebaseConfig) {
+      return Promise.resolve();
     }
     return signOut(auth);
   }, [user]);

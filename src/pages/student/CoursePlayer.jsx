@@ -23,6 +23,24 @@ export default function CoursePlayer() {
   const completedRef = useRef(false);
   const lastKnownTime = useRef(0);
   const playerContainerId = "youtube-player-container";
+
+  const persistWatchState = useCallback(() => {
+    if (!activeLesson || !user?.email || !playerRef.current || typeof playerRef.current.getCurrentTime !== "function") {
+      return;
+    }
+
+    try {
+      const currentTime = Math.max(0, Number(playerRef.current.getCurrentTime()) || 0);
+      if (currentTime > 0) {
+        updateLastWatchedMutationRef.current.mutate({
+          lessonId: activeLesson._id,
+          currentTimeSec: currentTime,
+        });
+      }
+    } catch (err) {
+      console.debug("Unable to persist watch state:", err);
+    }
+  }, [activeLesson, user?.email]);
   const apiLoadedRef = useRef(false);
   const [playerReady, setPlayerReady] = useState(false);
   const [playerInitToken, setPlayerInitToken] = useState(0);
@@ -280,13 +298,16 @@ export default function CoursePlayer() {
           if (playerRef.current && playerReady && !completedRef.current && playerRef.current.getCurrentTime) {
             let currentTime = playerRef.current.getCurrentTime();
             const duration = playerRef.current.getDuration();
+            const maxAllowedAdvance = 5;
+
             if (duration > 0 && lastKnownTime.current > 0) {
-              if (currentTime > lastKnownTime.current + 1.0) {
+              if (currentTime > lastKnownTime.current + maxAllowedAdvance) {
                 playerRef.current.seekTo(lastKnownTime.current, true);
                 toast.warning("Forward skipping is not allowed", { autoClose: 1500 });
                 currentTime = lastKnownTime.current;
               }
             }
+
             if (currentTime > 0) lastKnownTime.current = currentTime;
             const percent = (currentTime / duration) * 100;
             setWatchPercent(Math.min(100, percent));
@@ -391,6 +412,29 @@ export default function CoursePlayer() {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeLesson, playerInitToken]);
+
+  // --- Save progress when the student leaves the lesson page or tab ---
+  useEffect(() => {
+    if (!activeLesson) return;
+
+    const onPageHidden = () => {
+      if (document.hidden) {
+        persistWatchState();
+      }
+    };
+
+    const handleBeforeUnload = () => {
+      persistWatchState();
+    };
+
+    document.addEventListener("visibilitychange", onPageHidden);
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      document.removeEventListener("visibilitychange", onPageHidden);
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [activeLesson, persistWatchState]);
 
   // --- Cleanup on unmount ---
   useEffect(() => {
@@ -506,10 +550,16 @@ export default function CoursePlayer() {
       });
       setChatMessages(prev => [...prev, { sender: "ai", text: res.data.reply }]);
     } catch (error) {
-      console.debug(error);
-      const backendMessage = error?.response?.data?.error;
-      const fallback = "Sorry, I encountered an error connecting to the AI. Please try again.";
-      setChatMessages(prev => [...prev, { sender: "ai", text: backendMessage || fallback }]);
+      console.error("AI assistant request failed:", error);
+      const status = error?.response?.status;
+      const backendMessage = error?.response?.data?.error || error?.response?.data?.message || "";
+      const quotaExceeded = status === 429 || /quota|rate limit|resource_exhausted/i.test(backendMessage || error?.message || "");
+
+      const friendlyMessage = quotaExceeded
+        ? "The AI tutor is temporarily rate-limited because the Gemini free-tier quota has been reached. Please try again in a few minutes."
+        : "Sorry, the AI tutor is currently unavailable. Please retry in a moment.";
+
+      setChatMessages(prev => [...prev, { sender: "ai", text: friendlyMessage }]);
     } finally {
       setAiLoading(false);
     }
@@ -836,13 +886,15 @@ export default function CoursePlayer() {
         </div>
 
         {/* Floating AI Assistant Button */}
-        <div className="fixed bottom-6 right-6 z-40">
+        <div className="fixed bottom-24 right-4 z-40 md:bottom-6 md:right-6">
           <button
             onClick={() => setAiDrawerOpen(true)}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs shadow-xl shadow-purple-900/40 transition active:scale-95"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-full border border-white/15 bg-white/10 text-white font-bold text-xs shadow-[0_12px_40px_rgba(124,58,237,0.4)] backdrop-blur-xl transition-all duration-200 hover:scale-[1.02] active:scale-95"
             aria-label="Open AI Tutor"
           >
-            <Sparkles className="w-4 h-4 text-purple-200" />
+            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-indigo-500 text-purple-100 shadow-lg shadow-purple-900/40">
+              <Sparkles className="w-4 h-4" />
+            </span>
             <span>AI Tutor</span>
           </button>
         </div>
@@ -857,17 +909,29 @@ export default function CoursePlayer() {
 
         {/* AI Assistant Chat Drawer */}
         {aiDrawerOpen && (
-          <div className="fixed inset-y-0 right-0 w-80 sm:w-96 bg-zinc-950 border-l border-zinc-800 flex flex-col z-40 shadow-2xl">
-            <div className="p-4 border-b border-zinc-800 flex justify-between items-center bg-zinc-900">
-              <h3 className="text-white font-semibold flex items-center gap-2">🤖 AI Course Assistant</h3>
-              <button onClick={() => setAiDrawerOpen(false)} aria-label="Close AI assistant" className="text-gray-400 text-xl hover:text-white">&times;</button>
+          <div className="fixed inset-y-3 right-3 z-50 flex w-[92vw] max-w-md flex-col overflow-hidden rounded-[28px] border border-white/10 bg-zinc-950/75 shadow-[0_30px_80px_rgba(0,0,0,0.8)] backdrop-blur-2xl sm:inset-y-6 sm:right-6">
+            <div className="flex items-center justify-between border-b border-white/10 bg-white/5 px-4 py-3.5">
+              <div className="flex items-center gap-2 text-white">
+                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-indigo-500 text-sm">🤖</span>
+                <h3 className="font-semibold">AI Course Assistant</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setAiDrawerOpen(false)}
+                aria-label="Close AI assistant"
+                className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-xl text-gray-300 hover:bg-white/10 hover:text-white"
+              >
+                &times;
+              </button>
             </div>
-            
-            <div className="flex-1 p-4 overflow-y-auto space-y-3">
+
+            <div className="flex-1 overflow-y-auto space-y-3 bg-[radial-gradient(circle_at_top,_rgba(168,85,247,0.14),_transparent_42%)] p-4">
               {chatMessages.map((msg, idx) => (
                 <div key={idx} className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}>
-                  <div className={`max-w-[85%] p-3 rounded-xl text-sm ${
-                    msg.sender === "user" ? "bg-yellow-400 text-black font-medium" : "bg-zinc-900 text-gray-200 border border-zinc-800"
+                  <div className={`max-w-[85%] rounded-2xl p-3 text-sm shadow-lg ${
+                    msg.sender === "user"
+                      ? "bg-gradient-to-r from-yellow-300 to-amber-400 text-black font-medium"
+                      : "border border-white/10 bg-white/5 text-gray-100"
                   }`}>
                     {msg.text}
                   </div>
@@ -875,7 +939,7 @@ export default function CoursePlayer() {
               ))}
               {aiLoading && (
                 <div className="flex justify-start">
-                  <div className="bg-zinc-900 text-gray-400 p-3 rounded-xl text-sm border border-zinc-800 animate-pulse">
+                  <div className="animate-pulse rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-gray-300">
                     Thinking...
                   </div>
                 </div>
@@ -883,15 +947,19 @@ export default function CoursePlayer() {
               <div ref={chatEndRef} />
             </div>
 
-            <form onSubmit={handleSendAiMessage} className="p-3 border-t border-zinc-800 bg-zinc-900 flex gap-2">
+            <form onSubmit={handleSendAiMessage} className="flex gap-2 border-t border-white/10 bg-zinc-950/80 p-3">
               <input
                 type="text"
                 value={chatInput}
                 onChange={(e) => setChatInput(e.target.value)}
                 placeholder="Ask a question about this lesson..."
-                className="flex-1 bg-zinc-800 border border-zinc-700 text-white text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-yellow-400"
+                className="flex-1 rounded-xl border border-zinc-700 bg-zinc-900/80 px-3 py-2 text-sm text-white placeholder:text-zinc-400 focus:border-yellow-400 focus:outline-none"
               />
-              <button type="submit" disabled={aiLoading} className="bg-yellow-400 text-black px-4 py-2 rounded-lg font-semibold text-sm hover:bg-yellow-500 disabled:opacity-50">
+              <button
+                type="submit"
+                disabled={aiLoading}
+                className="rounded-xl bg-yellow-400 px-4 py-2 text-sm font-semibold text-black hover:bg-yellow-500 disabled:cursor-not-allowed disabled:opacity-50"
+              >
                 Send
               </button>
             </form>

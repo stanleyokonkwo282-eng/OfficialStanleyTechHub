@@ -25,10 +25,25 @@ async function handleUpload(imageFile) {
   }
 
   if (!res.ok) {
-    const detail = await res.text().catch(() => "");
-    throw new Error(
-      `Image upload signature request failed (${res.status}). ${detail || res.statusText || "Check the backend /get-ik-signature route."}`
-    );
+    const rawDetail = await res.text().catch(() => "");
+    let detail = rawDetail || res.statusText || "Check the backend /get-ik-signature route.";
+
+    try {
+      const parsed = JSON.parse(rawDetail);
+      if (parsed?.message) {
+        detail = parsed.message;
+      }
+    } catch {
+      // raw response is not JSON, so keep the plain text error message
+    }
+
+    if (/ImageKit Id.*API Key.*API secret|ImageKit .*necessary for initialization/i.test(detail)) {
+      throw new Error(
+        "Image upload signature request failed because the backend ImageKit credentials are missing or incomplete. Set IMAGEKIT_PUBLIC_KEY, IMAGEKIT_PRIVATE_KEY, and IMAGEKIT_URL_ENDPOINT in the Render backend environment, then redeploy."
+      );
+    }
+
+    throw new Error(`Image upload signature request failed (${res.status}). ${detail}`);
   }
 
   const payload = await res.json();
