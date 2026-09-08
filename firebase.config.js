@@ -12,9 +12,14 @@ const firebaseConfig = {
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
 };
 
-// Step-by-Step Instance Instantiation Sequence
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const provider = new GoogleAuthProvider(); // Corrected syntax (no argument needed)
+const hasFirebaseConfig = Object.values(firebaseConfig).every((value) => Boolean(value));
 
-export { auth, provider };
+if (!hasFirebaseConfig) {
+  console.warn("Firebase config is incomplete. The app will continue without Firebase Auth until the required VITE_FIREBASE_* variables are set.");
+}
+
+const app = hasFirebaseConfig ? initializeApp(firebaseConfig) : null;
+const auth = app ? getAuth(app) : null;
+const provider = app ? new GoogleAuthProvider() : null;
+
+export { auth, provider, hasFirebaseConfig };
