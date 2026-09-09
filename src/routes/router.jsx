@@ -7,6 +7,7 @@ import Signup from "../pages/Signup";
 import Courses from "../pages/Courses";
 import CourseDetails from "../pages/student/CourseDetails";
 import CoursePlayer from "../pages/student/CoursePlayer";
+import PdfCoursePlayer from "../pages/student/PdfCoursePlayer";
 import DashBoard from "../pages/common/Dashboard";
 import PrivateRoute from "./PrivateRoute";
 import RoleBasedRoute from "./RoleBasedRoute";
@@ -280,6 +281,14 @@ const router = createBrowserRouter([
         element: (
           <PrivateRoute>
             <CoursePlayer />
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "/dashboard/learn-pdf/:courseId",
+        element: (
+          <PrivateRoute>
+            <PdfCoursePlayer />
           </PrivateRoute>
         ),
       },

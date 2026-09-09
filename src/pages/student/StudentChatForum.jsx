@@ -25,6 +25,7 @@ export default function StudentChatForum() {
   const audioChunksRef = useRef([]);
   const localVideoRef = useRef(null);
   const mediaStreamRef = useRef(null);
+  const callStartTimeRef = useRef(null);
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -176,18 +177,41 @@ export default function StudentChatForum() {
 
   const toggleVideoCall = async () => {
     if (isVideoActive) {
+      // Stop the local camera preview first.
       if (mediaStreamRef.current) {
         mediaStreamRef.current.getTracks().forEach((track) => track.stop());
         mediaStreamRef.current = null;
       }
       if (localVideoRef.current) localVideoRef.current.srcObject = null;
       setIsVideoActive(false);
+
+      // Deduct the video-call cost (20 pts/min) based on elapsed minutes.
+      if (activePeer && callStartTimeRef.current) {
+        const minutes = Math.max(1, Math.ceil((Date.now() - callStartTimeRef.current) / 60000));
+        try {
+          const res = await axiosSecure.post("/forum/call/deduct", {
+            minutes,
+            callType: "video",
+            receiverId: activePeer._id,
+          });
+          if (res.data?.remainingPoints !== undefined) setPoints(res.data.remainingPoints);
+        } catch (err) {
+          setErrorMessage(err.response?.data?.error || "Failed to deduct video call points.");
+        }
+        callStartTimeRef.current = null;
+      }
     } else {
+      if (points < 20) {
+        setShowTopUpModal(true);
+        setErrorMessage("You need at least 20 chat points to start a video call.");
+        return;
+      }
       try {
         setErrorMessage("");
         const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
         mediaStreamRef.current = stream;
         setIsVideoActive(true);
+        callStartTimeRef.current = Date.now();
         setTimeout(() => {
           if (localVideoRef.current) localVideoRef.current.srcObject = stream;
         }, 100);

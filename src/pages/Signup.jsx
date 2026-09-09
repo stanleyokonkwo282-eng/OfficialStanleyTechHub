@@ -21,7 +21,7 @@ export default function Signup() {
   const location = useLocation();
   const [searchParams] = useSearchParams();
   const axiosSecure = useAxiosSecure();
-  const referrerEmail = searchParams.get("ref");
+  const referralCode = searchParams.get("ref");
 
   const { userSignup, setUser, updateUserProfile, isUserLoading } = useAuth();
 
@@ -40,28 +40,16 @@ export default function Signup() {
       return userCredential.user;
     },
     onSuccess: async (user) => {
-      // Save user in database on MongoDB
-      // server will set default role student
+      // Save user in database on MongoDB.
+      // The backend createNewUser reads `referralCode` (the /signup?ref=CODE
+      // param) and applies the +50 referee / +100 referrer point bonuses, then
+      // auto-generates a fresh referral code for the new student.
       await axiosSecure.post(`/users`, {
         email: user.email,
         photoURL: user.photoURL,
         name: user.displayName,
+        referralCode: referralCode || undefined,
       });
-
-      // Track referral if present
-      if (referrerEmail && referrerEmail !== user.email) {
-        try {
-          await axiosSecure.post("/referrals", {
-            referrerEmail,
-            refereeEmail: user.email,
-            refereeName: user.displayName || user.email,
-            courseId: null,
-            metadata: { source: "signup" },
-          });
-        } catch {
-          // non-blocking
-        }
-      }
 
       setUser({ ...user, role: "student" });
       reset();

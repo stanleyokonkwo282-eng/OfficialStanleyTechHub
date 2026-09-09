@@ -48,6 +48,16 @@ const CourseDetails = () => {
   const paystackCourseUrl =
     import.meta.env.VITE_PAYSTACK_COURSE_URL || "https://paystack.shop/pay/CreatorsHubAcademy";
 
+  const isPdfOnly = course?.hasPdf && !course?.hasVideo;
+  const isHybrid = course?.hasPdf && course?.hasVideo;
+
+  const getLearnRoute = () => {
+    if (isPdfOnly || (isHybrid && selectedFormat === "pdf")) {
+      return `/dashboard/learn-pdf/${id}`;
+    }
+    return `/dashboard/learn/${id}`;
+  };
+
   const handleEnrollClick = () => {
     if (!user) {
       navigate("/login", {
@@ -56,7 +66,7 @@ const CourseDetails = () => {
       return;
     }
     if (isEnrolled) {
-      navigate(`/dashboard/learn/${id}`, { replace: true });
+      navigate(getLearnRoute(), { replace: true });
       return;
     }
     sessionStorage.setItem("enrollmentFormat", selectedFormat);
