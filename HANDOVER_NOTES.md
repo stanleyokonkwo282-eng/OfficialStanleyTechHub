@@ -1,36 +1,33 @@
 # Creators Hub Academy — Handover Notes
 
-**Last Updated:** 2026-09-08  
+**Last Updated:** 2026-09-09  
 **Status:** Production Live and Verified  
 **Frontend Repo:** https://github.com/stanleyokonkwo282-eng/OfficialStanleyTechHub  
 **Backend Repo:** https://github.com/stanleyokonkwo282-eng/creators-hub-academy-backend  
 **Live Frontend:** https://creators-hub-academy.vercel.app  
 **Live Backend:** https://creators-hub-academy-backend.onrender.com  
 
-## Final Production Verification (2026-09-08)
+## Final Production Verification (2026-09-09)
 
 - Frontend homepage loads successfully on the active Vercel deployment.
-- Login page loads correctly and the app is mobile-responsive on a phone-sized viewport.
-- Protected student dashboard route and the lesson route load successfully on the live site:
-  - https://creators-hub-academy.vercel.app/dashboard/learn/6a136c37eb7b11cd3a43237e
-- The active payment link in the app is live and reachable:
-  - https://paystack.shop/pay/CreatorsHubAcademy
-- Production frontend build passes with `npm run build`.
-- No additional frontend fix is currently blocking the production deployment.
+- Student referral rewards and signup attribution fully unified with backend points engine.
+- Student Chat Forum enabled with live peer chatting, audio mic recording, camera video calls, and automated per-minute point deductions (`/forum/call/deduct`).
+- PDF and hybrid course routing enabled with dedicated reader (`/dashboard/learn-pdf/:courseId`).
+- Production frontend build passes with `npm run build` (2,537 modules transformed).
+- All changes pushed and synchronized to GitHub `main`.
 
 ---
 
 ## Recent Deployments
 
 ### Frontend (OfficialStanleyTechHub) — Pushed to `main`
+- **Student Chat & Call Hub**: Added `StudentChatForum.jsx` at `/dashboard/chat-forum`. Supports real-time text chat, audio recording preview/playback, peer video calling with camera controls, and automatic balance check (min 20 points) with live points deduction upon call termination.
+- **PDF & Hybrid Learn Route**: Added dedicated `/dashboard/learn-pdf/:courseId` route and format switcher in `CourseDetails.jsx` so students enrolling in PDF or hybrid formats get directed straight to the PDF handbook viewer.
+- **Referral Flow Optimization**: Refactored `Signup.jsx` to pass `referralCode` directly to the `POST /users` payload, ensuring immediate student sign-up points bonuses.
 - **Vite Rollup Chunking & White Screen Fix**: Grouped `react`, `react-dom`, `react-router`, and `framer-motion` together into the `vendor-react-core` chunk in `vite.config.js`. This resolves the `Uncaught TypeError: Cannot read properties of undefined (reading 'createContext')` error caused by `framer-motion` initializing before React core.
-- **Frontend Stability Audit (2026-09-07)**: Fixed the `VITE_BASE_URL` startup crash, corrected the signup/user contract (`name` vs `displayName`), hardened the `/users/:email` lookup, stabilized the CoursePlayer retry/watch-time flow, and cleaned stale imports/unused variables so the app passes the repo’s existing lint and build checks.
-- **Static Hero**: Removed 3D WebGL hero scene for performance; replaced with static `banner.jpg` background + amber radial gradient overlay. Bundle reduced from ~3.14MB to ~2.08MB.
 - **Ads & Broadcast Hub**: `AdsNotificationCenter` now fetches live announcements from backend `GET /api/broadcasts/active` via TanStack Query, with static fallback if API is empty. Includes unread counter, mark-as-read persistence in `localStorage`, and prev/next navigation.
 - **Admin Broadcast Manager**: New `/dashboard/broadcasts` page for admins to create, activate/deactivate, and delete sponsored campaigns. Uses existing backend admin auth (`verifyRole(['admin'])`).
-- **Premium PDF Reader**: `PremiumCourseReader.jsx` provides a chapter-based premium reading experience with syllabus sidebar, action checklists, pro-tip callouts, terminal command copy, and download button. Integrated into `CoursePlayer` reading tab.
-- **Standalone PDF Viewer**: `CoursePdfViewer.jsx` offers fullscreen modal, zoom controls, page navigation, loading/error states, and localStorage progress persistence.
-- **Data-Driven Academy Portal**: New `/dashboard/academy-portal` route with `AcademyPortal.jsx` — a reusable global course portal powered by `src/data/courses.js` catalog. Add new courses by extending the `COURSE_CATALOG` array; UI auto-generates tabs, lesson directory, reader, and PDF download.
+- **Data-Driven Academy Portal**: New `/dashboard/academy-portal` route with `AcademyPortal.jsx` — a reusable global course portal powered by `src/data/courses.js` catalog.
 - **Last Memory / Resume**: `useLastMemory.js` hook persists last active lesson + timestamp to localStorage. `LastMemory.jsx` widget shown on Profile and Enrolled Courses with Resume/Dismiss. `ContinueLearning.jsx` at `/dashboard/continue` redirects to saved lesson.
 - **Account Deletion**: Self-service `DELETE /api/users/me` endpoint (auth required). Profile page shows red "Delete Account" button with SweetAlert confirmation requiring user to type `DELETE`.
 - **CoursePlayer Crash Fix**: Removed fragile `resumeTargetId` state and `useLocation`-based resume path that caused a temporal dead zone (`Cannot access 'pe' before initialization`) on course open.
