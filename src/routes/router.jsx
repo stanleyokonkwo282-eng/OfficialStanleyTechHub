@@ -52,6 +52,7 @@ const CourseAssignments = lazyImport(() => import("../pages/student/CourseAssign
 const Certificate = lazyImport(() => import("../pages/student/Certificate"));
 const ExamPage = lazyImport(() => import("../pages/student/ExamPage"));
 const Referrals = lazyImport(() => import("../pages/student/Referrals"));
+const StudentChatForum = lazyImport(() => import("../pages/student/StudentChatForum"));
 const StripeWrapper = lazyImport(() => import("../pages/student/StripeWrapper"));
 const AddCourse = lazyImport(() => import("../pages/teacher/AddCourse"));
 const CourseSummery = lazyImport(() => import("../pages/teacher/CourseSummery"));
@@ -132,6 +133,14 @@ const router = createBrowserRouter([
             element: (
               <PrivateRoute>
                 <Referrals />
+              </PrivateRoute>
+            ),
+          },
+          {
+            path: "chat-forum",
+            element: (
+              <PrivateRoute>
+                <StudentChatForum />
               </PrivateRoute>
             ),
           },

@@ -109,6 +109,13 @@ export default function DashboardSidebar() {
             </LinkTile>
           </NavLink>
         )}
+        {(user?.role === "student" || user?.role === "teacher") && (
+          <NavLink to="/dashboard/chat-forum" className={linkStyle}>
+            <LinkTile title="Chat Forum">
+              <FaBookOpen />
+            </LinkTile>
+          </NavLink>
+        )}
         {user?.role === "student" && (
           <NavLink to="/dashboard/referrals" className={linkStyle}>
             <LinkTile title="My Referrals">
