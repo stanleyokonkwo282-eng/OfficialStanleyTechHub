@@ -1,6 +1,6 @@
 # Creators Hub Academy — Handover Notes
 
-**Last Updated:** 2026-09-09  
+**Last Updated:** 2026-09-10  
 **Status:** Production Live and Verified  
 **Frontend Repo:** https://github.com/stanleyokonkwo282-eng/OfficialStanleyTechHub  
 **Backend Repo:** https://github.com/stanleyokonkwo282-eng/creators-hub-academy-backend  
@@ -15,6 +15,22 @@
 - PDF and hybrid course routing enabled with dedicated reader (`/dashboard/learn-pdf/:courseId`).
 - Production frontend build passes with `npm run build` (2,537 modules transformed).
 - All changes pushed and synchronized to GitHub `main`.
+
+---
+
+## Recent Bug Fixes (2026-09-10)
+
+### Frontend (OfficialStanleyTechHub) — Pushed to `main`
+
+| Commit | Fix | Files |
+|--------|-----|-------|
+| `fdb8370` | **Logout button hang fix** — Admin notification POST now capped at 4s timeout so signOut always runs instantly. Previously hung 10-60s waiting for slow Gmail SMTP. | `src/providers/AuthProvider.jsx` |
+| `d97686e` | **Chat message delivery fix** — Added 5s polling on `/forum/history` so both parties see new messages in near-real-time. Added smart auto-scroll (only scrolls when user is near bottom) + "jump to bottom" button for unread messages. Fixed `isAtBottomRef` tracking via `onScroll` on messages container. | `src/pages/student/StudentChatForum.jsx` |
+| `50194fb` | **PDF course player crash fix** — Backend `getCourseById` returns `{ success, message, course }` but frontend was reading `res.data?.data` (which doesn't exist), falling through to the entire response envelope as the course object. This left `course` missing all fields (`title`, `hasPdf`, etc.), causing render errors that triggered the ErrorBoundary "Something went wrong" screen. Fixed to `res.data?.course`. Also fixed `persistLesson` to match by `_id` instead of `resolvedId` (sidebar lessons don't have `resolvedId`), and guarded against division-by-zero in progress calculation. | `src/pages/student/PdfCoursePlayer.jsx` |
+
+### Backend (creators-hub-academy-backend) — Already deployed
+- No backend changes required for these fixes. All three were frontend-only bugs.
+- Backend SMTP timeout fix (`b5b6153`) was deployed earlier to prevent email blocking.
 
 ---
 
@@ -238,6 +254,13 @@
 16. **PDF reader components**: `PremiumCourseReader.jsx` is the main chapter-based reader; `CoursePdfViewer.jsx` is a standalone fullscreen PDF viewer with zoom/page controls.
 17. **Course reassignment**: Admin can reassign all courses from one teacher email to another via `/dashboard/courses` → "Reassign Teacher" button, which calls `POST /api/courses/reassign-teacher` (admin only).
 18. **AI Course Assistant**: `POST /api/ai/chat` uses Google Gemini (`gemini-flash-latest`). Requires `GEMINI_API_KEY` env var on Render. Frontend now surfaces backend AI errors instead of generic fallback.
+19. **Backend response field mismatch**: The backend `getCourseById` returns `{ success, message, course }` — NOT `{ data }`. Several frontend components use `res.data?.data` (which is correct for their endpoints like `/forum/search` returning `{ success, data: [...] }`), but `PdfCoursePlayer.jsx` was incorrectly using `res.data?.data` for the course endpoint. Always verify the backend response format when adding new API calls. The correct pattern for each endpoint:
+   - `/courses/:id` → `res.data.course`
+   - `/forum/search`, `/forum/history` → `res.data.data`
+   - `/users/profile/:id` → `res.data.data`
+   - `/broadcasts`, `/broadcasts/active` → `res.data.data`
+20. **Chat polling trade-off**: The 5-second polling interval in `StudentChatForum.jsx` balances real-time feel vs. server load. For Render free tier, do not reduce below 3s to avoid cold-start timeouts. If upgrading to WebSockets in future, remove the `setInterval` in the `loadConversation` useEffect.
+21. **Logout notification is best-effort**: The admin notification POST in `userLogout` has a 4s timeout and is wrapped in try/catch. Email failures never block logout. This is intentional.
 
 ---
 
