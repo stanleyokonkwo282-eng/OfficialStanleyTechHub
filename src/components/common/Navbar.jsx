@@ -128,6 +128,31 @@ export default function Navbar() {
         </li>
       )}
 
+      {/* Community links (mobile dropdown) — visible to every logged-in user */}
+      {user && (
+        <li className="md:hidden">
+          <NavLink to="/dashboard/academy-portal" className={linkStyle}>
+            Academy Portal
+          </NavLink>
+        </li>
+      )}
+
+      {user && (
+        <li className="md:hidden">
+          <NavLink to="/dashboard/chat-forum" className={linkStyle}>
+            Chat Forum
+          </NavLink>
+        </li>
+      )}
+
+      {user && (
+        <li className="md:hidden">
+          <NavLink to="/dashboard/referrals" className={linkStyle}>
+            My Referrals
+          </NavLink>
+        </li>
+      )}
+
       {user && (
         <li className="md:hidden">
           <NavLink to="/dashboard/profile" className={linkStyle}>

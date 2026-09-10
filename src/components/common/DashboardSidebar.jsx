@@ -102,21 +102,22 @@ export default function DashboardSidebar() {
             </LinkTile>
           </NavLink>
         )}
-        {(user?.role === "student" || user?.role === "teacher") && (
+        {/* Community Links — visible to every logged-in role (student, teacher, admin) */}
+        {user && (
           <NavLink to="/dashboard/academy-portal" className={linkStyle}>
             <LinkTile title="Academy Portal">
               <FaGraduationCap />
             </LinkTile>
           </NavLink>
         )}
-        {(user?.role === "student" || user?.role === "teacher") && (
+        {user && (
           <NavLink to="/dashboard/chat-forum" className={linkStyle}>
             <LinkTile title="Chat Forum">
               <FaBookOpen />
             </LinkTile>
           </NavLink>
         )}
-        {user?.role === "student" && (
+        {user && (
           <NavLink to="/dashboard/referrals" className={linkStyle}>
             <LinkTile title="My Referrals">
               <LuShare2 />
