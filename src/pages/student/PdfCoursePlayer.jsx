@@ -29,11 +29,12 @@ export default function PdfCoursePlayer() {
   const [resumePage, setResumePage] = useState(0);
   const [completedLessonIds, setCompletedLessonIds] = useState({});
 
-  const { data: course, isLoading: courseLoading } = useQuery({
+    const { data: course, isLoading: courseLoading } = useQuery({
     queryKey: ["pdfCourse", id],
     queryFn: async () => {
       const res = await axiosSecure.get(`/courses/${id}`);
-      return res.data?.data || res.data;
+      // Backend returns { success, message, course: result[0] } — match CourseDetails.jsx
+      return res.data?.course || res.data;
     },
     staleTime: 1000 * 60 * 5,
   });
@@ -104,17 +105,20 @@ export default function PdfCoursePlayer() {
     onError: (err) => toast.error(err?.response?.data?.message || "Could not mark lesson complete."),
   });
 
-  // Persist which handbook lesson is being read (for resume).
+    // Persist which handbook lesson is being read (for resume).
   const persistLesson = (lesson) => {
     if (!lesson?._id || !user?.email) return;
-    const index = allLessons.findIndex((l) => l.resolvedId === lesson.resolvedId);
+    // Match by _id since sidebar lessons don't have resolvedId (only allLessons items do)
+    const index = allLessons.findIndex((l) => String(l._id) === String(lesson._id));
     axiosSecure
       .post("/lessons/last-watched", {
         lessonId: lesson._id,
         courseId: id,
         studentEmail: user?.email,
         lastPosition: Math.max(0, index),
-        progressPercent: Math.min(100, Math.round(((index + 1) / allLessons.length) * 100)),
+        progressPercent: allLessons.length > 0
+          ? Math.min(100, Math.round(((index + 1) / allLessons.length) * 100))
+          : 0,
       })
       .catch(() => {});
   };
