@@ -8,6 +8,7 @@ import Courses from "../pages/Courses";
 import CourseDetails from "../pages/student/CourseDetails";
 import CoursePlayer from "../pages/student/CoursePlayer";
 import PdfCoursePlayer from "../pages/student/PdfCoursePlayer";
+import HandbookViewer from "../pages/student/HandbookViewer";
 import DashBoard from "../pages/common/Dashboard";
 import PrivateRoute from "./PrivateRoute";
 import RoleBasedRoute from "./RoleBasedRoute";
@@ -298,6 +299,14 @@ const router = createBrowserRouter([
         element: (
           <PrivateRoute>
             <PdfCoursePlayer />
+          </PrivateRoute>
+        ),
+      },
+      {
+        path: "/dashboard/handbook/:courseId",
+        element: (
+          <PrivateRoute>
+            <HandbookViewer />
           </PrivateRoute>
         ),
       },

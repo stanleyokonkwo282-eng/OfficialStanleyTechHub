@@ -11,8 +11,11 @@ import { uploadPdf } from "../../utils/PdfUploadApi";
 export default function AddCourse() {
   const { user } = useAuth();
   const [customCategory, setCustomCategory] = useState("");
+  const [courseType, setCourseType] = useState("video"); // "video" | "handbook"
   const [videoUrl, setVideoUrl] = useState("");
   const [pdfFile, setPdfFile] = useState(null);
+  const [htmlFile, setHtmlFile] = useState(null);
+  const [htmlUrl, setHtmlUrl] = useState("");
   const {
     register,
     handleSubmit,
@@ -42,6 +45,8 @@ export default function AddCourse() {
       reset();
       setVideoUrl("");
       setPdfFile(null);
+      setHtmlFile(null);
+      setHtmlUrl("");
       navigate("/dashboard/courses");
     },
     onError: (error) => {
@@ -64,30 +69,108 @@ export default function AddCourse() {
       const imageUrl = await uploadImageMutation.mutateAsync(imageFile);
       data.image = imageUrl;
 
-      let resourcePdfUrl = "";
-      if (pdfFile && pdfFile.size > 10 * 1024 * 1024) {
-        toast.error("PDF file is too large. Please keep it under 10MB for 3G users.");
+      // --- Video course path ---
+      if (courseType === "video") {
+        if (!videoUrl) {
+          throw new Error("Please provide a YouTube/video URL for video courses.");
+        }
+        let resourcePdfUrl = "";
+        if (pdfFile && pdfFile.size > 10 * 1024 * 1024) {
+          toast.error("PDF file is too large. Please keep it under 10MB.");
+          return;
+        }
+        if (pdfFile) {
+          const pdfUploadResult = await uploadPdfMutation.mutateAsync(pdfFile);
+          resourcePdfUrl = pdfUploadResult.url;
+        }
+        const coursePayload = {
+          ...data,
+          price: 5000,
+          hasVideo: true,
+          hasPdf: Boolean(pdfFile),
+          resourceVideoUrl: videoUrl,
+          resourcePdfUrl,
+          rating: Math.floor(Math.random() * 5) + 1,
+        };
+        delete coursePayload.name;
+        if (coursePayload.category === "Others") {
+          coursePayload.category = customCategory;
+        }
+        saveCourseMutation.mutate(coursePayload);
         return;
       }
-      if (pdfFile) {
-        const pdfUploadResult = await uploadPdfMutation.mutateAsync(pdfFile);
-        resourcePdfUrl = pdfUploadResult.url;
-      }
 
-      const coursePayload = {
-        ...data,
-        price: 5000,
-        hasVideo: Boolean(videoUrl),
-        hasPdf: Boolean(pdfFile),
-        resourceVideoUrl: videoUrl,
-        resourcePdfUrl: resourcePdfUrl,
-        rating: Math.floor(Math.random() * 5) + 1,
-      };
-      delete coursePayload.name;
-      if (coursePayload.category === "Others") {
-        coursePayload.category = customCategory;
+      // --- Handbook course path (PDF or HTML) ---
+      if (courseType === "handbook") {
+        let handbookUrl = "";
+
+        // Priority 1: Uploaded HTML file
+        if (htmlFile) {
+          if (!htmlFile.name.endsWith(".html") && !htmlFile.name.endsWith(".htm")) {
+            toast.error("Please upload an HTML file (.html or .htm) for handbook courses.");
+            return;
+          }
+          // HTML files can be large — no size limit for now
+          const formData = new FormData();
+          formData.append("file", htmlFile);
+          const uploadRes = await fetch(`${import.meta.env.VITE_BASE_URL}/upload/html`, {
+            method: "POST",
+            body: formData,
+          });
+          if (uploadRes.ok) {
+            const dataResp = await uploadRes.json();
+            handbookUrl = dataResp.url || dataResp.htmlUrl || "";
+          } else {
+            // Fallback: read as data URL for small files — but this won't work for big files.
+            // Instead, upload to the same PDF endpoint as a fallback (server stores it as a document)
+            const pdfUploadResult = await uploadPdfMutation.mutateAsync(htmlFile);
+            handbookUrl = pdfUploadResult.url;
+          }
+          if (!handbookUrl) {
+            throw new Error("HTML upload failed. Please try again.");
+          }
+        }
+
+        // Priority 2: Uploaded PDF file
+        if (!handbookUrl && pdfFile) {
+          if (pdfFile.size > 10 * 1024 * 1024) {
+            toast.error("PDF file is too large. Please keep it under 10MB.");
+            return;
+          }
+          const pdfUploadResult = await uploadPdfMutation.mutateAsync(pdfFile);
+          handbookUrl = pdfUploadResult.url;
+        }
+
+        // Priority 3: Direct URL (paste a link to an HTML or PDF file)
+        if (!handbookUrl) {
+          // If user pasted a video URL by mistake, block it
+          if (videoUrl) {
+            throw new Error("Handbook courses need an HTML/PDF file or URL — not a video link. Switch to Video Course type.");
+          }
+          // Use the pdfFile URL field if they pasted a direct link
+          handbookUrl = data.handbookUrl || data.pdfUrl || "";
+          if (!handbookUrl) {
+            throw new Error("Please upload an HTML/PDF file or paste a document URL for handbook courses.");
+          }
+        }
+
+        const coursePayload = {
+          ...data,
+          price: 5000,
+          hasVideo: false,
+          hasPdf: true, // mark as document-based
+          resourceVideoUrl: "",
+          resourcePdfUrl: handbookUrl,
+          resourceHtmlUrl: htmlUrl || data.resourceHtmlUrl || "",
+          rating: Math.floor(Math.random() * 5) + 1,
+        };
+        delete coursePayload.name;
+        if (coursePayload.category === "Others") {
+          coursePayload.category = customCategory;
+        }
+        saveCourseMutation.mutate(coursePayload);
+        return;
       }
-      saveCourseMutation.mutate(coursePayload);
     } catch (err) {
       const message = err?.message || "Failed to process course uploads";
       toast.error(message);

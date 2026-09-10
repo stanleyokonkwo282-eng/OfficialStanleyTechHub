@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AI, Prompt-Writing & Instructional Design Handbook — Creators Hub Academy</title>
+<style>
+  :root {
+    --brand: #b45309;
+    --brand-light: #f59e0b;
+    --brand-dark: #78350f;
+    --ink: #1f2937;
+    --muted: #6b7280;
+    --paper: #ffffff;
+    --soft: #fef3c7;
+    --border: #e5e7eb;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body {
+    margin: 0;
+    font-family: Georgia, 'Times New Roman', serif;
+    color: var(--ink);
+    background: var(--paper);
+    line-height: 1.65;
+    font-size: 15px;
+  }
+  /* ---- Print setup: crisp vector A4 output ---- */
+  @page {
+    size: A4;
+    margin: 18mm 16mm 20mm 16mm;
+  }
+  @media print {
+    body { font-size: 12.5px; }
+    .page-break { break-after: page; }
+    section { break-inside: avoid-page; }
+  }
+
+  /* ---- Brand header ---- */
+  .cover {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    background: linear-gradient(160deg, #fff7ed 0%, #fef3c7 55%, #fde68a 100%);
+    padding: 40px 24px;
+  }
+  .cover .monogram {
+    width: 84px; height: 84px;
+    border-radius: 22px;
+    display: flex; align-items: center; justify-content: center;
+    background: linear-gradient(135deg, var(--brand-light), var(--brand));
+    color: #fff; font-size: 34px; font-weight: 900;
+    box-shadow: 0 12px 30px rgba(180,83,9,.3);
+    margin-bottom: 22px;
+  }
+  .cover .eyebrow {
+    letter-spacing: .28em; text-transform: uppercase;
+    font-size: 12px; font-weight: 700; color: var(--brand);
+    margin-bottom: 12px;
+  }
+  .cover h1 {
+    font-size: 40px; line-height: 1.12; margin: 0 0 14px;
+    color: var(--brand-dark); letter-spacing: -0.01em;
+  }
+  .cover p.lead {
+    max-width: 620px; color: var(--muted); font-size: 17px; margin: 0 0 30px;
+  }
+  .cover .badge-row { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
+  .cover .badge {
+    border: 1px solid var(--brand); color: var(--brand-dark);
+    padding: 8px 18px; border-radius: 999px; font-size: 12.5px; font-weight: 700;
+    background: #fff;
+  }
+  .cover .cert-line {
+    margin-top: 40px; color: var(--muted); font-size: 12.5px; font-style: italic;
+  }
+
+  /* ---- Page chrome ---- */
+  .page { max-width: 800px; margin: 0 auto; padding: 46px 26px; }
+  .brand-bar {
+    display: flex; justify-content: space-between; align-items: center;
+    padding-bottom: 18px; border-bottom: 2px solid var(--brand-light);
+    margin-bottom: 30px; font-size: 12px; color: var(--muted);
+  }
+  .brand-bar .logo-text { font-weight: 800; color: var(--brand-dark); letter-spacing: .02em; }
+
+  h2.section-title {
+    font-size: 27px; color: var(--brand-dark); margin: 0 0 6px; letter-spacing: -0.01em;
+  }
+  .section-kicker {
+    text-transform: uppercase; letter-spacing: .22em; font-size: 11px;
+    font-weight: 700; color: var(--brand); margin-bottom: 20px;
+  }
+  h3 {
+    color: var(--brand-dark); font-size: 19px; margin: 30px 0 10px;
+  }
+  h4 {
+    font-size: 15.5px; color: var(--ink); margin: 20px 0 8px;
+  }
+  p { margin: 0 0 14px; }
+  ul, ol { margin: 0 0 16px; padding-left: 24px; }
+  li { margin-bottom: 6px; }
+
+  /* ---- Callouts / analogy frames ---- */
+  .callout {
+    border-left: 4px solid var(--brand-light);
+    background: var(--soft);
+    padding: 14px 18px; border-radius: 0 10px 10px 0; margin: 18px 0;
+  }
+  .callout .label {
+    font-size: 11px; text-transform: uppercase; letter-spacing: .16em;
+    font-weight: 800; color: var(--brand); margin-bottom: 6px;
+  }
+  .analogy {
+    border: 1px solid var(--border); border-radius: 12px;
+    padding: 16px 18px; margin: 16px 0; background: #fafafa;
+  }
+  .analogy .metaphor { font-size: 16px; font-style: italic; margin-bottom: 8px; color: var(--brand-dark); }
+
+  /* ---- DIKW pyramid ---- */
+  .pyramid { display: flex; flex-direction: column; align-items: center; margin: 20px 0 28px; }
+  .pyramid .level {
+    width: 100%; max-width: 560px; padding: 14px 18px; margin: 3px 0;
+    border-radius: 8px; color: #fff; display: flex; flex-direction: column;
+  }
+  .pyramid .level small { opacity: .92; font-size: 12px; }
+  .pyramid .l1 { background: #6b7280; max-width: 260px; }
+  .pyramid .l2 { background: #b45309; max-width: 360px; }
+  .pyramid .l3 { background: #d97706; max-width: 460px; }
+  .pyramid .l4 { background: #f59e0b; max-width: 560px; color: #3b2f04; }
+
+  /* ---- Tables ---- */
+  table { width: 100%; border-collapse: collapse; margin: 16px 0 24px; font-size: 13.5px; }
+  th, td { border: 1px solid var(--border); padding: 9px 12px; text-align: left; }
+  th { background: var(--soft); color: var(--brand-dark); font-weight: 800; }
+  tr:nth-child(even) td { background: #fafaf9; }
+
+  /* ---- Exam solutions ---- */
+  .qa {
+    border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin: 14px 0;
+  }
+  .qa .q {
+    background: #f9fafb; padding: 12px 16px; font-weight: 800; color: var(--brand-dark);
+  }
+  .qa .a { padding: 12px 16px; }
+  .qa .a p:last-child { margin-bottom: 0; }
+
+  /* ---- Footer ---- */
+  .footer {
+    margin-top: 40px; padding-top: 18px; border-top: 1px solid var(--border);
+    text-align: center; color: var(--muted); font-size: 12px;
+  }
+  .footer strong { color: var(--brand-dark); }
+</style>
+</head>
+<body>
+
+  <!-- ============ COVER ============ -->
+  <div class="cover">
+    <div class="monogram">CH</div>
+    <div class="eyebrow">Creators Hub Academy · Official Handbook</div>
+    <h1>The AI, Prompt-Writing &<br/>Instructional Design Handbook</h1>
+    <p class="lead">A complete field guide to teaching machines to think, and teaching humans to learn — built on the DIKW pyramid, multi-modal AI workflows, and evidence-based instructional design.</p>
+    <div class="badge-row">
+      <span class="badge">DIKW Framework</span>
+      <span class="badge">Prompt Engineering</span>
+      <span class="badge">Multi-Modal AI</span>
+      <span class="badge">Certification Exam</span>
+    </div>
+    <p class="cert-line">Export this page via browser print (File → Print → Save as PDF) for a vector, print-ready copy.</p>
+  </div>
+<!-- ============ SECTION 1: DIKW PYRAMID ============ -->
+  <div class="page page-break">
+    <div class="brand-bar">
+      <span class="logo-text">Creators Hub Academy</span>
+      <span>AI & Instructional Design Handbook</span>
+    </div>
+    <div class="section-kicker">Section 01</div>
+    <h2 class="section-title">The DIKW Pyramid: The Backbone of All Thinking</h2>
+    <p>Every great prompt, lesson, and AI workflow rests on one quiet idea: information only becomes valuable when it climbs the DIKW pyramid. Understanding this ladder is the single most important skill for anyone building with AI — because it tells you exactly <em>what</em> to ask for and <em>why</em>.</p>
+
+    <div class="pyramid">
+      <div class="level l1"><strong>Data</strong><small>Raw, unprocessed facts — "7.2", "Nigerian", "10:04am"</small></div>
+      <div class="level l2"><strong>Information</strong><small>Data given context — "The exam started at 10:04am in Lagos."</small></div>
+      <div class="level l3"><strong>Knowledge</strong><small>Patterns & rules — "Lagos students perform best in morning sessions."</small></div>
+      <div class="level l4"><strong>Wisdom</strong><small>Judgment & action — "Schedule live classes at 10am to boost pass rates."</small></div>
+    </div>
+
+    <div class="callout">
+      <div class="label">Why it matters for AI</div>
+      <p>Large Language Models are <strong>information machines</strong> — they turn data into information and knowledge. They do <em>not</em> produce wisdom by themselves. Your job as the prompt-writer is to supply the judgment at the top of the pyramid: the constraints, the purpose, the audience.</p>
+    </div>
+
+    <h3>Analogy: The Library, The Librarian, The Mentor</h3>
+    <div class="analogy">
+      <div class="metaphor">"Data is a warehouse of books. Information is the catalogue. Knowledge is the librarian who has read them all. Wisdom is the mentor who knows which book to hand you — and why — at exactly the right moment."</div>
+      <p>An AI model is the all-knowing librarian. It has the catalogue memorised. But <strong>you</strong> are the mentor. Only you know the student, the deadline, the goal, and the stakes. That is why prompt-writing is really <em>wisdom transfer</em>, not just query-writing.</p>
+    </div>
+
+    <h3>Applying DIKW to a real lesson</h3>
+    <table>
+      <thead>
+        <tr><th>Level</th><th>Example (Graphic Design course)</th><th>Prompting move</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Data</td><td>"Colour hex #FF6B6B, 72 DPI, 1080×1080"</td><td>Give exact, structured facts.</td></tr>
+        <tr><td>Information</td><td>"This is a warm red for a brand logo."</td><td>Attach meaning & context.</td></tr>
+        <tr><td>Knowledge</td><td>"Warm reds increase urgency and appetite."</td><td>Link to established principles.</td></tr>
+        <tr><td>Wisdom</td><td>"Use warm red for the CTA so cart abandonment drops."</td><td>Decide action with intent.</td></tr>
+      </tbody>
+    </table>
+  </div>
+<!-- ============ SECTION 2: PROMPT FRAMEWORK ============ -->
+  <div class="page page-break">
+    <div class="brand-bar">
+      <span class="logo-text">Creators Hub Academy</span>
+      <span>AI & Instructional Design Handbook</span>
+    </div>
+    <div class="section-kicker">Section 02</div>
+    <h2 class="section-title">The Prompt-Writing Framework: Ask Like a Mentor</h2>
+    <p>A powerful prompt is not a single magic sentence — it is a five-part structure that hands the model your context, your goal, and your standards. Memorise this as the <strong>R.O.L.E.</strong> model:</p>
+
+    <table>
+      <thead>
+        <tr><th>Letter</th><th>Component</th><th>What to include</th><th>Example</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>R</strong></td><td>Role</td><td>The persona the model should adopt</td><td>"You are a senior UX copywriter."</td></tr>
+        <tr><td><strong>O</strong></td><td>Objective</td><td>The exact deliverable & purpose</td><td>"Write a 150-word landing hero."</td></tr>
+        <tr><td><strong>L</strong></td><td>Limits</td><td>Constraints: length, tone, format</td><td>"Plain language, no jargon, 2 sentences max."</td></tr>
+        <tr><td><strong>E</strong></td><td>Evidence</td><td>Facts, examples, or reference material</td><td>"It is for a fitness app for teenagers."</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout">
+      <div class="label">The X rule</div>
+      <p>Always add an <strong>exemplar</strong> ("Here is a great example: …") and an <strong>exit check</strong> ("Before you finish, confirm you used the word 'motion' at least once."). One shows the machine the target; the other forces it to verify its own work.</p>
+    </div>
+
+    <h3>From vague to precise — a live example</h3>
+    <div class="analogy">
+      <div class="metaphor">"Write about AI." → "You are a teacher explaining prompt engineering to 14-year-olds. Write a 120-word analogy comparing a prompt to an order at a restaurant. Use the word 'kitchen' and end with one question to the student."</div>
+      <p>The second request carries role, objective, limits, evidence, and an exit check. Notice how the model now has everything it needs to produce a <em>usable</em> first draft, not a generic lecture.</p>
+    </div>
+
+    <h3>Six reusable prompt patterns</h3>
+    <ol>
+      <li><strong>Chain-of-Thought:</strong> "Reason step-by-step before answering."</li>
+      <li><strong>Few-Shot:</strong> Provide 2–3 worked examples, then ask for a new one.</li>
+      <li><strong>Persona:</strong> Assign a specific expert role to control tone.</li>
+      <li><strong>Constraint:</strong> "No bullet points. Write in full paragraphs."</li>
+      <li><strong>Self-Critique:</strong> "Now review your own answer and list 3 weaknesses."</li>
+      <li><strong>Structured Output:</strong> "Return a JSON object with these keys."</li>
+    </ol>
+  </div>
+
+  <!-- ============ SECTION 3: MULTI-MODAL WORKFLOWS ============ -->
+  <div class="page page-break">
+    <div class="brand-bar">
+      <span class="logo-text">Creators Hub Academy</span>
+      <span>AI & Instructional Design Handbook</span>
+    </div>
+    <div class="section-kicker">Section 03</div>
+    <h2 class="section-title">Multi-Modal Workflows: Teaching with Every Sense</h2>
+    <p>Modern AI is not text-only. A complete instructional workflow moves through <strong>text → image → audio → video</strong>, each step reinforcing the last. This mirrors how the human brain actually encodes memory: words build structure, images build association, audio builds rhythm, and video builds rehearsal.</p>
+
+    <h3>The four-lane pipeline</h3>
+    <table>
+      <thead>
+        <tr><th>Lane</th><th>Tool family</th><th>Learner benefit</th><th>Example prompt</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Text</td><td>LLMs</td><td>Concept & structure</td><td>"Draft a lesson outline on colour theory."</td></tr>
+        <tr><td>Image</td><td>Image generators</td><td>Visual association</td><td>"Create a 4-panel diagram of the colour wheel."</td></tr>
+        <tr><td>Audio</td><td>TTS / voice AI</td><td>Memory & rhythm</td><td>"Narrate the outline in a calm teacher voice."</td></tr>
+        <tr><td>Video</td><td>AI editing</td><td>Rehearsal & engagement</td><td>"Turn the narrations into a 60s explainer."</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Analogy: Recipe, Ingredients, Chef, Service</h3>
+    <div class="analogy">
+      <div class="metaphor">"Text is the recipe. Image is the ingredients photo. Audio is the chef's commentary. Video is the finished dish being served."</div>
+      <p>Each lane alone is incomplete. The recipe without the photo is confusing; the photo without the recipe is decoration. The full multi-modal workflow gives the student the <em>whole meal</em> — structure, visuals, sound, and demonstration.</p>
+    </div>
+
+    <h3>Build an asset in 4 prompts</h3>
+    <ol>
+      <li><strong>Script:</strong> "Write a 4-beat script for 'How to compress video' for beginners."</li>
+      <li><strong>Storyboard:</strong> "Describe 4 frames that match each beat."</li>
+      <li><strong>Visuals:</strong> "Illustrate frame 2: a timeline bar being squashed."</li>
+      <li><strong>Narration:</strong> "Record a 20s voiceover of the script."</li>
+    </ol>
+    <div class="callout">
+      <div class="label">Teacher tip</div>
+      <p>Always let the learner <strong>manipulate</strong> one lane themselves — e.g. re-prompt the image in a new style. Passive watching builds recall; active building builds mastery.</p>
+    </div>
+  </div>
+<!-- ============ SECTION 4: CERTIFICATION EXAM SOLUTIONS ============ -->
+  <div class="page page-break">
+    <div class="brand-bar">
+      <span class="logo-text">Creators Hub Academy</span>
+      <span>AI & Instructional Design Handbook</span>
+    </div>
+    <div class="section-kicker">Section 04</div>
+    <h2 class="section-title">Certification Exam Solutions</h2>
+    <p>This section shows the exam-style questions for the AI & Instructional Design track, with model answers. No answer key is stored — internalise the <em>reasoning</em>, then apply it.</p>
+
+    <div class="qa">
+      <div class="q">Q1. Explain the DIKW pyramid and give one example of each level in a prompt context.</div>
+      <div class="a">
+        <p><strong>Model answer:</strong> The DIKW pyramid orders raw input into value: <strong>Data</strong> (raw, unlabelled facts), <strong>Information</strong> (data with context), <strong>Knowledge</strong> (patterns and rules), and <strong>Wisdom</strong> (sound judgment applied to action). Example for a prompt on ad copy: Data = "Red, 24, Lagos"; Information = "A young Lagos audience"; Knowledge = "Short red CTAs convert well with Gen-Z"; Wisdom = "Write a 6-word red CTA for a Lagos Gen-Z audience." A good prompt supplies at least the top two levels so the model can act.</p>
+      </div>
+    </div>
+
+    <div class="qa">
+      <div class="q">Q2. What are the four parts you would include to turn a vague request into a high-quality prompt?</div>
+      <div class="a">
+        <p><strong>Model answer:</strong> Use the <strong>R.O.L.E.</strong> framework — <strong>Role</strong> (assign an expert persona), <strong>Objective</strong> (define the exact deliverable), <strong>Limits</strong> (constrain tone, length, and format), and <strong>Evidence</strong> (supply facts, examples, or an exemplar). Optionally add a fifth: an <strong>Exit check</strong> so the model verifies its own output.</p>
+      </div>
+    </div>
+
+    <div class="qa">
+      <div class="q">Q3. Describe one multi-modal workflow and explain why the learner benefits from all four lanes.</div>
+      <div class="a">
+        <p><strong>Model answer:</strong> A text → image → audio → video pipeline: script the lesson (text), storyboard it (image), narrate it (audio), then edit it into a short explainer (video). The learner benefits because each lane encodes the content differently — language builds structure, imagery builds association, narration builds rhythm and recall, and video builds rehearsal. Combined, they activate multiple memory systems, so the concept sticks.</p>
+      </div>
+    </div>
+
+    <div class="qa">
+      <div class="q">Q4. Why is "wisdom transfer" a better way to describe expert prompt-writing than "query-writing"?</div>
+      <div class="a">
+        <p><strong>Model answer:</strong> A query simply asks for information. An expert prompt hands the model the context, constraints, purpose, and audience — the judgment an expert would apply. That is not just retrieving answers; it is transferring the reasoning that turns knowledge into a wise decision. The model supplies knowledge; the prompt-writer supplies wisdom.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ FOOTER ============ -->
+  <div class="page">
+    <div class="footer">
+      <p><strong>Creators Hub Academy</strong> — AI, Prompt-Writing & Instructional Design Handbook</p>
+      <p>© 2026 Creators Hub Academy · www.creators-hub-academy.vercel.app</p>
+      <p>For learning purposes. Export via <em>File → Print → Save as PDF</em> for a vector copy.</p>
+    </div>
+  </div>
+
+</body>
+</html>
