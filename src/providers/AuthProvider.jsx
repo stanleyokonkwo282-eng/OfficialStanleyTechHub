@@ -125,8 +125,12 @@ const AuthProvider = ({ children }) => {
   };
 
   const userLogout = useCallback(async () => {
+    // Best-effort admin notification. It must NEVER block the actual logout:
+    // a cold-started backend (Render free tier) or a slow SMTP server used to
+    // keep this request pending for a long time, which made the Logout button
+    // appear frozen/dead. Cap it at 4 seconds, then always sign out.
     try {
-      if (user?.email) {
+      if (user?.email && import.meta.env.VITE_BASE_URL) {
         await axios.post(
           `${import.meta.env.VITE_BASE_URL}/notifications/user-logout`,
           {
@@ -134,7 +138,8 @@ const AuthProvider = ({ children }) => {
             email: user.email,
             phone: user.phone || "",
             role: user.role || "student",
-          }
+          },
+          { timeout: 4000 }
         );
       }
     } catch (notifyErr) {
