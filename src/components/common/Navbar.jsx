@@ -299,9 +299,10 @@ const UserData = ({ user, isUserLoading, logoutMutation, notifications, unreadCo
       <div className="dropdown dropdown-end">
         <div tabIndex={1} role="button">
           <img
-            src={user.photoURL}
+            src={user.photoURL || logo}
             alt="profile"
-            className="w-10 h-10 rounded-full ring-2 ring-yellow-400 hover:ring-4 transition-all duration-300 cursor-pointer"
+            className="w-10 h-10 rounded-full ring-2 ring-yellow-400 hover:ring-4 transition-all duration-300 cursor-pointer object-cover"
+            onError={(e) => { e.target.src = logo; }}
           />
         </div>
 
@@ -327,13 +328,13 @@ const UserData = ({ user, isUserLoading, logoutMutation, notifications, unreadCo
             </Link>
           </li>
           <li>
-            <Link
+            <button
               onClick={() => logoutMutation.mutate()}
-              className="text-red-400 hover:text-red-300"
+              className="w-full text-left text-red-400 hover:text-red-300 px-2 py-2 rounded"
             >
               <MdArrowRight />
               Logout
-            </Link>
+            </button>
           </li>
         </ul>
       </div>

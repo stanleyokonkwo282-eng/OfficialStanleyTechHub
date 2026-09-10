@@ -132,7 +132,7 @@ export default function Feedback() {
             Join thousands of Nigerian creators already learning at Creators Hub Academy
           </p>
           <p className="text-yellow-400 font-bold mt-1">
-            Enroll today for ₦5,000 — instant access via Paystack
+            Enroll today and get instant access via Paystack
           </p>
         </motion.div>
       </div>

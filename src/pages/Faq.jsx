@@ -9,9 +9,9 @@ const faqs = [
       "You can sign up with your email and password, or use Google login. Verify your email and browse our catalog of paid digital skills courses.",
   },
   {
-    question: "Are the courses really free?",
+    question: "Do the courses cost money?",
     answer:
-      "No. All courses require a ₦5,000 enrollment fee via Paystack. A ₦10,000 verification fee only applies if you want a shareable certificate after passing the exam.",
+      "No. Each course has its own one-time enrollment fee paid via Paystack. A separate verification fee only applies if you want a shareable certificate after passing the exam.",
   },
   {
     question: "What payment methods are supported?",

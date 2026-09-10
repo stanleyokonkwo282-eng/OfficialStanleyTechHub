@@ -58,8 +58,8 @@ const AllCourses = () => {
       <HeadTag title="All Courses | Creators Hub Academy" />
       <div className="max-w-7xl mx-auto px-4 py-10 bg-black min-h-screen">
         <h2 className="text-3xl font-bold mb-2 text-center text-white">All Courses</h2>
-        <p className="text-center text-gray-400 mb-8 text-sm">
-          Enroll in any course for ₦5,000 and start learning instantly.
+        <p className="text-center text-gray-400 mb-4 text-sm">
+          Enroll in any course with a one-time fee and start learning instantly.
         </p>
 
         {/* Search Bar */}
@@ -159,7 +159,7 @@ const AllCourses = () => {
 
               <div className="mt-4 pt-4 border-t border-zinc-800 flex justify-between items-center">
                 <div>
-                  <p className="text-green-400 font-bold text-lg">₦5,000</p>
+                  <p className="text-green-400 font-bold text-lg">{course.price ? `₦${Number(course.price).toLocaleString()}` : "Enroll"}</p>
                 </div>
                 <Link
                   to={`/courses/${course._id}`}

@@ -187,8 +187,8 @@ export default function Hero3D() {
 
             <p className="text-neutral-300 text-lg md:text-xl max-w-xl leading-relaxed">
               Master profitable digital skills — Graphic Design, Video Editing,
-              Digital Marketing, AI Tools, and more. Enroll for ₦5,000 and earn a
-              verified certificate with a unique ID.
+              Digital Marketing, AI Tools, and more. Enroll in your chosen course
+              with a one-time fee and earn a verified certificate with a unique ID.
             </p>
 
             <div className="flex flex-wrap gap-2 max-w-xl">

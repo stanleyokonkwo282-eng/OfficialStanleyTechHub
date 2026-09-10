@@ -6,6 +6,7 @@ const Hero3D = lazy(() => import("../components/home/Hero3D"));
 const AdsNotificationCenter = lazy(() => import("../components/common/AdsNotificationCenter"));
 const TrustedClients = lazy(() => import("../components/home/TrustedClients"));
 const WhyChoose = lazy(() => import("../components/home/WhyChoose"));
+const Benefits = lazy(() => import("../components/home/Benefits"));
 const PopularCourses = lazy(() => import("../components/home/PopularCourses"));
 const NewCourses = lazy(() => import("../components/home/NewCourses"));
 const Feedback = lazy(() => import("../components/home/Feedback"));
@@ -38,6 +39,9 @@ export default function Home() {
       </Suspense>
       <Suspense fallback={<SectionFallback />}>
         <WhyChoose />
+      </Suspense>
+      <Suspense fallback={<SectionFallback />}>
+        <Benefits />
       </Suspense>
       <Suspense fallback={<SectionFallback />}>
         <PopularCourses />

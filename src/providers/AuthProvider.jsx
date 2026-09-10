@@ -142,9 +142,20 @@ const AuthProvider = ({ children }) => {
     }
 
     if (!auth || !hasFirebaseConfig) {
+      window.location.href = "/login";
       return Promise.resolve();
     }
-    return signOut(auth);
+    try {
+      await signOut(auth);
+    } catch (signOutErr) {
+      console.error("Firebase signOut failed:", signOutErr.message);
+    }
+    // Hard reload guarantees all React caches (auth context, react-query) reset,
+    // so no UI ever remains "logged in" after logout.
+    if (!window.location.pathname.startsWith("/login")) {
+      window.location.href = "/login";
+    }
+    return undefined;
   }, [user]);
 
   const authInfo = useMemo(

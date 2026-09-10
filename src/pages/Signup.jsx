@@ -162,10 +162,8 @@ export default function Signup() {
                 <FaImage className="text-yellow-400 mr-2" />
                 <input
                   type="url"
-                  {...register("photoURL", {
-                    required: "Photo URL is required",
-                  })}
-                  placeholder="Enter your photo URL"
+                  {...register("photoURL")}
+                  placeholder="Optional photo URL (you can add it later)"
                   className="w-full outline-none bg-transparent text-white placeholder-gray-500"
                 />
               </div>

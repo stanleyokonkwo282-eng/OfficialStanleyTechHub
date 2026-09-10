@@ -26,7 +26,7 @@ export default function TermsOfService() {
           <section>
             <h2 className="text-2xl font-bold text-white mb-2">3. Course Enrollment & Payments</h2>
             <p>
-              All courses are subject to a ₦5,000 enrollment fee unless otherwise stated. Payments are processed securely through Paystack. Access to course materials is granted only after successful payment confirmation.
+              All courses are subject to a one-time enrollment fee unless otherwise stated. Payments are processed securely through Paystack. Access to course materials is granted only after successful payment confirmation.
             </p>
           </section>
 

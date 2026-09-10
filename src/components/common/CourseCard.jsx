@@ -74,7 +74,7 @@ export default function CourseCard({ course }) {
 
           <div className="flex justify-between items-center mt-auto pt-3 border-t border-zinc-800">
             <div>
-              <p className="text-green-400 font-bold text-lg">₦5,000</p>
+              <p className="text-green-400 font-bold text-lg">{course.price ? `₦${Number(course.price).toLocaleString()}` : "Enroll"}</p>
             </div>
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Link

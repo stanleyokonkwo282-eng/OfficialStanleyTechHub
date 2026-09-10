@@ -1,26 +1,33 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { useNavigate, useParams } from "react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "react-toastify";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
+import useAuth from "../../hooks/useAuth";
 import {
   ArrowLeft,
   ChevronLeft,
   ChevronRight,
   Download,
-  ExternalLink,
   BookOpen,
   FileText,
   Menu,
   CheckCircle2,
+  GraduationCap,
+  ClipboardCheck,
 } from "lucide-react";
 
 export default function PdfCoursePlayer() {
   const { courseId: id } = useParams();
   const navigate = useNavigate();
   const axiosSecure = useAxiosSecure();
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
 
   const [selectedLessonId, setSelectedLessonId] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [resumePage, setResumePage] = useState(0);
+  const [completedLessonIds, setCompletedLessonIds] = useState({});
 
   const { data: course, isLoading: courseLoading } = useQuery({
     queryKey: ["pdfCourse", id],
@@ -43,6 +50,88 @@ export default function PdfCoursePlayer() {
 
   const lessonErrorStatus = lessonsQueryError?.response?.status || null;
   const lessonErrorMessage = lessonsQueryError?.response?.data?.message || lessonsQueryError?.message || "";
+
+  // Resume: open the exact handbook lesson the student last read, and remember
+  // their last-seen "page" (lesson index) so they can continue where they left off.
+  const { data: resumeData } = useQuery({
+    queryKey: ["pdf-resume", id, user?.email],
+    queryFn: async () => {
+      const res = await axiosSecure.get(`/lessons/resume/${id}/${user?.email}`);
+      return res.data?.resume || null;
+    },
+    enabled: !!user?.email,
+  });
+
+  // Completion summary + exam eligibility (60% pass; exam only after all lessons).
+  const { data: completionData, refetch: refetchCompletion } = useQuery({
+    queryKey: ["pdf-completion", id, user?.email],
+    queryFn: async () => {
+      const res = await axiosSecure.get(`/lessons/completion/${id}/${user?.email}`);
+      return res.data || { totalLessons: 0, completedLessons: 0, percentage: 0, isComplete: false, exam: null };
+    },
+    enabled: !!user?.email,
+  });
+
+  useEffect(() => {
+    if (!allLessons?.length) return;
+    if (!resumeData?.lessonId) return;
+    const resumeLesson = allLessons.find((l) => String(l._id || l.resolvedId) === String(resumeData.lessonId));
+    if (resumeLesson) {
+      setSelectedLessonId(resumeLesson.resolvedId);
+      setResumePage(Math.max(0, Number(resumeData.lastPosition) || 0));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [Boolean(resumeData), allLessons.length]);
+
+  // Mark the current handbook lesson as completed (once fully read).
+  const completeLessonMutation = useMutation({
+    mutationFn: async (lesson) => {
+      const res = await axiosSecure.post("/lessons/complete", {
+        lessonId: lesson._id,
+        courseId: id,
+        studentEmail: user?.email,
+      });
+      return res.data;
+    },
+    onSuccess: async (_, lesson) => {
+      setCompletedLessonIds((prev) => ({ ...prev, [String(lesson._id)]: true }));
+      queryClient.invalidateQueries({ queryKey: ["pdf-completion"] });
+      toast.success("Lesson marked as complete! ✅");
+      if (completionData?.totalLessons && completedLessonsAll(completedLessonIds, completionData.totalLessons)) {
+        toast.info("Course complete — your exam is now unlocked!", { autoClose: 5000 });
+      }
+    },
+    onError: (err) => toast.error(err?.response?.data?.message || "Could not mark lesson complete."),
+  });
+
+  // Persist which handbook lesson is being read (for resume).
+  const persistLesson = (lesson) => {
+    if (!lesson?._id || !user?.email) return;
+    const index = allLessons.findIndex((l) => l.resolvedId === lesson.resolvedId);
+    axiosSecure
+      .post("/lessons/last-watched", {
+        lessonId: lesson._id,
+        courseId: id,
+        studentEmail: user?.email,
+        lastPosition: Math.max(0, index),
+        progressPercent: Math.min(100, Math.round(((index + 1) / allLessons.length) * 100)),
+      })
+      .catch(() => {});
+  };
+
+  const handleSelectLesson = useCallback(
+    (lesson) => {
+      setSelectedLessonId(lesson.resolvedId || lesson._id);
+      setResumePage(0);
+      persistLesson(lesson);
+      setSidebarOpen(false);
+    },
+    [allLessons, persistLesson]
+  );
+
+  function completedLessonsAll(localMap, total) {
+    return total > 0 && total <= Object.keys(localMap).length;
+  }
 
   const modules = useMemo(() => {
     if (!lessonsData?.lessons?.length) return [];
@@ -158,16 +247,31 @@ export default function PdfCoursePlayer() {
 
         <div className="flex items-center gap-2">
           {pdfUrl && (
-            <a
-              href={pdfUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 border border-white/10 text-xs font-semibold text-zinc-200 transition"
-              title="Open full document in new tab"
+            <button
+              onClick={() => {
+                const lesson = currentLesson;
+                if (!lesson) return;
+                completeLessonMutation.mutate(lesson);
+              }}
+              disabled={completeLessonMutation.isPending}
+              className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-emerald-500/90 hover:bg-emerald-400 text-zinc-950 font-bold text-xs transition shadow-lg shadow-emerald-500/20 disabled:opacity-50"
+              title="Mark this lesson as fully read"
             >
-              <ExternalLink className="w-3.5 h-3.5" />
-              <span className="hidden md:inline">Open External</span>
-            </a>
+              <ClipboardCheck className="w-3.5 h-3.5" />
+              <span className="hidden md:inline">Mark Complete</span>
+            </button>
+          )}
+          {pdfUrl && (
+            <button
+              onClick={() => {
+                toast.info("Continue reading right here on the academy — external viewing is locked to protect your progress.");
+              }}
+              className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 border border-white/10 text-xs font-semibold text-zinc-200 transition cursor-not-allowed"
+              title="External viewing is disabled"
+            >
+              <FileText className="w-3.5 h-3.5" />
+              <span className="hidden md:inline">Read In-App</span>
+            </button>
           )}
           {pdfUrl && (
             <a
@@ -207,7 +311,7 @@ export default function PdfCoursePlayer() {
             <div className="flex items-center gap-2 shrink-0">
               <button
                 disabled={!prevLesson}
-                onClick={() => setSelectedLessonId(prevLesson?.resolvedId)}
+                onClick={() => prevLesson && handleSelectLesson(prevLesson)}
                 className={`flex items-center gap-1 px-3 py-2 rounded-xl text-xs font-bold border transition ${
                   prevLesson
                     ? "bg-zinc-800 border-white/10 text-white hover:bg-zinc-700"
@@ -218,7 +322,7 @@ export default function PdfCoursePlayer() {
               </button>
               <button
                 disabled={!nextLesson}
-                onClick={() => setSelectedLessonId(nextLesson?.resolvedId)}
+                onClick={() => nextLesson && handleSelectLesson(nextLesson)}
                 className={`flex items-center gap-1 px-4 py-2 rounded-xl text-xs font-bold transition shadow-md ${
                   nextLesson
                     ? "bg-amber-500 text-zinc-950 hover:bg-amber-400"
@@ -230,10 +334,50 @@ export default function PdfCoursePlayer() {
             </div>
           </div>
 
+          {/* Progress + Exam gate */}
+          <div className="bg-[#0d121d] border border-white/10 rounded-2xl p-4 mb-4 shadow-lg">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div>
+                <p className="text-[10px] font-bold text-amber-500 uppercase tracking-wider mb-1">
+                  Course Progress
+                </p>
+                <p className="text-xs text-zinc-300">
+                  {completionData?.completedLessons || 0} of {completionData?.totalLessons || allLessons.length} lessons completed ({completionData?.percentage || 0}%)
+                </p>
+                <div className="w-full sm:w-72 h-2 rounded-full bg-zinc-800 mt-2 overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-amber-500 to-amber-400 rounded-full transition-all"
+                    style={{ width: `${completionData?.percentage || 0}%` }}
+                  />
+                </div>
+              </div>
+
+              {completionData?.isComplete ? (
+                completionData?.exam ? (
+                  <button
+                    onClick={() => navigate(`/dashboard/exam/${id}`)}
+                    className="flex items-center gap-2 px-5 py-3 rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-black text-sm transition shadow-lg shadow-amber-500/30"
+                  >
+                    <GraduationCap className="w-4 h-4" />
+                    Exam Ready — Take the Exam (Pass mark {completionData?.exam?.passMark ?? 60}%)
+                  </button>
+                ) : (
+                  <p className="text-[11px] text-zinc-500 max-w-xs text-right">
+                    Course complete! Your exam will appear here once the instructor publishes it.
+                  </p>
+                )
+              ) : (
+                <p className="text-[11px] text-zinc-500 max-w-xs text-right">
+                  Complete every lesson in this handbook (mark each one complete as you read) to unlock your final exam.
+                </p>
+              )}
+            </div>
+          </div>
+
           <div className="flex-1 min-h-[550px] sm:min-h-[700px] w-full rounded-2xl overflow-hidden border border-white/10 bg-[#0d121d] relative shadow-2xl">
             {pdfUrl ? (
               <iframe
-                src={`${pdfUrl}#toolbar=1&navpanes=0`}
+                src={`${pdfUrl}${resumePage > 0 ? `#page=${Math.min(Math.ceil(resumePage) + 1, 500)}` : ""}#toolbar=1&navpanes=0`}
                 title={currentLesson?.lessonTitle || "PDF Document Viewer"}
                 className="w-full h-full min-h-[550px] sm:min-h-[700px] border-0 rounded-2xl bg-zinc-950"
               />
@@ -277,23 +421,25 @@ export default function PdfCoursePlayer() {
                   {mod.lessons.map((les, lesIdx) => {
                     const lessonId = les._id || `${les.moduleNumber}-${les.lessonNumber}`;
                     const isActive = currentLesson?.resolvedId === lessonId;
+                    const isDone = completedLessonIds[String(les._id)] || false;
 
                     return (
                       <button
                         key={lesIdx}
-                        onClick={() => {
-                          setSelectedLessonId(lessonId);
-                          setSidebarOpen(false);
-                        }}
+                        onClick={() => handleSelectLesson(les)}
                         className={`w-full text-left p-2.5 rounded-lg text-xs flex items-center gap-2.5 transition ${
                           isActive
                             ? "bg-amber-500/15 border border-amber-500/40 text-amber-300 font-bold"
                             : "text-zinc-400 hover:text-white hover:bg-white/5 border border-transparent"
                         }`}
                       >
-                        <FileText
-                          className={`w-3.5 h-3.5 shrink-0 ${isActive ? "text-amber-400" : "text-zinc-500"}`}
-                        />
+                        {isDone ? (
+                          <CheckCircle2 className="w-3.5 h-3.5 shrink-0 text-emerald-400" />
+                        ) : (
+                          <FileText
+                            className={`w-3.5 h-3.5 shrink-0 ${isActive ? "text-amber-400" : "text-zinc-500"}`}
+                          />
+                        )}
                         <span className="truncate flex-1">{les.lessonTitle}</span>
                         {isActive && <CheckCircle2 className="w-3.5 h-3.5 text-amber-400 shrink-0" />}
                       </button>

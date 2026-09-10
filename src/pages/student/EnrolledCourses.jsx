@@ -27,7 +27,7 @@ export default function EnrolledCourses() {
         <div className="text-6xl">📚</div>
         <h2 className="text-2xl font-bold text-white">No Enrolled Courses Yet</h2>
         <p className="text-gray-400 text-center max-w-md">
-          You have not enrolled in any course yet. Browse our catalog and enroll for ₦5,000.
+          You have not enrolled in any course yet. Browse our catalog and enroll to start learning.
         </p>
         <button
           onClick={() => navigate("/courses")}

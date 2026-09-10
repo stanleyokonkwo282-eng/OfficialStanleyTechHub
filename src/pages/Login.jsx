@@ -38,16 +38,26 @@ export default function Login() {
       const userCredential = await userLogin(data.email, data.password);
       return userCredential.user;
     },
-    onSuccess: async (user) => {
-      setUser(user);
+    onSuccess: async (firebaseUser) => {
       sessionStorage.setItem("chub_justLoggedIn", "true");
-      toast.success("Welcome back, Stanley! 👋 Your dashboard is ready.", {
+      // Merge the Mongo database profile (role, points, referral code, etc.)
+      // with the Firebase user so the dashboard is fully populated immediately.
+      try {
+        const res = await axiosSecure.get(`/users/${encodeURIComponent(firebaseUser.email)}`);
+        const merged = { ...firebaseUser, ...res.data, email: firebaseUser.email };
+        setUser(merged);
+      } catch (err) {
+        console.error("Failed to fetch Mongo user after login:", err);
+        setUser(firebaseUser);
+      }
+      const displayName = firebaseUser?.displayName || firebaseUser?.email?.split("@")[0] || "there";
+      toast.success(`Welcome back, ${displayName}! 👋 Your dashboard is ready.`, {
         autoClose: 5000,
       });
       if (location.state?.from) {
         navigate(location.state.from, { state: location.state });
       } else {
-        navigate("/", { state: location.state });
+        navigate("/dashboard", { state: location.state });
       }
     },
     onError: (error) => {

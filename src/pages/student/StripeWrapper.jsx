@@ -112,11 +112,11 @@ const StripeWrapper = () => {
             <div className="border border-gray-400 rounded-lg p-6 bg-gray-50 text-gray-700 space-y-4">
               <div className="flex justify-between">
                 <span>Amount</span>
-                <span>₦5,000</span>
+                <span>{courseDetails?.price ? `₦${Number(courseDetails.price).toLocaleString()}` : "One-time fee"}</span>
               </div>
               <div className="border-t pt-4 flex justify-between font-semibold text-gray-900">
                 <span>Total</span>
-                <span>₦5,000</span>
+                <span>{courseDetails?.price ? `₦${Number(courseDetails.price).toLocaleString()}` : "One-time fee"}</span>
               </div>
               <button
                 onClick={() => {
@@ -126,7 +126,7 @@ const StripeWrapper = () => {
                 }}
                 className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-lg transition"
               >
-                Pay ₦5,000 with Card (Paystack)
+                Pay with Card (Paystack)
               </button>
               <p className="text-center text-gray-500 text-xs mt-2">
                 You will be redirected to Paystack to complete payment securely.

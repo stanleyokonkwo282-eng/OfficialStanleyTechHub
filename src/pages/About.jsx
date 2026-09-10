@@ -170,7 +170,7 @@ export default function About() {
               Enroll and Learn
             </h3>
             <p className="text-gray-300">
-              Enroll in any course for ₦5,000. Watch lessons, track your progress, and resume
+              Enroll in any course with a one-time fee. Watch lessons, track your progress, and resume
               exactly where you stopped.
             </p>
           </div>

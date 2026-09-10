@@ -82,7 +82,7 @@ const CourseDetails = () => {
   };
 
   const getButtonLabel = () => {
-    return isEnrolled ? "▶ Continue Learning" : `Enroll for ₦5,000`;
+    return isEnrolled ? "▶ Continue Learning" : `Enroll for ${course?.price ? `₦${Number(course.price).toLocaleString()}` : "this course"}`;
   };
 
   if (courseLoading) return <LoaderSpinner />;
@@ -176,7 +176,7 @@ const CourseDetails = () => {
           <div>
             <div className="bg-zinc-950 border border-zinc-800 rounded-xl p-6 sticky top-24 space-y-5">
               <div>
-                <p className="text-3xl font-bold text-green-400">₦5,000</p>
+                <p className="text-3xl font-bold text-green-400">{course.price ? `₦${Number(course.price).toLocaleString()}` : "Enroll"}</p>
                 <p className="text-gray-400 text-sm mt-1">
                   Full enrollment access — choose your format and start learning.
                 </p>

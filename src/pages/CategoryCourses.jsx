@@ -75,7 +75,7 @@ export default function CategoryCourses() {
                     </span>
                   </div>
                   <div className="flex justify-between items-center mt-4">
-                    <span className="text-green-400 font-bold">₦5,000</span>
+                    <span className="text-green-400 font-bold">{course.price ? `₦${Number(course.price).toLocaleString()}` : "Enroll"}</span>
                     <Link
                       to={`/courses/${course._id}`}
                       className="bg-yellow-400 text-black px-4 py-2 rounded hover:bg-yellow-500 font-medium transition"

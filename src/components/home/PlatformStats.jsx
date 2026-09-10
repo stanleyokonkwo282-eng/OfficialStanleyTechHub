@@ -136,7 +136,7 @@ export default function PlatformStats() {
             Ready to Start Learning?
           </h3>
           <p className="text-gray-400 mb-6">
-            Enroll in any course for <span className="text-yellow-400 font-bold text-lg">₦5,000</span> and get instant access.
+            Enroll in any course — one-time fee per course with instant Paystack access.
           </p>
           <a
             href="/courses"

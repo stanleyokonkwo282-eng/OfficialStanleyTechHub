@@ -31,16 +31,37 @@ export default function CoursePlayer() {
 
     try {
       const currentTime = Math.max(0, Number(playerRef.current.getCurrentTime()) || 0);
+      const duration = Number(playerRef.current.getDuration()) || 0;
+      const percent = duration > 0 ? Math.min(100, Math.round((currentTime / duration) * 100)) : 0;
       if (currentTime > 0) {
         updateLastWatchedMutationRef.current.mutate({
           lessonId: activeLesson._id,
-          currentTimeSec: currentTime,
+          lastPosition: Math.floor(currentTime),
+          progressPercent: percent,
         });
       }
     } catch (err) {
       console.debug("Unable to persist watch state:", err);
     }
   }, [activeLesson, user?.email]);
+
+  // Resume state from the server so learners pick up exactly where they stopped
+  // (even across devices / sessions). Maps lessonId -> lastPosition seconds.
+  const resumePositionsRef = useRef({});
+  const { data: resumeData } = useQuery({
+    queryKey: ["resume-state", courseId, user?.email],
+    queryFn: async () => {
+      const res = await axiosSecure.get(`/lessons/resume/${courseId}/${user?.email}`);
+      return res.data?.resume || null;
+    },
+    enabled: !!user?.email,
+  });
+
+  useEffect(() => {
+    if (resumeData?.lessonId && Number.isFinite(resumeData.lastPosition)) {
+      resumePositionsRef.current[String(resumeData.lessonId)] = Number(resumeData.lastPosition) || 0;
+    }
+  }, [resumeData]);
   const apiLoadedRef = useRef(false);
   const [playerReady, setPlayerReady] = useState(false);
   const [playerInitToken, setPlayerInitToken] = useState(0);
@@ -153,12 +174,13 @@ export default function CoursePlayer() {
   });
 
   const updateLastWatchedMutation = useMutation({
-    mutationFn: async ({ lessonId, currentTimeSec = 0 }) => {
+    mutationFn: async ({ lessonId, lastPosition = 0, progressPercent = 0 }) => {
       await axiosSecure.post("/lessons/last-watched", {
         lessonId,
         courseId,
         studentEmail: user?.email,
-        currentTime: currentTimeSec,
+        lastPosition,
+        progressPercent,
       });
     },
   });
@@ -282,12 +304,19 @@ export default function CoursePlayer() {
     // Create new player with safe parameters
     const onPlayerReady = (event) => {
       setPlayerReady(true);
-      const startTime = activeLesson.lastWatchedTime || 0;
-      if (startTime > 0) {
-        event.target.seekTo(startTime, true);
-        lastKnownTime.current = startTime;
-      }
       playerRef.current = event.target;
+      // Resume exactly where the student stopped (server-tracked position).
+      const saved = resumePositionsRef.current[String(activeLesson._id)] || activeLesson.lastWatchedTime || 0;
+      if (saved > 0) {
+        setTimeout(() => {
+          try {
+            event.target.seekTo(saved, true);
+            lastKnownTime.current = saved;
+          } catch (err) {
+            console.debug("Seek to resume position failed:", err);
+          }
+        }, 300);
+      }
     };
 
     const onPlayerError = (event) => {
@@ -305,6 +334,19 @@ export default function CoursePlayer() {
             const duration = playerRef.current.getDuration();
             const maxAllowedAdvance = 5;
 
+            // Force normal speed — recorded-video fast forwarding is blocked.
+            if (playerRef.current.getPlaybackRate && Math.abs(playerRef.current.getPlaybackRate() - 1) > 0.01) {
+              try { playerRef.current.setPlaybackRate(1); } catch (err) { console.debug(err); }
+              toast.warning("Fast forwarding is not allowed", { autoClose: 1500 });
+            }
+
+            // Auto-pause + warn when the learner leaves the tab (focus tracking).
+            if (document.hidden && playerRef.current.pauseVideo) {
+              try { playerRef.current.pauseVideo(); } catch (err) { console.debug(err); }
+              toast.warning("Lesson paused — stay on this page to continue watching.", { autoClose: 2000 });
+              return;
+            }
+
             if (duration > 0 && lastKnownTime.current > 0) {
               if (currentTime > lastKnownTime.current + maxAllowedAdvance) {
                 playerRef.current.seekTo(lastKnownTime.current, true);
@@ -316,13 +358,18 @@ export default function CoursePlayer() {
             if (currentTime > 0) lastKnownTime.current = currentTime;
             const percent = (currentTime / duration) * 100;
             setWatchPercent(Math.min(100, percent));
-            if (Math.floor(currentTime) % 10 === 0 && currentTime > 0) {
+            // Persist precise position continuously (throttled) so "continue where
+            // you stopped" works down to the second.
+            if (Math.floor(currentTime) % 5 === 0 && currentTime > 0) {
               updateLastWatchedMutationRef.current.mutate({
                 lessonId: activeLesson._id,
-                currentTimeSec: currentTime,
+                lastPosition: Math.floor(currentTime),
+                progressPercent: Math.min(100, percent),
               });
             }
-            if (percent >= 90 && !completedRef.current) {
+            // A lesson only counts as completed once the video is watched to the
+            // end (95%+) — forwarding is locked out, so this proves full viewing.
+            if (percent >= 95 && !completedRef.current) {
               clearInterval(watchInterval.current);
               markCompleteMutationRef.current.mutate(activeLesson._id);
             }
@@ -332,10 +379,13 @@ export default function CoursePlayer() {
         if (watchInterval.current) clearInterval(watchInterval.current);
         if (playerRef.current && playerReady && playerRef.current.getCurrentTime) {
           const currentTime = playerRef.current.getCurrentTime();
+          const duration = playerRef.current.getDuration();
+          const percent = duration > 0 ? Math.min(100, Math.round((currentTime / duration) * 100)) : 0;
           if (currentTime > 0) {
             updateLastWatchedMutationRef.current.mutate({
               lessonId: activeLesson._id,
-              currentTimeSec: currentTime,
+              lastPosition: Math.floor(currentTime),
+              progressPercent: percent,
             });
           }
         }
@@ -500,10 +550,13 @@ export default function CoursePlayer() {
     if (playerRef.current && playerReady && activeLesson && playerRef.current.getCurrentTime) {
       try {
         const currentTime = playerRef.current.getCurrentTime();
+        const duration = playerRef.current.getDuration();
+        const percent = duration > 0 ? Math.min(100, Math.round((currentTime / duration) * 100)) : 0;
         if (currentTime > 0) {
           updateLastWatchedMutationRef.current.mutate({
             lessonId: activeLesson._id,
-            currentTimeSec: currentTime,
+            lastPosition: Math.floor(currentTime),
+            progressPercent: percent,
           });
         }
       } catch (err) {
@@ -579,7 +632,7 @@ export default function CoursePlayer() {
         <div className="text-6xl">🔒</div>
         <h2 className="text-3xl font-bold text-white">Course Locked</h2>
         <p className="text-gray-400 text-center max-w-md">
-          You need to enroll in this course to access lessons. Enroll for ₦5,000 and start learning instantly.
+          You need to enroll in this course to access lessons. Enroll now and start learning instantly.
         </p>
         <button
           onClick={() => navigate(`/courses/${courseId}`)}
