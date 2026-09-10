@@ -8,9 +8,9 @@ import LoaderDotted from "../components/common/LoaderDotted";
 import renderStars from "../utils/renderStars";
 
 const fetchCourses = async ({ queryKey }) => {
-  const [, { page, searchTerm }] = queryKey;
+  const [, { page, searchTerm, format }] = queryKey;
   const res = await axios.get(`${import.meta.env.VITE_BASE_URL}/courses`, {
-    params: { page, limit: 9, searchTerm },
+    params: { page, limit: 9, searchTerm, ...(format && format !== "all" ? { format } : {}) },
   });
   return res.data;
 };
@@ -19,9 +19,10 @@ const AllCourses = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [inputTerm, setInputTerm] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
+  const [formatFilter, setFormatFilter] = useState("all");
 
   const { data, refetch, isLoading } = useQuery({
-    queryKey: ["courses", { page: currentPage, searchTerm }],
+    queryKey: ["courses", { page: currentPage, searchTerm, format: formatFilter }],
     queryFn: fetchCourses,
   });
 
@@ -29,6 +30,11 @@ const AllCourses = () => {
     setSearchTerm(inputTerm);
     setCurrentPage(1);
     refetch();
+  };
+
+  const handleFormatChange = (format) => {
+    setFormatFilter(format);
+    setCurrentPage(1);
   };
 
   const handleNextPage = () => {
@@ -57,7 +63,7 @@ const AllCourses = () => {
         </p>
 
         {/* Search Bar */}
-        <div className="flex gap-3 mb-8 justify-center">
+        <div className="flex gap-3 mb-4 justify-center">
           <input
             type="text"
             placeholder="Search courses..."
@@ -72,6 +78,27 @@ const AllCourses = () => {
           >
             Search
           </button>
+        </div>
+
+        {/* Format filter — YouTube video courses and PDF handbooks live apart */}
+        <div className="flex gap-2 mb-8 justify-center flex-wrap">
+          {[
+            { value: "all", label: "All Formats" },
+            { value: "video", label: "🎥 Video Courses" },
+            { value: "pdf", label: "📄 PDF Handbooks" },
+          ].map((opt) => (
+            <button
+              key={opt.value}
+              onClick={() => handleFormatChange(opt.value)}
+              className={`px-4 py-2 rounded-lg text-sm font-semibold transition border ${
+                formatFilter === opt.value
+                  ? "bg-yellow-400 text-black border-yellow-400"
+                  : "bg-zinc-900 text-gray-300 border-zinc-700 hover:border-yellow-400"
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
         </div>
 
         {/* Courses Grid */}
@@ -91,7 +118,20 @@ const AllCourses = () => {
               />
 
               <div className="flex-1 space-y-2">
-                <h3 className="text-lg font-semibold text-white leading-tight">{course.title}</h3>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h3 className="text-lg font-semibold text-white leading-tight flex-1">{course.title}</h3>
+                </div>
+                <div className="flex items-center gap-2">
+                  {course.hasVideo && !course.hasPdf && (
+                    <span className="text-[10px] font-bold uppercase tracking-wider bg-red-500/15 text-red-400 border border-red-500/30 rounded-full px-2 py-0.5">🎥 Video</span>
+                  )}
+                  {course.hasPdf && !course.hasVideo && (
+                    <span className="text-[10px] font-bold uppercase tracking-wider bg-sky-500/15 text-sky-400 border border-sky-500/30 rounded-full px-2 py-0.5">📄 PDF Handbook</span>
+                  )}
+                  {course.hasVideo && course.hasPdf && (
+                    <span className="text-[10px] font-bold uppercase tracking-wider bg-amber-500/15 text-amber-400 border border-amber-500/30 rounded-full px-2 py-0.5">🎥 + 📄 Hybrid</span>
+                  )}
+                </div>
 
                 <p className="text-gray-400 text-sm">
                   By{" "}

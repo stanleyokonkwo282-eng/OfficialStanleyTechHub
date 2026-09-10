@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { FaCamera, FaUser, FaPhone } from "react-icons/fa";
+import { FaCamera, FaUser, FaPhone, FaUpload } from "react-icons/fa";
 import { toast } from "react-toastify";
 import { motion } from "framer-motion";
 import HeadTag from "../../components/common/HeadTag";
@@ -13,6 +13,59 @@ export default function ProfileEdit() {
   const axiosSecure = useAxiosSecure();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [previewUrl, setPreviewUrl] = useState(user?.photoURL || "");
+  const [uploading, setUploading] = useState(false);
+
+  const handlePhotoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please choose an image file.");
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image must be under 5MB.");
+      return;
+    }
+    try {
+      setUploading(true);
+      const sigRes = await axiosSecure.get("/get-ik-signature");
+      const { signature, token, expire, publicKey } = sigRes.data || {};
+      if (!signature || !token || !expire) {
+        throw new Error("Image service is not ready. Paste an image URL instead.");
+      }
+      const endpoint = import.meta.env.VITE_IMAGEKIT_URL_ENDPOINT || "https://ik.imagekit.io/jakariya";
+      const form = new FormData();
+      form.append("file", file);
+      form.append("fileName", `profile-${user?.email || Date.now()}.jpg`);
+      form.append("folder", "creators-hub-academy/profiles");
+      form.append("publicKey", publicKey);
+      form.append("signature", signature);
+      form.append("expire", String(expire));
+      form.append("token", token);
+      const uploadRes = await fetch("https://upload.imagekit.io/api/v1/files/upload", {
+        method: "POST",
+        body: form,
+      });
+      const uploadData = await uploadRes.json();
+      if (!uploadRes.ok || !uploadData?.url) {
+        throw new Error(uploadData?.message || "Upload failed.");
+      }
+      setPreviewUrl(uploadData.url);
+      setUser((prev) => ({ ...prev, photoURL: uploadData.url }));
+      // persist immediately so dashboard shows it everywhere
+      await axiosSecure.patch(`/users/${encodeURIComponent(user?.email)}`, {
+        photoURL: uploadData.url,
+        displayName: user?.displayName || user?.name,
+        name: user?.name || user?.displayName,
+      }).catch(() => {});
+      toast.success("Profile picture uploaded!");
+    } catch (err) {
+      console.error("Photo upload error:", err);
+      toast.error(err.message || "Failed to upload picture.");
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const {
     register,
@@ -80,13 +133,22 @@ export default function ProfileEdit() {
                     className="w-24 h-24 rounded-full object-cover border-4 border-yellow-400"
                   />
                   <label
-                    htmlFor="photoURL"
+                    htmlFor="photoUpload"
                     className="absolute bottom-0 right-0 bg-yellow-400 text-black p-2 rounded-full cursor-pointer hover:bg-yellow-500 transition-colors"
+                    title="Upload picture"
                   >
                     <FaCamera />
                   </label>
+                  <input id="photoUpload" type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} />
                 </div>
-                <p className="text-gray-400 text-sm">Click the camera icon to change photo URL</p>
+                <p className="text-gray-400 text-sm">
+                  {uploading ? "Uploading picture…" : "Click the camera icon to upload a picture, or paste a URL below"}
+                </p>
+                <label className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-zinc-800 text-white text-sm font-semibold hover:bg-zinc-700 cursor-pointer transition">
+                  <FaUpload />
+                  {uploading ? "Uploading…" : "Upload Picture"}
+                  <input type="file" accept="image/*" className="hidden" onChange={handlePhotoUpload} />
+                </label>
               </div>
 
               {/* Name */}

@@ -59,6 +59,7 @@ const AddCourse = lazyImport(() => import("../pages/teacher/AddCourse"));
 const CourseSummery = lazyImport(() => import("../pages/teacher/CourseSummery"));
 const TeacherPayout = lazyImport(() => import("../pages/teacher/TeacherPayout"));
 const TeacherSubscription = lazyImport(() => import("../pages/teacher/TeacherSubscription"));
+const PublicProfile = lazyImport(() => import("../pages/common/PublicProfile"));
 
 const router = createBrowserRouter([
   {
@@ -255,6 +256,14 @@ const router = createBrowserRouter([
             element: (
               <PrivateRoute>
                 <ProfileEdit />
+              </PrivateRoute>
+            ),
+          },
+          {
+            path: "profile/:identifier",
+            element: (
+              <PrivateRoute>
+                <PublicProfile />
               </PrivateRoute>
             ),
           },

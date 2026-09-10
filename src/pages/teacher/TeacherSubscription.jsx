@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import HeadTag from "../../components/common/HeadTag";
 import LoaderSpinner from "../../components/common/LoaderSpinner";
@@ -7,6 +8,7 @@ import useAxiosSecure from "../../hooks/useAxiosSecure";
 export default function TeacherSubscription() {
   const { user } = useAuth();
   const axiosSecure = useAxiosSecure();
+  const [renewing, setRenewing] = useState(false);
 
   const { data, isLoading } = useQuery({
     queryKey: ["my-subscription"],
@@ -36,6 +38,20 @@ export default function TeacherSubscription() {
   };
 
   const planDetails = getPlanDetails(subscription?.plan || userSub?.plan);
+
+  const handleRenew = async () => {
+    try {
+      setRenewing(true);
+      const res = await axiosSecure.post("/subscriptions/renew");
+      if (res.data?.authorizationUrl) {
+        window.location.href = res.data.authorizationUrl;
+      }
+    } catch (err) {
+      alert(err.response?.data?.message || "Could not start renewal. Please try again.");
+    } finally {
+      setRenewing(false);
+    }
+  };
 
   return (
     <>
@@ -79,15 +95,27 @@ export default function TeacherSubscription() {
               </div>
 
               <div className="mt-8 pt-6 border-t border-zinc-800">
-                <p className="text-gray-400 text-sm mb-4">
+                <p className="text-gray-400 text-sm mb-1">
                   Your subscription gives you full access to the teacher platform including course creation, student management, and earnings.
                 </p>
-                <a
-                  href="/dashboard/courses"
-                  className="inline-block bg-yellow-400 text-black px-6 py-3 rounded-lg font-bold hover:bg-yellow-500 transition"
-                >
-                  Go to Teacher Dashboard
-                </a>
+                <p className="text-emerald-400 text-sm font-semibold mb-4">
+                  ✓ Unlimited chat, voice notes &amp; video calls included — no separate point top-up needed. Renews {subscription.nextBillingDate ? new Date(subscription.nextBillingDate).toLocaleDateString() : subscription.endDate ? new Date(subscription.endDate).toLocaleDateString() : "monthly"}.
+                </p>
+                <div className="flex flex-wrap gap-3">
+                  <a
+                    href="/dashboard/courses"
+                    className="inline-block bg-yellow-400 text-black px-6 py-3 rounded-lg font-bold hover:bg-yellow-500 transition"
+                  >
+                    Go to Teacher Dashboard
+                  </a>
+                  <button
+                    onClick={handleRenew}
+                    disabled={renewing}
+                    className="inline-block bg-zinc-800 text-white px-6 py-3 rounded-lg font-bold hover:bg-zinc-700 transition disabled:opacity-50"
+                  >
+                    {renewing ? "Starting renewal…" : "Renew Subscription"}
+                  </button>
+                </div>
               </div>
             </div>
           ) : (

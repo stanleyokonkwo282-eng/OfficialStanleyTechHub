@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useSearchParams } from "react-router";
+import { Link, useSearchParams } from "react-router";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
 import useAuth from "../../hooks/useAuth";
 
@@ -14,6 +14,7 @@ export default function StudentChatForum() {
   const [messages, setMessages] = useState([]);
   const [inputMsg, setInputMsg] = useState("");
   const [points, setPoints] = useState(user?.points ?? 200);
+  const [unlimitedChat, setUnlimitedChat] = useState(user?.role === "admin");
   const [copied, setCopied] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
@@ -89,6 +90,7 @@ export default function StudentChatForum() {
         const res = await axiosSecure.get(`/forum/history/${activePeer._id}`);
         setMessages(res.data?.data || []);
         if (res.data?.points !== undefined) setPoints(res.data.points);
+        if (res.data?.unlimitedChat !== undefined) setUnlimitedChat(!!res.data.unlimitedChat);
       } catch (err) {
         setErrorMessage(err.response?.data?.error || "Failed to load messages.");
       }
@@ -99,7 +101,7 @@ export default function StudentChatForum() {
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!inputMsg.trim() || !activePeer) return;
-    if (points < 1) {
+    if (!unlimitedChat && points < 1) {
       setShowTopUpModal(true);
       return;
     }
@@ -116,7 +118,8 @@ export default function StudentChatForum() {
         messageType: "text",
         createdAt: new Date(),
       }]);
-      setPoints(res.data.remainingPoints);
+      if (res.data?.remainingPoints !== undefined) setPoints(res.data.remainingPoints);
+      if (res.data?.unlimitedChat !== undefined) setUnlimitedChat(!!res.data.unlimitedChat);
       setInputMsg("");
     } catch (err) {
       setErrorMessage(err.response?.data?.error || "Failed to send message.");
@@ -138,7 +141,7 @@ export default function StudentChatForum() {
         reader.readAsDataURL(audioBlob);
         reader.onloadend = async () => {
           const base64Audio = reader.result;
-          if (points < 5) {
+          if (!unlimitedChat && points < 5) {
             setShowTopUpModal(true);
             return;
           }
@@ -154,7 +157,8 @@ export default function StudentChatForum() {
               messageType: "audio",
               createdAt: new Date(),
             }]);
-            setPoints(res.data.remainingPoints);
+            if (res.data?.remainingPoints !== undefined) setPoints(res.data.remainingPoints);
+            if (res.data?.unlimitedChat !== undefined) setUnlimitedChat(!!res.data.unlimitedChat);
           } catch (err) {
             setErrorMessage(err.response?.data?.error || "Failed to send audio note.");
           }
@@ -185,7 +189,7 @@ export default function StudentChatForum() {
       if (localVideoRef.current) localVideoRef.current.srcObject = null;
       setIsVideoActive(false);
 
-      // Deduct the video-call cost (20 pts/min) based on elapsed minutes.
+      // Deduct the video-call cost (20 pts/min; free for unlimited plans) based on elapsed minutes.
       if (activePeer && callStartTimeRef.current) {
         const minutes = Math.max(1, Math.ceil((Date.now() - callStartTimeRef.current) / 60000));
         try {
@@ -195,13 +199,14 @@ export default function StudentChatForum() {
             receiverId: activePeer._id,
           });
           if (res.data?.remainingPoints !== undefined) setPoints(res.data.remainingPoints);
+          if (res.data?.unlimitedChat !== undefined) setUnlimitedChat(!!res.data.unlimitedChat);
         } catch (err) {
           setErrorMessage(err.response?.data?.error || "Failed to deduct video call points.");
         }
         callStartTimeRef.current = null;
       }
     } else {
-      if (points < 20) {
+      if (!unlimitedChat && points < 20) {
         setShowTopUpModal(true);
         setErrorMessage("You need at least 20 chat points to start a video call.");
         return;
@@ -257,12 +262,20 @@ export default function StudentChatForum() {
         <div className="p-4 border-b border-white/10 bg-gradient-to-br from-amber-500/10 via-transparent to-purple-500/10">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-zinc-400">Your Chat Balance</span>
-            <span className="px-2.5 py-1 rounded-full text-xs font-black bg-amber-500 text-zinc-950 flex items-center gap-1">{points} Pts</span>
+            {unlimitedChat ? (
+              <span className="px-2.5 py-1 rounded-full text-xs font-black bg-emerald-500 text-zinc-950 flex items-center gap-1">∞ Unlimited</span>
+            ) : (
+              <span className="px-2.5 py-1 rounded-full text-xs font-black bg-amber-500 text-zinc-950 flex items-center gap-1">{points} Pts</span>
+            )}
           </div>
-          <div className="flex gap-2 mt-3">
-            <button onClick={() => setShowTopUpModal(true)} className="flex-1 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 font-bold text-xs text-zinc-950">Top Up Points</button>
-            <button onClick={copyReferral} className="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/10 font-bold text-xs">{copied ? "Copied" : "Invite"}</button>
-          </div>
+          {unlimitedChat ? (
+            <p className="text-[11px] text-emerald-400 font-semibold mt-2">Unlimited chat, voice notes &amp; video calls included in your plan.</p>
+          ) : (
+            <div className="flex gap-2 mt-3">
+              <button onClick={() => setShowTopUpModal(true)} className="flex-1 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 font-bold text-xs text-zinc-950">Top Up Points</button>
+              <button onClick={copyReferral} className="px-3 py-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/10 font-bold text-xs">{copied ? "Copied" : "Invite"}</button>
+            </div>
+          )}
         </div>
         <div className="p-3 border-b border-white/10">
           <input
@@ -282,7 +295,17 @@ export default function StudentChatForum() {
                 className={`p-2.5 rounded-xl flex items-center justify-between cursor-pointer transition ${activePeer?._id === peer._id ? "bg-amber-500/20 border border-amber-500/40 text-white" : "hover:bg-white/5 text-zinc-300"}`}
               >
                 <div className="flex items-center gap-2.5 truncate">
-                  <div className="w-8 h-8 rounded-full bg-cyan-500/20 border border-cyan-500/40 text-cyan-300 font-black flex items-center justify-center text-xs shrink-0">{peer.name?.[0]?.toUpperCase() || "U"}</div>
+                  <Link
+                    to={`/dashboard/profile/${peer._id}`}
+                    onClick={(e) => e.stopPropagation()}
+                    title={`View ${peer.name || "member"} profile`}
+                  >
+                    {peer.photoURL ? (
+                      <img src={peer.photoURL} alt={peer.name} className="w-8 h-8 rounded-full object-cover border border-cyan-500/40 hover:border-amber-400" />
+                    ) : (
+                      <div className="w-8 h-8 rounded-full bg-cyan-500/20 border border-cyan-500/40 text-cyan-300 font-black flex items-center justify-center text-xs shrink-0 hover:border-amber-400">{peer.name?.[0]?.toUpperCase() || "U"}</div>
+                    )}
+                  </Link>
                   <div className="truncate">
                     <h4 className="text-xs font-bold truncate">{peer.name}</h4>
                     <span className="text-[10px] text-zinc-400 capitalize">{peer.role || "Student"}</span>
@@ -301,9 +324,22 @@ export default function StudentChatForum() {
           <>
             <div className="h-16 border-b border-white/10 bg-[#0d121d] px-4 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full bg-purple-500/20 border border-purple-500/40 text-purple-300 font-black flex items-center justify-center text-sm">{activePeer.name?.[0]?.toUpperCase()}</div>
+                <Link
+                  to={`/dashboard/profile/${activePeer._id}`}
+                  title={`View ${activePeer.name || "member"} profile`}
+                >
+                  <div className="w-9 h-9 rounded-full bg-purple-500/20 border border-purple-500/40 text-purple-300 font-black flex items-center justify-center text-sm hover:border-amber-400">
+                    {activePeer.photoURL ? (
+                      <img src={activePeer.photoURL} alt={activePeer.name} className="w-9 h-9 rounded-full object-cover" />
+                    ) : (
+                      activePeer.name?.[0]?.toUpperCase()
+                    )}
+                  </div>
+                </Link>
                 <div>
-                  <h3 className="text-sm font-bold text-white leading-tight">{activePeer.name}</h3>
+                  <Link to={`/dashboard/profile/${activePeer._id}`} className="hover:text-amber-400">
+                    <h3 className="text-sm font-bold text-white leading-tight">{activePeer.name}</h3>
+                  </Link>
                   <span className="text-[10px] text-emerald-400 font-semibold">• Active Peer</span>
                 </div>
               </div>
@@ -324,7 +360,7 @@ export default function StudentChatForum() {
             )}
 
             <div className="flex-1 overflow-y-auto p-4 space-y-3">
-              <div className="text-center text-[10px] text-zinc-500 my-1">🔒 Direct peer-to-peer session • 1 Pt/text • 5 Pts/audio</div>
+              <div className="text-center text-[10px] text-zinc-500 my-1">{unlimitedChat ? "🔓 Unlimited plan • free messaging, voice & video" : "🔒 Direct peer-to-peer session • 1 Pt/text • 5 Pts/audio"}</div>
               {messages.map((m, idx) => {
                 const isMe = m.sender === (user?._id || "me") || m.sender === user?._id;
                 return (
@@ -348,7 +384,7 @@ export default function StudentChatForum() {
               <button type="button" onClick={isRecording ? stopRecordingAudio : startRecordingAudio} className={`p-2.5 rounded-xl border transition ${isRecording ? "bg-rose-500 text-white border-rose-600 animate-pulse" : "bg-zinc-800 hover:bg-zinc-700 text-cyan-400 border-white/10"}`} title={isRecording ? "Click to finish and send audio note" : "Hold/Click to record audio note"}>
                 {isRecording ? "Stop" : "Mic"}
               </button>
-              <input type="text" placeholder={isRecording ? "Recording audio voice note..." : "Type message (1 pt)..."} disabled={isRecording} value={inputMsg} onChange={(e) => setInputMsg(e.target.value)} className="flex-1 bg-zinc-900 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500 disabled:opacity-50" />
+              <input type="text" placeholder={isRecording ? "Recording audio voice note..." : unlimitedChat ? "Type message (free)..." : "Type message (1 pt)..."} disabled={isRecording} value={inputMsg} onChange={(e) => setInputMsg(e.target.value)} className="flex-1 bg-zinc-900 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500 disabled:opacity-50" />
               <button type="submit" disabled={isRecording || !inputMsg.trim()} className="p-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold transition disabled:opacity-40 shadow-lg shadow-amber-500/20">Send</button>
             </form>
           </>

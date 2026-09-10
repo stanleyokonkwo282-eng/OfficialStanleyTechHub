@@ -206,6 +206,9 @@ export default function CoursePlayer() {
   updateLastWatchedMutationRef.current = updateLastWatchedMutation;
 
   // --- Curated distinct YouTube educational video IDs for varied lessons ---
+  // NOTE: no longer used as a silent fallback. getYouTubeId() returns null for
+  // unplayable URLs so the player shows "video unavailable" instead of a
+  // random unrelated video.
   const CURATED_LESSON_VIDEOS = [
     "WONZVnlam6U", "a5KYlHNKQB8", "AvgCkHrcj8w", "sByzHoiYFX0", "ZK86XQ1iFVs",
     "Ib8UBwU3bgQ", "agbj7dBmDvs", "4fGPbEDzPqA", "oSQbRFquPso", "sCHiTpTqY4E",
@@ -217,21 +220,23 @@ export default function CoursePlayer() {
     "9kfvblvOoFY", "5CxXhyhT6Fc", "u44pBnAn7cM", "qpH7-KFWZRI", "2cRtDFnmqrw"
   ];
 
-  // --- Helper: extract YouTube ID with unique topic fallback ---
-  const getYouTubeId = (url, lessonTitle = "") => {
-    if (url) {
-      const match = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([^?&\n?#]+)/);
+  // --- Helper: extract YouTube ID, or null when the lesson has no playable URL.
+  // Never fall back to a dummy video — a missing ID renders an explicit error
+  // state so broken instructor links are visible instead of silently wrong.
+  const getYouTubeId = (url) => {
+    if (!url || typeof url !== "string") return null;
+    const trimmed = url.trim();
+    if (!trimmed) return null;
+    const patterns = [
+      /(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/|live\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/,
+      /youtube\.com\/watch\?.*v=([a-zA-Z0-9_-]{11})/,
+      /^([a-zA-Z0-9_-]{11})$/,
+    ];
+    for (const pattern of patterns) {
+      const match = trimmed.match(pattern);
       if (match && match[1]) return match[1];
     }
-    // Deterministic unique hash based on title so each lesson gets a distinct video
-    let hash = 0;
-    const str = (lessonTitle || "") + (url || "");
-    for (let i = 0; i < str.length; i++) {
-      hash = (hash << 5) - hash + str.charCodeAt(i);
-      hash |= 0;
-    }
-    const index = Math.abs(hash) % CURATED_LESSON_VIDEOS.length;
-    return CURATED_LESSON_VIDEOS[index];
+    return null;
   };
 
   // --- Load YouTube API once ---
@@ -254,7 +259,7 @@ export default function CoursePlayer() {
   useEffect(() => {
     if (!activeLesson || !window.YT) return;
 
-    const youtubeId = getYouTubeId(activeLesson.videoUrl, activeLesson.lessonTitle);
+    const youtubeId = getYouTubeId(activeLesson.videoUrl);
     if (!youtubeId) {
       setVideoError(true);
       return;
@@ -352,6 +357,7 @@ export default function CoursePlayer() {
       try {
         const newPlayer = new window.YT.Player(playerContainerId, {
           videoId: youtubeId,
+          host: "https://www.youtube-nocookie.com",
           playerVars: {
             rel: 0,
             modestbranding: 1,
@@ -359,6 +365,7 @@ export default function CoursePlayer() {
             playsinline: 1,
             controls: 1,
             autoplay: 1,
+            origin: window.location.origin,
           },
           events: { onReady: onPlayerReady, onStateChange: onPlayerStateChange, onError: onPlayerError },
         });
@@ -597,7 +604,7 @@ export default function CoursePlayer() {
   const isLocked = attempts.length >= 2 && !hasPassed;
   const useFallback = videoError && activeLesson;
   const videoProvider = getVideoProvider(activeLesson?.videoUrl);
-  const fallbackYoutubeId = getYouTubeId(activeLesson?.videoUrl, activeLesson?.lessonTitle);
+  const fallbackYoutubeId = getYouTubeId(activeLesson?.videoUrl);
   const fallbackVimeoId = getVimeoId(activeLesson?.videoUrl);
 
   const downloadReceipt = async () => {
