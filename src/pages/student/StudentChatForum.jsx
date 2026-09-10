@@ -28,13 +28,25 @@ export default function StudentChatForum() {
   const mediaStreamRef = useRef(null);
   const callStartTimeRef = useRef(null);
   const messagesEndRef = useRef(null);
+  const messagesContainerRef = useRef(null);
+  const isAtBottomRef = useRef(true);
+  const lastReadCountRef = useRef(0);
+  const [jumpToBottomVisible, setJumpToBottomVisible] = useState(false);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
+  // 🔧 FIX: Only auto-scroll when the user is already near the bottom.
+  // If they've scrolled up to read old messages, show a "jump to bottom"
+  // button instead of yanking the view back down on every new message.
   useEffect(() => {
-    scrollToBottom();
+    if (isAtBottomRef.current) {
+      scrollToBottom();
+      lastReadCountRef.current = messages.length;
+    } else if (messages.length > lastReadCountRef.current) {
+      setJumpToBottomVisible(true);
+    }
   }, [messages]);
 
   useEffect(() => {
@@ -84,18 +96,37 @@ export default function StudentChatForum() {
 
   useEffect(() => {
     if (!activePeer) return;
+    let isCancelled = false;
     const loadConversation = async () => {
       try {
         setErrorMessage("");
         const res = await axiosSecure.get(`/forum/history/${activePeer._id}`);
-        setMessages(res.data?.data || []);
+        if (isCancelled) return;
+        const fetched = res.data?.data || [];
+        // Only update state when there are genuinely newer messages,
+        // to avoid triggering the scroll effect on every poll tick.
+        setMessages((prev) => {
+          if (prev.length === fetched.length) {
+            const same = prev.every((m, i) => m._id === fetched[i]?._id);
+            if (same) return prev;
+          }
+          return fetched;
+        });
         if (res.data?.points !== undefined) setPoints(res.data.points);
         if (res.data?.unlimitedChat !== undefined) setUnlimitedChat(!!res.data.unlimitedChat);
       } catch (err) {
-        setErrorMessage(err.response?.data?.error || "Failed to load messages.");
+        if (!isCancelled) setErrorMessage(err.response?.data?.error || "Failed to load messages.");
       }
     };
     loadConversation();
+    // 🔧 FIX: Poll for new messages every 5 seconds so that both
+    //           conversation participants see incoming messages in
+    //           near-real-time without switching peers or reloading.
+    const interval = setInterval(loadConversation, 5000);
+    return () => {
+      isCancelled = true;
+      clearInterval(interval);
+    };
   }, [activePeer, axiosSecure]);
 
   const handleSendMessage = async (e) => {
@@ -359,7 +390,21 @@ export default function StudentChatForum() {
               </div>
             )}
 
-            <div className="flex-1 overflow-y-auto p-4 space-y-3">
+            <div
+              ref={messagesContainerRef}
+              onScroll={() => {
+                const container = messagesContainerRef.current;
+                if (!container) return;
+                const threshold = 80;
+                isAtBottomRef.current =
+                  container.scrollHeight - container.scrollTop - container.clientHeight < threshold;
+                if (isAtBottomRef.current) {
+                  lastReadCountRef.current = messages.length;
+                  setJumpToBottomVisible(false);
+                }
+              }}
+              className="flex-1 overflow-y-auto p-4 space-y-3"
+            >
               <div className="text-center text-[10px] text-zinc-500 my-1">{unlimitedChat ? "🔓 Unlimited plan • free messaging, voice & video" : "🔒 Direct peer-to-peer session • 1 Pt/text • 5 Pts/audio"}</div>
               {messages.map((m, idx) => {
                 const isMe = m.sender === (user?._id || "me") || m.sender === user?._id;
@@ -387,6 +432,20 @@ export default function StudentChatForum() {
               <input type="text" placeholder={isRecording ? "Recording audio voice note..." : unlimitedChat ? "Type message (free)..." : "Type message (1 pt)..."} disabled={isRecording} value={inputMsg} onChange={(e) => setInputMsg(e.target.value)} className="flex-1 bg-zinc-900 border border-white/10 rounded-xl px-4 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-amber-500 disabled:opacity-50" />
               <button type="submit" disabled={isRecording || !inputMsg.trim()} className="p-2.5 rounded-xl bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold transition disabled:opacity-40 shadow-lg shadow-amber-500/20">Send</button>
             </form>
+            {jumpToBottomVisible && (
+              <button
+                onClick={() => {
+                  scrollToBottom();
+                  setJumpToBottomVisible(false);
+                }}
+                className="fixed bottom-24 right-6 z-50 p-3 rounded-full bg-amber-500 hover:bg-amber-400 text-zinc-950 shadow-xl shadow-amber-500/30 transition transform hover:scale-110"
+                title="New messages — click to jump to latest"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 24" fill="currentColor">
+                  <path d="M7 10l5 5 5-5z" />
+                </svg>
+              </button>
+            )}
           </>
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center p-8 text-center text-zinc-500">
