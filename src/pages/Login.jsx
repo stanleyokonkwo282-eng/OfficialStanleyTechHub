@@ -366,6 +366,23 @@ export default function Login() {
                 <img src={GoogleLogo} alt="Google Logo" className="mr-3 h-5 w-5" />
                 {googleLoginMutation.isPending ? "Logging with Google..." : "Login with Google"}
               </button>
+
+              <details className="mt-4 rounded-lg border border-white/10 bg-[#0a1522]/60 px-3 py-2 text-[10px] leading-relaxed text-slate-500">
+                <summary className="cursor-pointer select-none font-mono">
+                  Build info (click to check you're on the latest version)
+                </summary>
+                <p className="mt-1 font-mono">
+                  commit: 30c01b0 · domain: {window.location.host}<br />
+                  project: {import.meta.env.VITE_FIREBASE_PROJECT_ID || "?"} · key:{" "}
+                  {String(import.meta.env.VITE_FIREBASE_API_KEY || "").slice(0, 12)}…<br />
+                  reset link app: {sendResetEmail ? "yes" : "no"}
+                </p>
+                <p className="mt-1 text-slate-400">
+                  If the <span className="font-mono">key:</span> prefix below is not{" "}
+                  <span className="font-mono">AIzaSyCrsEIp</span>, your browser is serving a STALE old build — do
+                  <span className="font-mono">Ctrl+Shift+R</span> (hard refresh) and retry.
+                </p>
+              </details>
             </motion.div>
           </div>
         </div>
