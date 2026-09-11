@@ -111,7 +111,7 @@ export default function AddCourse() {
           }
           const formData = new FormData();
           formData.append("html", htmlFile);
-          let uploaded = false;
+          let lastError = "";
           try {
             const uploadRes = await fetch(`${import.meta.env.VITE_BASE_URL}/upload/html`, {
               method: "POST",
@@ -120,23 +120,17 @@ export default function AddCourse() {
             if (uploadRes.ok) {
               const dataResp = await uploadRes.json();
               resourceHtmlUrl = dataResp.url || dataResp.htmlUrl || "";
-              uploaded = true;
+            } else {
+              lastError = `HTML upload endpoint returned ${uploadRes.status}`;
             }
-          } catch {
-            // network error — fall through to fallback below
-          }
-          if (!uploaded) {
-            // Fallback: send to the PDF upload endpoint (server stores it as a document)
-            try {
-              const pdfUploadResult = await uploadPdfMutation.mutateAsync(htmlFile);
-              resourceHtmlUrl = pdfUploadResult.url;
-              uploaded = true;
-            } catch {
-              // fall through
-            }
+          } catch (err) {
+            lastError = err?.message || "Network error contacting upload service";
           }
           if (!resourceHtmlUrl) {
-            throw new Error("HTML upload failed. Please try again.");
+            const hint = lastError ? ` (${lastError})` : "";
+            throw new Error(
+              `HTML upload failed.${hint} If the upload endpoint returned 404, the backend is likely still deploying — try again in 1–2 minutes.`
+            );
           }
         }
 
