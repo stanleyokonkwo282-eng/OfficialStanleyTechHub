@@ -159,7 +159,7 @@ const AllCourses = () => {
 
               <div className="mt-4 pt-4 border-t border-zinc-800 flex justify-between items-center">
                 <div>
-                  <p className="text-green-400 font-bold text-lg">{course.price ? `₦${Number(course.price).toLocaleString()}` : "Enroll"}</p>
+                  <p className="text-green-400 font-bold text-lg">{Number(course.price) > 0 ? `₦${Number(course.price).toLocaleString()}` : "Free"}</p>
                 </div>
                 <Link
                   to={`/courses/${course._id}`}
