@@ -210,11 +210,15 @@
 
 ## Payment Architecture
 
-### Course Enrollment (₦5,000)
-- **Frontend**: Clicking "Enroll Now" redirects to `VITE_PAYSTACK_COURSE_URL` (default: `https://paystack.shop/pay/CreatorsHubAcademy`).
-- **Handoff**: `sessionStorage` stores `enrollmentCourseId` and `enrollmentFormat`.
-- **Return Flow**: Paystack redirects back to site with `?reference=...`. Frontend reads stored `courseId`/`format` and calls `GET /api/courses/verify-payment/:reference?courseId=...&format=...`.
-- **Backend**: Verifies payment with Paystack, creates `Enrollment` with `enrolledFormat`, records `Transaction`, updates teacher earnings (90% / 10% commission).
+### Course Enrollment (per-course pricing — UPDATED 2026-09-11)
+- **Pricing ladder** (market-checked): ₦2,500 (entry: Canva, CapCut, Personal Branding) · ₦3,500 (core skills) · ₦4,500 (professional) · ₦5,000 (premium career). All live DB courses migrated to this ladder; no more dollar-style decimals (₦49.99 bug eliminated).
+- **Free courses (price 0)**: `POST /api/enroll` enrolls instantly (no payment) — `paymentMethod: "free"`. Frontend shows "Enroll Free — Start Learning" and navigates straight to the player.
+- **Paid courses**: Frontend `CourseDetails.jsx` / `StripeWrapper.jsx` now call `POST /api/enroll` first; backend `secureEnroll` initializes Paystack **at the course's actual price** (`course.price × 100` kobo) and returns `authorizationUrl` → redirect. Static `VITE_PAYSTACK_COURSE_URL` (paystack.shop link) is now only a fallback if the API call fails.
+- **Verification**: `GET /api/courses/verify-payment/:reference` compares `txn.amount` against **the course's own price** (fallback legacy flat ₦5,000), not a global constant.
+- **Handoff fallback**: `sessionStorage` still stores `enrollmentCourseId` and `enrollmentFormat` for the paystack.shop fallback path.
+- **Return Flow**: Paystack redirects back with `?reference=...` → `StripeWrapper` verifies → `Enrollment` created with `enrolledFormat`, `Transaction` recorded, teacher earnings credited (90% / 10% commission).
+- **Teacher price fix**: `AddCourse.jsx` / `UpdateCourse.jsx` previously **overrode the teacher's typed price with a hardcoded 5000**; now they send the form value (`Number(data.price) || 5000`).
+- **Live DB migration done**: 25 courses updated (17 main seed + 8 legacy titles). Revenue per ₦5,000 sale: Paystack fee ₦175 → teacher ₦4,500 / platform ₦500.
 
 ### Certificate Payment (₦10,000)
 - **Frontend**: `Certificate.jsx` calls `POST /api/certificates/paystack/initialize` → redirects to Paystack.
