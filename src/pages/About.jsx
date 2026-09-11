@@ -378,22 +378,16 @@ export default function About() {
             variants={fadeUp}
             className="flex flex-col sm:flex-row items-center justify-center gap-5"
           >
-            <MotionLink
+            <Link
               to="/portfolio"
-              whileHover={{
-                scale: 1.04,
-                boxShadow: "0 0 40px rgba(242,193,76,0.45)",
-                transition: { duration: 0.25 },
-              }}
-              whileTap={{ scale: 0.97 }}
               onClick={handlePortfolioClick}
-              className="group relative inline-flex items-center justify-center gap-3 bg-gradient-to-r from-yellow-400 to-yellow-500 text-black font-extrabold text-lg px-10 py-4 rounded-2xl shadow-2xl shadow-yellow-400/25 overflow-hidden"
+              className="group relative inline-flex items-center justify-center gap-3 bg-gradient-to-r from-yellow-400 to-yellow-500 text-black font-extrabold text-lg px-10 py-4 rounded-2xl shadow-2xl shadow-yellow-400/25 overflow-hidden transition-transform duration-200 hover:scale-[1.04] active:scale-95"
             >
               <FaIdBadge className="text-xl relative z-10" />
               <span className="relative z-10">View My Portfolio</span>
               <div className="absolute inset-0 bg-gradient-to-r from-yellow-300 to-yellow-200 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               <div className="absolute -inset-1 bg-yellow-400/30 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            </MotionLink>
+            </Link>
 
             <motion.a
               href="mailto:support@creatorshubacademy.com"
