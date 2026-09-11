@@ -25,6 +25,7 @@ const lazyImport = (importFn) => {
 };
 
 const About = lazyImport(() => import("../pages/About"));
+const Portfolio = lazyImport(() => import("../pages/Portfolio"));
 const Contact = lazyImport(() => import("../pages/Contact"));
 const ManageCertificates = lazyImport(() => import("../pages/admin/ManageCertificates"));
 const ManageBroadcasts = lazyImport(() => import("../pages/admin/ManageBroadcasts"));
@@ -71,6 +72,7 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <Home /> },
       { path: "/about", element: <About /> },
+      { path: "/portfolio", element: <Portfolio /> },
       { path: "/contact", element: <Contact /> },
       { path: "/faq", element: <FAQ /> },
       { path: "/privacy-policy", element: <PrivacyPolicy /> },

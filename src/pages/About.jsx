@@ -1,4 +1,5 @@
-import { FaLinkedin, FaEnvelope, FaPhone, FaGithub } from "react-icons/fa";
+import { Link } from "react-router";
+import { FaLinkedin, FaEnvelope, FaPhone, FaIdBadge } from "react-icons/fa6";
 import founderImg from "../assets/images/founder.jpg";
 import { motion } from "framer-motion";
 import { useEffect, useRef } from "react";
@@ -8,7 +9,6 @@ import { trackLinkView, trackLinkClick } from "../utils/linkTracker";
 export default function About() {
   const phone = "+234 813 443 8808";
   const waLink = "https://wa.me/2348134438808";
-  const portfolioLink = "https://github.com/stanleyokonkwo282-eng";
 
   const fadeUp = {
     hidden: { opacity: 0, y: 32 },
@@ -378,10 +378,8 @@ export default function About() {
             variants={fadeUp}
             className="flex flex-col sm:flex-row items-center justify-center gap-5"
           >
-            <motion.a
-              href={portfolioLink}
-              target="_blank"
-              rel="noopener noreferrer"
+            <MotionLink
+              to="/portfolio"
               whileHover={{
                 scale: 1.04,
                 boxShadow: "0 0 40px rgba(242,193,76,0.45)",
@@ -391,11 +389,11 @@ export default function About() {
               onClick={handlePortfolioClick}
               className="group relative inline-flex items-center justify-center gap-3 bg-gradient-to-r from-yellow-400 to-yellow-500 text-black font-extrabold text-lg px-10 py-4 rounded-2xl shadow-2xl shadow-yellow-400/25 overflow-hidden"
             >
-              <FaGithub className="text-xl relative z-10" />
+              <FaIdBadge className="text-xl relative z-10" />
               <span className="relative z-10">View My Portfolio</span>
               <div className="absolute inset-0 bg-gradient-to-r from-yellow-300 to-yellow-200 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               <div className="absolute -inset-1 bg-yellow-400/30 blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            </motion.a>
+            </MotionLink>
 
             <motion.a
               href="mailto:support@creatorshubacademy.com"
