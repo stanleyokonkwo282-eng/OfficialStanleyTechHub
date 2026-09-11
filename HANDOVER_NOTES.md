@@ -1,11 +1,16 @@
 # Creators Hub Academy — Handover Notes
 
-**Last Updated:** 2026-09-11
-**Status:** Production Live — Google Login + Password-Reset Fix Deployed (build verified, pushed to main)
+**Last Updated:** 2026-09-11 (night)
+**Status:** PRODUCTION LIVE — Password-Reset Hardening **verified deployed** (commit `09902c9`, pushed to `main`; live asset `assets/index-sr6XXYcp.js` FETCHED and confirmed: contains `handleCodeInApp`, embeds current key `AIzaSyCrsEIp…`, does NOT contain old key `AIzaSyChAL0L…`)
 **Frontend Repo:** https://github.com/stanleyokonkwo282-eng/OfficialStanleyTechHub
 **Backend Repo:** https://github.com/stanleyokonkwo282-eng/creators-hub-academy-backend
 **Live Frontend:** https://creators-hub-academy.vercel.app
 **Live Backend:** https://creators-hub-academy-backend.onrender.com
+
+## Latest Change — Password-Reset Hardening (2026-09-11, night, commit `09902c9`)
+- **What shipped:** `ResetPassword.jsx` now reads `oobCode`/`email`/`mode`/`apiKey` from BOTH the URL **query string** AND the URL **fragment** (`#mode=resetPassword&oobCode=…`), strips the oobCode from the address bar after verification (`history.replaceState`), and prefills the Resend email from `localStorage:chub_reset_email`. `Login.jsx` reset banner now shows the destination email and the error map surfaces `auth/operation-not-allowed`, `auth/invalid-action-code`, `auth/expired-action-code`.
+- **Why:** user still got "expired or already used" within 20–30s. Forensic check of the pasted link proved the sender was an OLD/cached deployment — the email's `apiKey=AIzaSyChAL0L…` does not exist in this repo/history, while the live build embeds `AIzaSyCrsEIp…` and already had `handleCodeInApp`. Stale bundles + the "every new request cancels older links" rule caused the ghost failure.
+- **Deploy verified:** `git push origin main` succeeded → Vercel auto-deploy completed (asset hash changed `index-BjgefuB2.js` → `index-sr6XXYcp.js`). `npm run build` ✅, `eslint` clean on touched files ✅, working tree clean except untracked `.continue/` (IDE folder — safe to delete, never committed).
 
 ## Google Login + Password-Reset Fix (2026-09-11, evening)
 
