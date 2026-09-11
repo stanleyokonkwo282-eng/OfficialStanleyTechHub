@@ -9,9 +9,21 @@
 
 ## Folder Merge Cleanup (2026-09-11)
 
+### Working agreement (going forward)
+- **Work ONLY in the two main folders on `main`:** `OfficialStanleyTechHub/` (frontend) and `mentora-lms-server/` (backend). No new git worktrees, no `*.worktrees` checkouts, no nested copies (like the old `creators-hub-academy-2/` gitlink), no new branches unless explicitly requested — commit straight to `main` and push.
+- **Duplicate guard:** before creating any checkout/copy, run `git worktree list` in both repos — it must stay single-entry `[main]`. Any helper/clone folders go OUTSIDE `PROJECT LMS 2026/` (e.g. `%TEMP%`), never beside the live folders.
+- **Manual deletions marked with DELETE files:** because Windows/IDE locks block scripted deletion, each stale folder now contains a `DELETE-ME-*.txt` marker at its top level. In Explorer you will see the marker filename itself — delete the PARENT folder that contains it (details below). Nothing else in `PROJECT LMS 2026/` is marked; everything unmarked stays.
+
+### What to delete manually (2 folders — look for the DELETE files)
+1. `PROJECT LMS 2026\OfficialStanleyTechHub.worktrees\` — marker inside: `hi\DELETE-ME-STALE-EMPTY-WORKTREE.txt`. Stale EMPTY frontend worktree shell (0 files besides the marker). Git no longer tracks it (`git worktree list` = only `[main]`). Steps: close VS Code completely (its file-watcher holds the lock) → delete the `OfficialStanleyTechHub.worktrees` folder in Explorer → reopen VS Code.
+2. `PROJECT LMS 2026\mentora-lms-server.worktrees\` — marker inside: `hi\DELETE-ME-STALE-DUPLICATE-BACKEND.txt`. Stale DUPLICATE backend checkout at the same commit as live `main` (`cc1e452`, zero diff — nothing to merge). Steps: stop backend `node` process + close VS Code → delete the `mentora-lms-server.worktrees` folder in Explorer → reopen.
+- You may also delete `PROJECT LMS 2026\remove-stale-worktrees-NOW.bat` after the above (it was the scripted attempt; manual delete is the reliable path while locks persist).
+- **KEEP — do NOT delete:** `OfficialStanleyTechHub\` (LIVE frontend), `mentora-lms-server\` (LIVE backend), `.venv\`, `HANDOVER_NOTES.md` (archived root copy).
+
+### Already merged (no action needed)
 - **Merged into one structure:** `PROJECT LMS 2026/` now holds exactly two live folders — `OfficialStanleyTechHub/` (frontend, repo `OfficialStanleyTechHub`, branch `main`) and `mentora-lms-server/` (backend, repo `creators-hub-academy-backend`, branch `main`). Stale `HANDOVER_NOTES.md` copy at `PROJECT LMS 2026/` root left untouched (archived 2026-08-22 version; canonical notes live inside each repo).
 - **Frontend duplicates removed:** deleted stale `agents/hi` + `quirky-gauge` worktree checkouts and branches (both fully merged into `main` long ago — `main` is AHEAD of them: auth-fix commit `a9d6794` + HandbookViewer fix), removed dead `creators-hub-academy-2` gitlink entry (`160000` submodule stub pointing at `2d62ce9`, working tree was an empty folder) via `git rm --cached` + `rmdir`. `git worktree list` is now single-entry `[main]`. Committed as `984d9d2`, pushed to `origin/main`, `npm run build` passes (2,540 modules).
-- **Backend duplicates checked, nothing to merge:** `mentora-lms-server.worktrees/hi` sits at the SAME commit as `main` (`cc1e452`, zero diff) — it is a redundant checkout, not a fork. Backend `main` is clean and already pushed (`Everything up-to-date`). Safe to delete that folder manually in Explorer (it is locked while the backend `node` process/IDE holds it — close the server + VS Code folder handle, then delete `mentora-lms-server.worktrees/`). Same for the leftover empty `OfficialStanleyTechHub.worktrees/hi` shell (EBUSY-locked by the IDE file watcher; restart VS Code or delete on reboot — harmless, git no longer tracks it).
+- **Backend duplicates checked, nothing to merge:** `mentora-lms-server.worktrees/hi` sits at the SAME commit as `main` (`cc1e452`, zero diff) — it is a redundant checkout, not a fork. Backend `main` is clean and already pushed (`Everything up-to-date`).
 - **Deploy:** frontend pushed → Vercel auto-deploys from `main`; backend already in sync → Render redeploys only if triggered. Verify live: login/signup/logout smoke test per the Auth Overhaul checklist below.
 
 ## Auth Overhaul + Premium Signup (2026-09-11)
