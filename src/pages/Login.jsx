@@ -29,7 +29,11 @@ const getFriendlyAuthError = (error) => {
       "Too many attempts — your account is temporarily locked. Wait a few minutes or reset your password.",
     "auth/network-request-failed":
       "Network error. Check your internet connection and try again. (Backend may be waking up — wait ~30s and retry.)",
-    "auth/operation-not-allowed": "Email/password sign-in is disabled. Please contact support.",
+    "auth/operation-not-allowed":
+      "This sign-in method isn't enabled for this app. Please contact support (Google/Email must be enabled in Firebase Console → Authentication → Sign-in method).",
+    "auth/admin-restricted-operation": "This sign-in method is restricted. Please contact support.",
+    "auth/invalid-action-code": "This reset/verification link is invalid or already used. Request a fresh one.",
+    "auth/expired-action-code": "This reset/verification link has expired. Request a fresh one.",
     "auth/popup-blocked": "Popup blocked. Please allow popups and try Google sign-in again.",
     "auth/popup-closed-by-user": "Google sign-in was closed before finishing. Please try again.",
     "auth/cancelled-popup-request": "Only one sign-in popup at a time. Please try again.",
@@ -171,6 +175,11 @@ export default function Login() {
     }
     try {
       await sendResetEmail(email);
+      try {
+        localStorage.setItem("chub_reset_email", email);
+      } catch {
+        /* storage unavailable — non-blocking */
+      }
       setResetSent(true);
       toast.success("Password reset email sent! Open the NEWEST email and click its link ONCE within 1 hour. Each new request cancels older links.", { autoClose: 8000 });
     } catch (error) {
@@ -313,13 +322,14 @@ export default function Login() {
                 </div>
 
                 {resetSent && (
-                  <p className="mt-3 flex items-start gap-2 rounded-xl border border-green-500/30 bg-green-500/10 px-3 py-2 text-sm text-green-200">
+                  <div className="mt-3 flex items-start gap-2 rounded-xl border border-green-500/30 bg-green-500/10 px-3 py-2 text-sm text-green-200">
                     <FaCheckCircle className="mt-0.5 shrink-0" />
                     <span>
-                      Email sent — open the <strong>newest</strong> email, click its link <strong>once</strong> within 1 hour.
+                      Reset email sent to <strong>{localStorage.getItem("chub_reset_email") || "your inbox"}</strong>.
+                      Open the <strong>newest</strong> email, click its link <strong>once</strong> within 1 hour.
                       Don't request again: each new email cancels the older links.
                     </span>
-                  </p>
+                  </div>
                 )}
 
                 <button

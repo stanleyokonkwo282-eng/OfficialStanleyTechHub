@@ -8,17 +8,32 @@ import LoaderSpinner from "../components/common/LoaderSpinner";
 import useAuth from "../hooks/useAuth";
 
 // Custom in-app password-reset handler. Reset emails link back here
-// (?oobCode=...) via actionCodeSettings, so the code is VERIFIED before
-// being consumed. Gmail/Outlook prefetchers + double-clicks burn the
-// single-use oobCode — that is what produced Firebase's generic
-// "expired or already used" page in the bug report.
+// via actionCodeSettings (handleCodeInApp). Firebase's hosted __/auth/action
+// page appends the oobCode to the continueUrl EITHER as a query string
+// (?oobCode=...) OR as a URL fragment (#mode=resetPassword&oobCode=...)
+// depending on the client — read BOTH so a valid link can never land on
+// "No reset code found".
+// Gmail/Outlook prefetchers + double-clicks burn the single-use oobCode —
+// that is what produced Firebase's generic "expired or already used" page.
+const readParam = (searchParams, name) => {
+  const fromQuery = searchParams.get(name);
+  if (fromQuery) return fromQuery;
+  const rawHash = window.location.hash || "";
+  if (!rawHash) return "";
+  const hashParams = new URLSearchParams(
+    rawHash.startsWith("#") ? rawHash.slice(1) : rawHash
+  );
+  return hashParams.get(name) || "";
+};
+
 export default function ResetPassword() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { verifyResetCode, confirmReset, sendResetEmail } = useAuth();
 
-  const oobCode = searchParams.get("oobCode") || "";
-  const emailHint = searchParams.get("email") || "";
+  const oobCode = readParam(searchParams, "oobCode") || "";
+  const emailHint = readParam(searchParams, "email") || "";
+  const mode = readParam(searchParams, "mode") || "";
 
   const [status, setStatus] = useState(oobCode ? "verifying" : "missing");
   const [verifiedEmail, setVerifiedEmail] = useState(emailHint);
@@ -27,7 +42,9 @@ export default function ResetPassword() {
   const [showPw, setShowPw] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [done, setDone] = useState(false);
-  const [resendEmail, setResendEmail] = useState(emailHint);
+  const [resendEmail, setResendEmail] = useState(
+    String(localStorage.getItem("chub_reset_email") || "") || emailHint
+  );
   const [resending, setResending] = useState(false);
 
   useEffect(() => {
@@ -43,6 +60,14 @@ export default function ResetPassword() {
         setVerifiedEmail(email || emailHint);
         setResendEmail(email || emailHint);
         setStatus("valid");
+        // Strip the oobCode from the address bar so refresh/prefetch can't
+        // accidentally re-submit (and burn) the single-use code again.
+        try {
+          const clean = `${window.location.pathname}?email=${encodeURIComponent(email || emailHint || "")}`;
+          window.history.replaceState({}, "", clean);
+        } catch {
+          /* history API unavailable — non-blocking */
+        }
       } catch (err) {
         if (cancelled) return;
         console.error("[Reset link invalid]", err?.code, err?.message);
@@ -186,7 +211,16 @@ export default function ResetPassword() {
           {status === "verifying" && <LoaderSpinner />}
           {status === "missing" && (
             <div className="rounded-md border border-amber-500/30 bg-amber-500/10 p-4 text-sm text-amber-200">
-              <p className="font-semibold">No reset code found. Open the email link once.</p>
+              <p className="font-semibold">
+                {mode === "resetPassword"
+                  ? "Reset link received — continue below."
+                  : "No reset code found. Open the email link once."}
+              </p>
+              <p className="mt-2">
+                {mode === "resetPassword"
+                  ? "Use the NEWEST reset email, click its link ONCE, then finish here within 1 hour."
+                  : "If you clicked a link and see this, your email client may have opened it in a preview — open the NEWEST email and click its link once."}
+              </p>
               {resendForm}
             </div>
           )}
