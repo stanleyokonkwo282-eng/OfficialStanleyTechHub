@@ -227,6 +227,19 @@
 - **Note**: Courses with **zero lessons** (the 6 unseeded free-tier courses) still have no flags — they won't appear in either filtered list until lessons are added. That's correct behavior.
 - Backend `getApprovedCourses` needed no code change — flags were the only problem.
 
+## HTML Handbook Support (NEW 2026-09-11)
+Handbook courses can now be **PDF or HTML** (interactive, rendered in an iframe). The viewer (`HandbookViewer.jsx`) already detects type via `isHtml` (`.html` extension, `data:text/html`, or `/documents/` path) and shows "Interactive HTML Course" vs "Handbook Study Portal".
+
+**Backend (`mentora-lms-server`):**
+- `models/Course.js`: added `resourceHtmlUrl: { type: String, default: "" }` field.
+- `controllers/utilsController.js`: added `uploadHtmlToImageKit` — uploads `.html`/`.htm` to ImageKit (`folder: creators-hub-academy/htmls`, `contentType: "text/html"`), returns `{ url, htmlUrl }`.
+- `routes/router.js`: new `POST /upload/html` route; multer `fileFilter` now accepts `text/html` + `.html`/`.htm` extensions alongside PDF.
+
+**Frontend (`OfficialStanleyTechHub`):**
+- `AddCourse.jsx` handbook path: rewritten to split by type — `resourceHtmlUrl` (HTML) vs `resourcePdfUrl` (PDF). Priority: uploaded HTML file → uploaded PDF file → direct URL (auto-detects type from extension). Fixes the old undefined `htmlUrl` variable bug.
+- `HandbookViewer.jsx`: `documentSource` now also checks `course.resourceHtmlUrl` and `course.resourcePdfUrl` (previously only checked non-existent `course.htmlUrl`/`course.fileUrl`).
+
+
 ## Portfolio / Biography Page (NEW 2026-09-11)
 - **New route `/portfolio`** → `src/pages/Portfolio.jsx`, a premium in-app biography (dark indigo/violet theme, Playfair Display serif + Inter/Poppins, animated ambient glow blobs, framer-motion reveals, hover-lift expertise cards).
 - Replaces the old external GitHub link (`https://github.com/stanleyokonkwo282-eng`) on the About page — the "View My Portfolio" button now navigates internally via `<Link to="/portfolio">` (keeps the tracking toast + `FaIdBadge` icon).
