@@ -372,6 +372,7 @@
    - `/broadcasts`, `/broadcasts/active` → `res.data.data`
 20. **Chat polling trade-off**: The 5-second polling interval in `StudentChatForum.jsx` balances real-time feel vs. server load. For Render free tier, do not reduce below 3s to avoid cold-start timeouts. If upgrading to WebSockets in future, remove the `setInterval` in the `loadConversation` useEffect.
 21. **Logout is instant + notification is fire-and-forget**: `userLogout` calls `signOut(auth)` first, redirects to `/login` immediately, then POSTs the admin logout notification in the background with `fetch(..., { keepalive: true })` — never awaited, so it can NEVER delay the logout. UI feedback: the button click returns right away.
+22. **Notifications have premium read-state (mark as read)**: backend Notification model has `read` + `readAt` fields; `GET /notifications` returns `unread` count; `PATCH /notifications/:id/read` marks one; `POST /notifications/read-all` marks all. Frontend `NotificationContext` exposes `markAsRead`/`markAllAsRead` with optimistic UI; the Navbar bell shows the unread badge (yellow dot per unread item in the dropdown + "Mark all as read" button + items auto-mark read when clicked); the admin `/dashboard/notifications` page shows per-item "Mark as read"/"Read" chips and a "Mark all as read" header button. Deployed: backend commit `884776c`, frontend commit for this feature on `main`.
 
 ---
 

@@ -13,7 +13,13 @@ import { useTheme } from "../../context/ThemeContext";
 
 export default function Navbar() {
   const { user, isUserLoading, userLogout } = useAuth();
-  const { notifications, unreadCount, refreshNotifications } = useContext(NotificationContext);
+  const {
+    notifications,
+    unreadCount,
+    refreshNotifications,
+    markAsRead,
+    markAllAsRead,
+  } = useContext(NotificationContext);
   const { theme, toggleTheme } = useTheme();
   const { scrollY } = useScroll();
   const navBackground = useTransform(scrollY, [0, 100], ["rgba(0,0,0,0.8)", "rgba(0,0,0,0.95)"]);
@@ -220,6 +226,8 @@ export default function Navbar() {
             setShowDropdown={setShowDropdown}
             showDropdown={showDropdown}
             dropdownRef={dropdownRef}
+            markAsRead={markAsRead}
+            markAllAsRead={markAllAsRead}
           />
         </div>
       </div>
@@ -227,7 +235,7 @@ export default function Navbar() {
   );
 }
 
-const UserData = ({ user, isUserLoading, logoutMutation, notifications, unreadCount, setShowDropdown, showDropdown, dropdownRef }) => {
+const UserData = ({ user, isUserLoading, logoutMutation, notifications, unreadCount, setShowDropdown, showDropdown, dropdownRef, markAsRead, markAllAsRead }) => {
   if (isUserLoading)
     return <span className="loading loading-spinner loading-lg text-yellow-400"></span>;
 
@@ -256,33 +264,70 @@ const UserData = ({ user, isUserLoading, logoutMutation, notifications, unreadCo
 
           {showDropdown && (
             <div className="absolute right-0 mt-2 w-80 bg-zinc-950 border border-zinc-800 rounded-box shadow-xl z-50 max-h-96 overflow-y-auto">
-              <div className="p-3 border-b border-zinc-800">
-                <h3 className="text-white font-semibold">Notifications</h3>
+              <div className="p-3 border-b border-zinc-800 flex items-center justify-between gap-2">
+                <h3 className="text-white font-semibold">
+                  Notifications
+                  {unreadCount > 0 && (
+                    <span className="ml-2 text-xs font-normal text-gray-400">
+                      {unreadCount} new
+                    </span>
+                  )}
+                </h3>
+                {unreadCount > 0 && (
+                  <button
+                    onClick={() => {
+                      markAllAsRead?.();
+                    }}
+                    className="shrink-0 rounded-md bg-yellow-400/90 px-2 py-1 text-[11px] font-semibold text-black hover:bg-yellow-500 transition-colors"
+                  >
+                    Mark all as read
+                  </button>
+                )}
               </div>
               {notifications.length === 0 ? (
                 <p className="text-gray-400 text-sm p-3">No notifications yet</p>
               ) : (
-                notifications.slice(0, 5).map((notif) => (
-                  <Link
-                    key={notif._id}
-                    to="/dashboard/notifications"
-                    className="block p-3 hover:bg-zinc-800 border-b border-zinc-800/50 last:border-0"
-                    onClick={() => setShowDropdown(false)}
-                  >
-                    <p className="text-sm text-white">
-                      {notif.type === "user_joined" && `🆕 New ${notif.meta?.role || "user"} joined`}
-                      {notif.type === "user_login" && `🔑 ${notif.meta?.role || "User"} login: ${notif.studentName}`}
-                      {notif.type === "user_logout" && `🚪 ${notif.meta?.role || "User"} logout: ${notif.studentName}`}
-                      {notif.type === "course_joined" && `📚 New enrollment: ${notif.courseTitle}`}
-                      {notif.type === "exam_completed" && `🎓 Exam completed: ${notif.courseTitle}`}
-                      {notif.type === "certificate_payment" && `💳 Certificate payment`}
-                      {notif.type === "site_visit" && notif.meta?.authenticated ? `👁️ ${notif.meta?.userName || notif.studentName} visited ${notif.meta?.page || "site"}` : `👁️ New site visit`}
-                    </p>
-                    <p className="text-xs text-gray-400 mt-1">
-                      {new Date(notif.createdAt).toLocaleString()}
-                    </p>
-                  </Link>
-                ))
+                notifications.slice(0, 5).map((notif) => {
+                  const isUnread = !notif.read;
+                  return (
+                    <Link
+                      key={notif._id}
+                      to="/dashboard/notifications"
+                      className={`flex items-start gap-2 p-3 border-b border-zinc-800/50 last:border-0 transition-colors ${
+                        isUnread ? "bg-yellow-400/5 hover:bg-zinc-800" : "hover:bg-zinc-800"
+                      }`}
+                      onClick={() => {
+                        if (isUnread) markAsRead?.(notif._id);
+                        setShowDropdown(false);
+                      }}
+                    >
+                      {isUnread && (
+                        <span
+                          className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-yellow-400"
+                          aria-hidden
+                        />
+                      )}
+                      <div className="min-w-0">
+                        <p
+                          className={`text-sm ${
+                            isUnread ? "font-semibold text-white" : "text-gray-300"
+                          }`}
+                        >
+                          {notif.type === "user_joined" && `🆕 New ${notif.meta?.role || "user"} joined`}
+                          {notif.type === "user_login" && `🔑 ${notif.meta?.role || "User"} login: ${notif.studentName}`}
+                          {notif.type === "user_logout" && `🚪 ${notif.meta?.role || "User"} logout: ${notif.studentName}`}
+                          {notif.type === "course_joined" && `📚 New enrollment: ${notif.courseTitle}`}
+                          {notif.type === "exam_completed" && `🎓 Exam completed: ${notif.courseTitle}`}
+                          {notif.type === "certificate_payment" && `💳 Certificate payment`}
+                          {notif.type === "site_visit" && notif.meta?.authenticated ? `👁️ ${notif.meta?.userName || notif.studentName} visited ${notif.meta?.page || "site"}` : `👁️ New site visit`}
+                        </p>
+                        <p className="text-xs text-gray-400 mt-1">
+                          {new Date(notif.createdAt).toLocaleString()}
+                        </p>
+                      </div>
+                    </Link>
+                  );
+                })
               )}
               <Link
                 to="/dashboard/notifications"

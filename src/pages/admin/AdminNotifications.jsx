@@ -1,10 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
+import { useContext } from "react";
+import { FaCheck, FaCheckDouble } from "react-icons/fa";
 import HeadTag from "../../components/common/HeadTag";
 import LoaderSpinner from "../../components/common/LoaderSpinner";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
+import { NotificationContext } from "../../providers/NotificationContext";
 
 export default function AdminNotifications() {
   const axiosSecure = useAxiosSecure();
+  const { markAsRead, markAllAsRead } = useContext(NotificationContext);
 
   const { data, isLoading, refetch } = useQuery({
     queryKey: ["admin-notifications"],
@@ -15,6 +19,17 @@ export default function AdminNotifications() {
   });
 
   const notifications = data?.notifications || [];
+  const unread = data?.unread ?? notifications.filter((n) => !n.read).length;
+
+  const handleMarkOne = async (id) => {
+    await markAsRead?.(id);
+    refetch();
+  };
+
+  const handleMarkAll = async () => {
+    await markAllAsRead?.();
+    refetch();
+  };
 
   const getTypeLabel = (type, meta) => {
     switch (type) {
@@ -87,13 +102,30 @@ export default function AdminNotifications() {
       <HeadTag title="Creators Hub Academy | Notifications" />
       <div className="p-6 bg-black text-white min-h-screen">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold text-yellow-400">Notifications</h1>
-          <button
-            onClick={() => refetch()}
-            className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg text-sm"
-          >
-            Refresh
-          </button>
+          <h1 className="text-3xl font-bold text-yellow-400">
+            Notifications
+            {unread > 0 && (
+              <span className="ml-3 align-middle rounded-full bg-red-500 px-3 py-1 text-xs font-bold text-white">
+                {unread} new
+              </span>
+            )}
+          </h1>
+          <div className="flex gap-2">
+            {unread > 0 && (
+              <button
+                onClick={handleMarkAll}
+                className="px-4 py-2 bg-yellow-400 hover:bg-yellow-500 text-black rounded-lg text-sm font-semibold flex items-center gap-2"
+              >
+                <FaCheckDouble /> Mark all as read
+              </button>
+            )}
+            <button
+              onClick={() => refetch()}
+              className="px-4 py-2 bg-zinc-800 hover:bg-zinc-700 text-white rounded-lg text-sm"
+            >
+              Refresh
+            </button>
+          </div>
         </div>
 
         {isLoading ? (
@@ -104,16 +136,25 @@ export default function AdminNotifications() {
           </div>
         ) : (
           <div className="space-y-4">
-            {notifications.map((notif) => (
-              <div
-                key={notif._id}
-                className="bg-zinc-950 border border-zinc-800 rounded-xl p-5 hover:border-zinc-700 transition-colors"
-              >
-                <div className="flex justify-between items-start">
-                  <div>
-                    <span className={`text-sm font-semibold ${getTypeColor(notif.type, notif.meta)}`}>
-                      {getTypeLabel(notif.type, notif.meta)}
-                    </span>
+            {notifications.map((notif) => {
+              const isUnread = !notif.read;
+              return (
+                <div
+                  key={notif._id}
+                  className={`rounded-xl border p-5 transition-colors ${
+                    isUnread
+                      ? "bg-yellow-400/5 border-yellow-400/30 hover:border-yellow-400/50"
+                      : "bg-zinc-950 border-zinc-800 hover:border-zinc-700"
+                  }`}
+                >
+                  <div className="flex justify-between items-start gap-4">
+                    <div className="min-w-0">
+                      <span className={`text-sm font-semibold ${getTypeColor(notif.type, notif.meta)}`}>
+                        {isUnread && (
+                          <span className="mr-2 inline-block h-2 w-2 rounded-full bg-yellow-400 align-middle" aria-hidden />
+                        )}
+                        {getTypeLabel(notif.type, notif.meta)}
+                      </span>
                     <h3 className="text-white font-medium mt-1">
                       {getNotificationDetails(notif)}
                     </h3>
@@ -145,12 +186,27 @@ export default function AdminNotifications() {
                       )}
                     </div>
                   </div>
-                  <span className="text-gray-500 text-xs whitespace-nowrap">
-                    {new Date(notif.createdAt).toLocaleString()}
-                  </span>
+                  <div className="flex flex-col items-end gap-2 shrink-0">
+                    <span className="text-gray-500 text-xs whitespace-nowrap">
+                      {new Date(notif.createdAt).toLocaleString()}
+                    </span>
+                    {isUnread ? (
+                      <button
+                        onClick={() => handleMarkOne(notif._id)}
+                        className="rounded-md bg-yellow-400/90 px-3 py-1 text-[11px] font-semibold text-black hover:bg-yellow-500 transition-colors flex items-center gap-1"
+                      >
+                        <FaCheck /> Mark as read
+                      </button>
+                    ) : (
+                      <span className="rounded-md bg-zinc-800 px-3 py-1 text-[11px] font-medium text-gray-400 flex items-center gap-1">
+                        <FaCheck /> Read
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
-            ))}
+            );
+            })}
           </div>
         )}
       </div>
