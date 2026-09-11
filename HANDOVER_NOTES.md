@@ -15,6 +15,16 @@
 - **Fix shipped in this pass:** a **Build Info diagnostics strip** (collapsible `<details>`) on the Login card that prints `domain`, `project`, **Firebase key prefix**, and whether the in-app reset handler is wired. Instantly exposes a stale cached bundle: if `key:` prefix ≠ `AIzaSyCrsEIp`, the browser is serving an old build → hard-refresh (`Ctrl+Shift+R`). Harmless read-only display of already-public bundle values.
 - **Action for the operator:** when the user reports the issue again, ask them to expand **Build info** on `/login` and confirm the key prefix shows `AIzaSyCrsEIp`, then request ONE reset from THAT page and open only the NEWEST email. If their emails still show `apiKey=AIzaSyChAL0L…`, they are using an old cached page / old email — not this deployment.
 
+## 4th-Round Diagnosis — user pasted the raw 403 `PERMISSION_DENIED / API_KEY_HTTP_REFERRER_BLOCKED` (2026-09-11, night, follow-up)
+- **User error:** `{"error":{"code":403,"message":"Requests from referer https://creators-hub-academy-2026.firebaseapp.com/ are blocked." … "reason":"API_KEY_HTTP_REFERRER_BLOCKED" … consumer:"projects/1000269402915"}}`
+- **What it means:** the reset email the user clicked carried the OLD project key `AIzaSyChAL0L…`, and that key's project has **"Restrict keys to specific website domains (HTTP referrer)" enabled** — so Firebase's own hosted action page (`…firebaseapp.com/__/auth/action`) is itself blocked by the referrer restriction the moment it processes the oobCode. This is the raw, unfiltered Firebase error reaching the user’s screen.
+- **Referrer matrix test (this repo, `accounts:sendOobCode`):**
+  - `AIzaSyCrsEIp…` + vercel.app → HTTP 200 ✅
+  - `AIzaSyCrsEIp…` + firebaseapp.com / localhost → HTTP 400 rate-limit (functioning key, NOT referrer-blocked)
+  - `AIzaSyChAL0L…` + every referrer → 403 referrer-blocked ❌
+- **Conclusion:** the app’s Firebase project is healthy and owns the account. The failures originate from emails/deployments using the OTHER key. No code change can make a referrer-restricted key work — **the console (or cache) is the only place this can be corrected.**
+- **Code hardening added in this pass:** `Login.jsx getFriendlyAuthError` now detects referrer-403 / `auth/api-key-header-not-found` and shows an actionable message ("Firebase key restriction … add your exact site domain") instead of the generic toast.
+
 ## Latest Change — Password-Reset Hardening (2026-09-11, night, commit `09902c9`)
 - **What shipped:** `ResetPassword.jsx` now reads `oobCode`/`email`/`mode`/`apiKey` from BOTH the URL **query string** AND the URL **fragment** (`#mode=resetPassword&oobCode=…`), strips the oobCode from the address bar after verification (`history.replaceState`), and prefills the Resend email from `localStorage:chub_reset_email`. `Login.jsx` reset banner now shows the destination email and the error map surfaces `auth/operation-not-allowed`, `auth/invalid-action-code`, `auth/expired-action-code`.
 - **Why:** user still got "expired or already used" within 20–30s. Forensic check of the pasted link proved the sender was an OLD/cached deployment — the email's `apiKey=AIzaSyChAL0L…` does not exist in this repo/history, while the live build embeds `AIzaSyCrsEIp…` and already had `handleCodeInApp`. Stale bundles + the "every new request cancels older links" rule caused the ghost failure.

@@ -13,6 +13,17 @@ import useAxiosSecure from "../hooks/useAxiosSecure";
 
 const getFriendlyAuthError = (error) => {
   const code = error?.code || "";
+  // PERMISSION_DENIED / API_KEY_HTTP_REFERRER_BLOCKED: the Firebase project's
+  // API key has "Restrict keys to specific website domains" enabled, and the
+  // calling referrer is not in the allow-list. This is what produces the raw
+  // "Requests from referer … are blocked." 403 on the Firebase reset page.
+  if (
+    code.includes("referrer") ||
+    code === "auth/api-key-header-not-found" ||
+    (error?.message || "").includes("Requests from referer")
+  ) {
+    return "Firebase key restriction is blocking this action (HTTP referrer not allowed). Fix in Firebase Console → Project Settings → Your API Key → add your exact site domain. Contact support if you can't access it.";
+  }
   const map = {
     "auth/invalid-email": "That email address doesn't look right. Please check it and try again.",
     "auth/missing-email": "Please enter your email address.",
