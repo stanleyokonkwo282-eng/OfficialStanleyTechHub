@@ -1,12 +1,16 @@
 import axios from "axios";
 import {
+  confirmPasswordReset,
   createUserWithEmailAndPassword,
   getRedirectResult,
   onAuthStateChanged,
+  sendPasswordResetEmail,
   signInWithEmailAndPassword,
+  signInWithPopup,
   signInWithRedirect,
   signOut,
   updateProfile,
+  verifyPasswordResetCode,
 } from "firebase/auth";
 import { createContext, useEffect, useState, useMemo, useCallback } from "react";
 import { auth, provider, hasFirebaseConfig } from "../../firebase.config";
@@ -118,7 +122,7 @@ const AuthProvider = ({ children }) => {
     return signInWithEmailAndPassword(auth, email, password);
   };
 
-  const loginWithGoogle = () => {
+  const loginWithGoogle = async () => {
     if (!auth || !provider || !hasFirebaseConfig) {
       return Promise.reject(new Error("Google sign-in is unavailable because Firebase authentication is not configured."));
     }
@@ -127,7 +131,96 @@ const AuthProvider = ({ children }) => {
       prompt: "select_account",
     });
 
-    return signInWithRedirect(auth, provider);
+    // FIX (Google login not working): signInWithRedirect alone leaves the
+    // user stranded whenever the redirect back is blocked (popup blockers,
+    // in-app browsers, lost sessionStorage on Vercel preview deploys, or a
+    // missing Authorized-domain entry). Try the popup first — it resolves
+    // IN PLACE so onAuthStateChanged fires immediately — and only fall back
+    // to full-page redirect when the popup is blocked/closed.
+    try {
+      const result = await signInWithPopup(auth, provider);
+      if (result?.user?.email) {
+        sessionStorage.setItem("chub_justLoggedIn", "true");
+        await axios.post(`${import.meta.env.VITE_BASE_URL}/users`, {
+          email: result.user.email,
+          photoURL: result.user.photoURL,
+          name: result.user.displayName,
+        }).catch(() => undefined);
+      }
+      return result;
+    } catch (popupErr) {
+      const code = popupErr?.code || "";
+      // User closed the popup themselves — don't yank them into a redirect.
+      if (code === "auth/popup-closed-by-user" || code === "auth/cancelled-popup-request") {
+        throw popupErr;
+      }
+      // Popup blocked / not supported (mobile webviews, COOP restrictions) —
+      // fall back to redirect, which always works with a full page load.
+      if (
+        code === "auth/popup-blocked" ||
+        code === "auth/operation-not-supported-in-this-environment" ||
+        code === "auth/unauthorized-domain"
+      ) {
+        sessionStorage.setItem("chub_justLoggedIn", "true");
+        return signInWithRedirect(auth, provider);
+      }
+      throw popupErr;
+    }
+  };
+
+  // FIX (reset links instantly "expired"): every call to
+  // sendPasswordResetEmail INVALIDATES all previous oobCodes for that user.
+  // Users were double-tapping "Forgot Password?" (or retrying after a slow
+  // toast), so the first email's link was dead on arrival. This wrapper adds
+  // a 60s client-side cooldown per email + routes the link back to OUR
+  // /reset-password page (custom handler) so the code is verified with
+  // verifyPasswordResetCode before being consumed.
+  const sendResetEmail = async (rawEmail) => {
+    if (!auth || !hasFirebaseConfig) {
+      return Promise.reject(new Error("Firebase authentication is not configured."));
+    }
+    const email = String(rawEmail || "").trim().toLowerCase();
+    if (!email) {
+      const err = new Error("Please enter your email address first.");
+      err.code = "auth/missing-email";
+      throw err;
+    }
+    const cooldownKey = `chub_reset_cooldown_${email}`;
+    const lastSent = Number(sessionStorage.getItem(cooldownKey) || 0);
+    const elapsed = Date.now() - lastSent;
+    if (lastSent && elapsed < 60000) {
+      const wait = Math.ceil((60000 - elapsed) / 1000);
+      const err = new Error(`A reset email was just sent. Please wait ${wait}s before requesting another — each new request cancels the previous link.`);
+      err.code = "auth/too-many-requests";
+      throw err;
+    }
+    const actionCodeSettings = {
+      // Custom in-app handler: verifies the oobCode BEFORE consuming it, so
+      // users get "invalid link, request a new one" instead of Firebase's
+      // generic expired page, and the code can't be burnt by prefetchers.
+      url: `${window.location.origin}/reset-password?email=${encodeURIComponent(email)}`,
+      handleCodeInApp: true,
+    };
+    await sendPasswordResetEmail(auth, email, actionCodeSettings);
+    try {
+      sessionStorage.setItem(cooldownKey, String(Date.now()));
+    } catch {
+      /* storage unavailable — non-blocking */
+    }
+  };
+
+  const verifyResetCode = (oobCode) => {
+    if (!auth || !hasFirebaseConfig) {
+      return Promise.reject(new Error("Firebase authentication is not configured."));
+    }
+    return verifyPasswordResetCode(auth, oobCode);
+  };
+
+  const confirmReset = (oobCode, newPassword) => {
+    if (!auth || !hasFirebaseConfig) {
+      return Promise.reject(new Error("Firebase authentication is not configured."));
+    }
+    return confirmPasswordReset(auth, oobCode, newPassword);
   };
 
   const updateUserProfile = (user, name, photoURL) => {
@@ -220,6 +313,9 @@ const AuthProvider = ({ children }) => {
       loginWithGoogle,
       updateUserProfile,
       reloadAuthUser,
+      sendResetEmail,
+      verifyResetCode,
+      confirmReset,
     }),
     [user, firebaseUser, isUserLoading, userLogout, reloadAuthUser]
   );

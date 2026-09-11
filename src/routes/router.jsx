@@ -61,6 +61,7 @@ const CourseSummery = lazyImport(() => import("../pages/teacher/CourseSummery"))
 const TeacherPayout = lazyImport(() => import("../pages/teacher/TeacherPayout"));
 const TeacherSubscription = lazyImport(() => import("../pages/teacher/TeacherSubscription"));
 const PublicProfile = lazyImport(() => import("../pages/common/PublicProfile"));
+const ResetPassword = lazyImport(() => import("../pages/ResetPassword"));
 
 const router = createBrowserRouter([
   {
@@ -79,6 +80,7 @@ const router = createBrowserRouter([
       { path: "/category/:category", element: <CategoryCourses /> },
       { path: "/login", element: <Login /> },
       { path: "/signup", element: <Signup /> },
+      { path: "/reset-password", element: <ResetPassword /> },
       { path: "/verify/:certificateId", element: <VerifyCertificate /> },
       { path: "/verify", element: <VerifyCertificate /> },
       {

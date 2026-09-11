@@ -1,12 +1,10 @@
 import { useMutation } from "@tanstack/react-query";
-import { sendPasswordResetEmail } from "firebase/auth";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { FaEye, FaEyeSlash, FaLock, FaUser } from "react-icons/fa";
+import { FaCheckCircle, FaEye, FaEyeSlash, FaLock, FaUser } from "react-icons/fa";
 import { Link, Navigate, useLocation, useNavigate } from "react-router";
 import { toast } from "react-toastify";
 import { motion } from "framer-motion";
-import { auth } from "../../firebase.config";
 import GoogleLogo from "../assets/icons/google.svg";
 import HeadTag from "../components/common/HeadTag";
 import LoaderDotted from "../components/common/LoaderSpinner";
@@ -54,7 +52,7 @@ const _legacyErrorMap = {
 void _legacyErrorMap;
 
 export default function Login() {
-  const { user, setUser, isUserLoading, userLogin, loginWithGoogle } =
+  const { user, setUser, isUserLoading, userLogin, loginWithGoogle, sendResetEmail } =
     useAuth();
   const navigate = useNavigate();
   const location = useLocation();
@@ -132,20 +130,34 @@ export default function Login() {
 
   const googleLoginMutation = useMutation({
     mutationFn: async () => {
-      await loginWithGoogle();
+      // Popup-first (see AuthProvider): resolves in place for most users.
+      // Returns a redirect promise only when popups are blocked — in that
+      // case the page navigates away and onAuthStateChanged completes login.
+      const result = await loginWithGoogle();
+      return result;
     },
-    onSuccess: () => {
+    onSuccess: (result) => {
+      // Redirect fallback: page is about to navigate away — just inform.
+      if (result && typeof result.catch === "function") return;
+      if (result?.user) {
+        toast.success(`Welcome${result.user.displayName ? `, ${result.user.displayName}` : ""}! 👋`);
+        navigate("/dashboard");
+        return;
+      }
       sessionStorage.setItem("chub_justLoggedIn", "true");
       toast.info("Redirecting to Google sign-in…");
     },
     onError: (error) => {
       const message = getFriendlyAuthError(error);
-      toast.error(message === getFriendlyAuthError({}) ? "Google login failed. Please try again." : message);
+      toast.error(message === getFriendlyAuthError({}) ? "Google login failed. Please try again." : message, { autoClose: 6000 });
       console.error("[Google login failed]", error?.code, error?.message, error);
     },
   });
 
-  // Forgot Password Handler
+  // Forgot Password Handler — uses the cooldown-guarded wrapper so a
+  // double-tap can't silently kill the first email's link (each new
+  // sendPasswordResetEmail invalidates ALL previous oobCodes).
+  const [resetSent, setResetSent] = useState(false);
   const handleForgotPassword = async () => {
     const rawEmail = getValues("email");
     const email = String(rawEmail || "").trim();
@@ -153,16 +165,22 @@ export default function Login() {
       toast.error("Please enter your email address first.");
       return;
     }
-    if (!auth) {
+    if (!sendResetEmail) {
       toast.error("Password reset is unavailable right now (auth service not configured). Please contact support.");
       return;
     }
     try {
-      await sendPasswordResetEmail(auth, email);
-      toast.success("Password reset email sent! Check your inbox (and spam folder).");
+      await sendResetEmail(email);
+      setResetSent(true);
+      toast.success("Password reset email sent! Open the NEWEST email and click its link ONCE within 1 hour. Each new request cancels older links.", { autoClose: 8000 });
     } catch (error) {
+      // Cooldown message already explains the "each request cancels the last" rule.
+      if (error?.code === "auth/too-many-requests" && error?.message?.includes("just sent")) {
+        toast.warning(error.message, { autoClose: 7000 });
+        return;
+      }
       const message = getFriendlyAuthError(error);
-      toast.error(message === getFriendlyAuthError({}) ? "Failed to send reset email." : message);
+      toast.error(error?.message && !error?.code ? error.message : (message === getFriendlyAuthError({}) ? "Failed to send reset email." : message), { autoClose: 6000 });
     }
   };
 
@@ -293,6 +311,16 @@ export default function Login() {
                     Forgot Password?
                   </button>
                 </div>
+
+                {resetSent && (
+                  <p className="mt-3 flex items-start gap-2 rounded-xl border border-green-500/30 bg-green-500/10 px-3 py-2 text-sm text-green-200">
+                    <FaCheckCircle className="mt-0.5 shrink-0" />
+                    <span>
+                      Email sent — open the <strong>newest</strong> email, click its link <strong>once</strong> within 1 hour.
+                      Don't request again: each new email cancels the older links.
+                    </span>
+                  </p>
+                )}
 
                 <button
                   type="submit"

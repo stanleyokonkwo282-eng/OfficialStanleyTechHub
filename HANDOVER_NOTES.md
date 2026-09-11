@@ -1,11 +1,23 @@
 # Creators Hub Academy — Handover Notes
 
 **Last Updated:** 2026-09-11
-**Status:** Production Live — Folder Merge + Auth Overhaul Deployed (build verified, pushed to main)
+**Status:** Production Live — Google Login + Password-Reset Fix Deployed (build verified, pushed to main)
 **Frontend Repo:** https://github.com/stanleyokonkwo282-eng/OfficialStanleyTechHub
 **Backend Repo:** https://github.com/stanleyokonkwo282-eng/creators-hub-academy-backend
 **Live Frontend:** https://creators-hub-academy.vercel.app
 **Live Backend:** https://creators-hub-academy-backend.onrender.com
+
+## Google Login + Password-Reset Fix (2026-09-11, evening)
+
+### A. Google ("login through gmail") not working — root cause + fix
+- **Cause:** `loginWithGoogle` used `signInWithRedirect` ONLY. Redirect login dies silently when (a) the return-to domain isn't in Firebase Console → Authentication → Settings → **Authorized domains** (`creators-hub-academy.vercel.app` must be listed — `localhost` is there by default, Vercel is not), (b) the redirect lands but `getRedirectResult` session state was lost (in-app browsers, preview deploys), or (c) Google provider itself isn't enabled in the console. Any of these leaves the user back on `/login` with no error — exactly "not working".
+- **Fix (`AuthProvider.loginWithGoogle`):** popup-first with redirect fallback. `signInWithPopup` resolves in place so `onAuthStateChanged` fires immediately and Mongo `/users` sync runs inline; only `popup-blocked` / `operation-not-supported` (mobile webviews, COOP) falls back to `signInWithRedirect`. User-closed popup rethrows (no surprise navigation). `Login.jsx` navigates to `/dashboard` directly on popup success instead of always showing "Redirecting…".
+- **Console checklist (do once, 2 min):** Firebase Console → your project (`creators-hub-academy-2026`) → Authentication → Sign-in method → enable **Google** (it is separate from Email/Password) → Settings → Authorized domains → add `creators-hub-academy.vercel.app`.
+
+### B. "Try resetting your password again — expired or already used" — root cause + fix
+- **Cause (3 stacked):** (1) Every `sendPasswordResetEmail` call **invalidates ALL previous oobCodes** — your screenshots show TWO reset emails 1 min apart (`11:04` + `11:06`), so the first link was dead before it was clicked. Double-tapping "Forgot Password?" guarantees this. (2) The old code sent the DEFAULT Firebase handler (`creators-hub-academy-2026.firebaseapp.com/__/auth/action`), whose single-use code is burnt by Gmail prefetchers/double-clicks and then shows the generic expired page with no recovery. (3) Note the email subject says *"for project-1000269402915"* (raw project NUMBER, not "Creators Hub Academy") — cosmetic, but confirms the default template; also the link's `apiKey=AlzaSyChAL0L...` differs from your `.env.local` `AIzaSyCrsE...`, which is EXPECTED (the link in your screenshot is from the LIVE Vercel deploy = different Firebase API key than local) — do not "fix" by copying keys; just test reset on the live site after deploy.
+- **Fix:** new `sendResetEmail` wrapper (`AuthProvider`) with **60s per-email cooldown** (second tap shows "wait Ns — each request cancels the previous link" instead of silently killing link #1) + `actionCodeSettings` routing links to our new **in-app `/reset-password` page** (`continueUrl = {origin}/reset-password?email=…`, `handleCodeInApp: true`) which **verifies** the `oobCode` via `verifyPasswordResetCode` BEFORE consuming it, then confirms via `confirmPasswordReset` and redirects to `/login`. Invalid/used codes get a friendly "use the NEWEST email, click ONCE, finish in 1 hour" panel with an inline **Resend** button — never the dead Firebase page. `Login.jsx` success toast + green checklist banner teach the one-click rule.
+- **How to test (live site):** Login → Forgot Password? → wait for ONE email → open the NEWEST → click ONCE → set new password on `/reset-password` → auto-redirect to login → sign in. If you see the invalid panel, hit Resend and use only the newest mail.
 
 ## Folder Merge Cleanup (2026-09-11)
 
