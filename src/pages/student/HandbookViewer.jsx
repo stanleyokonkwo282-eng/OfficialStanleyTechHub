@@ -36,13 +36,9 @@ export default function HandbookViewer() {
         let res;
         try {
           res = await axiosSecure.get(`/courses/${id}`);
-        } catch (_) { try {
-            res = await axiosSecure.get(`/courses/single/${id}`);
-          } catch (e2) {
-            throw e2;
-          }
+        } catch {
+          res = await axiosSecure.get(`/courses/single/${id}`);
         }
-
         const data = res.data?.data || res.data;
         if (isMounted) {
           setCourse(data);
@@ -109,6 +105,8 @@ export default function HandbookViewer() {
     activeLesson?.pdfUrl ||
     activeLesson?.htmlUrl ||
     activeLesson?.videoUrl ||
+    course?.resourceHtmlUrl ||
+    course?.resourcePdfUrl ||
     course?.fileUrl ||
     course?.pdfUrl ||
     "";

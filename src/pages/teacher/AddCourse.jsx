@@ -15,7 +15,6 @@ export default function AddCourse() {
   const [videoUrl, setVideoUrl] = useState("");
   const [pdfFile, setPdfFile] = useState(null);
   const [htmlFile, setHtmlFile] = useState(null);
-  const [htmlUrl, setHtmlUrl] = useState("");
   const {
     register,
     handleSubmit,
@@ -46,7 +45,6 @@ export default function AddCourse() {
       setVideoUrl("");
       setPdfFile(null);
       setHtmlFile(null);
-      setHtmlUrl("");
       navigate("/dashboard/courses");
     },
     onError: (error) => {
@@ -102,7 +100,8 @@ export default function AddCourse() {
 
       // --- Handbook course path (PDF or HTML) ---
       if (courseType === "handbook") {
-        let handbookUrl = "";
+        let resourcePdfUrl = "";
+        let resourceHtmlUrl = "";
 
         // Priority 1: Uploaded HTML file
         if (htmlFile) {
@@ -110,47 +109,62 @@ export default function AddCourse() {
             toast.error("Please upload an HTML file (.html or .htm) for handbook courses.");
             return;
           }
-          // HTML files can be large — no size limit for now
           const formData = new FormData();
-          formData.append("file", htmlFile);
-          const uploadRes = await fetch(`${import.meta.env.VITE_BASE_URL}/upload/html`, {
-            method: "POST",
-            body: formData,
-          });
-          if (uploadRes.ok) {
-            const dataResp = await uploadRes.json();
-            handbookUrl = dataResp.url || dataResp.htmlUrl || "";
-          } else {
-            // Fallback: read as data URL for small files — but this won't work for big files.
-            // Instead, upload to the same PDF endpoint as a fallback (server stores it as a document)
-            const pdfUploadResult = await uploadPdfMutation.mutateAsync(htmlFile);
-            handbookUrl = pdfUploadResult.url;
+          formData.append("html", htmlFile);
+          let uploaded = false;
+          try {
+            const uploadRes = await fetch(`${import.meta.env.VITE_BASE_URL}/upload/html`, {
+              method: "POST",
+              body: formData,
+            });
+            if (uploadRes.ok) {
+              const dataResp = await uploadRes.json();
+              resourceHtmlUrl = dataResp.url || dataResp.htmlUrl || "";
+              uploaded = true;
+            }
+          } catch {
+            // network error — fall through to fallback below
           }
-          if (!handbookUrl) {
+          if (!uploaded) {
+            // Fallback: send to the PDF upload endpoint (server stores it as a document)
+            try {
+              const pdfUploadResult = await uploadPdfMutation.mutateAsync(htmlFile);
+              resourceHtmlUrl = pdfUploadResult.url;
+              uploaded = true;
+            } catch {
+              // fall through
+            }
+          }
+          if (!resourceHtmlUrl) {
             throw new Error("HTML upload failed. Please try again.");
           }
         }
 
         // Priority 2: Uploaded PDF file
-        if (!handbookUrl && pdfFile) {
+        if (!resourceHtmlUrl && !resourcePdfUrl && pdfFile) {
           if (pdfFile.size > 10 * 1024 * 1024) {
             toast.error("PDF file is too large. Please keep it under 10MB.");
             return;
           }
           const pdfUploadResult = await uploadPdfMutation.mutateAsync(pdfFile);
-          handbookUrl = pdfUploadResult.url;
+          resourcePdfUrl = pdfUploadResult.url;
         }
 
         // Priority 3: Direct URL (paste a link to an HTML or PDF file)
-        if (!handbookUrl) {
+        if (!resourceHtmlUrl && !resourcePdfUrl) {
           // If user pasted a video URL by mistake, block it
           if (videoUrl) {
             throw new Error("Handbook courses need an HTML/PDF file or URL — not a video link. Switch to Video Course type.");
           }
-          // Use the pdfFile URL field if they pasted a direct link
-          handbookUrl = data.handbookUrl || data.pdfUrl || "";
-          if (!handbookUrl) {
+          const pastedUrl = data.handbookUrl || data.pdfUrl || data.resourceHtmlUrl || "";
+          if (!pastedUrl) {
             throw new Error("Please upload an HTML/PDF file or paste a document URL for handbook courses.");
+          }
+          // Detect type from file extension
+          if (pastedUrl.toLowerCase().match(/\.html?($|#|\?)/) || pastedUrl.startsWith("data:text/html")) {
+            resourceHtmlUrl = pastedUrl;
+          } else {
+            resourcePdfUrl = pastedUrl;
           }
         }
 
@@ -158,10 +172,10 @@ export default function AddCourse() {
           ...data,
           price: Number(data.price) || 5000,
           hasVideo: false,
-          hasPdf: true, // mark as document-based
+          hasPdf: true, // document-based (PDF or HTML)
           resourceVideoUrl: "",
-          resourcePdfUrl: handbookUrl,
-          resourceHtmlUrl: htmlUrl || data.resourceHtmlUrl || "",
+          resourcePdfUrl,
+          resourceHtmlUrl,
           rating: Math.floor(Math.random() * 5) + 1,
         };
         delete coursePayload.name;
