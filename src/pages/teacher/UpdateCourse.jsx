@@ -68,7 +68,7 @@ const UpdateCourse = ({ isOpen, setIsOpen, course, refetch }) => {
       const payload = {
         ...updateData,
         image: imageUrl,
-        price: 5000,
+        price: Number(updateData.price) || 5000,
         hasVideo: Boolean(videoUrl),
         hasPdf: Boolean(pdfFile || resourcePdfUrl),
         resourceVideoUrl: videoUrl,

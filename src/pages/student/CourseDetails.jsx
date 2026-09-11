@@ -5,6 +5,7 @@ import LoaderSpinner from "../../components/common/LoaderSpinner";
 import useAuth from "../../hooks/useAuth";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
 import renderStars from "../../utils/renderStars";
+import { toast } from "react-toastify";
 
 const CourseDetails = () => {
   const { user } = useAuth();
@@ -12,6 +13,7 @@ const CourseDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [selectedFormat, setSelectedFormat] = useState("video");
+  const [enrolling, setEnrolling] = useState(false);
 
   const { data: course, isLoading: courseLoading } = useQuery({
     queryKey: ["course", id],
@@ -58,7 +60,7 @@ const CourseDetails = () => {
     return `/dashboard/learn/${id}`;
   };
 
-  const handleEnrollClick = () => {
+  const handleEnrollClick = async () => {
     if (!user) {
       navigate("/login", {
         state: { from: `/courses/${id}` },
@@ -71,7 +73,30 @@ const CourseDetails = () => {
     }
     sessionStorage.setItem("enrollmentFormat", selectedFormat);
     sessionStorage.setItem("enrollmentCourseId", id);
-    window.location.href = paystackCourseUrl;
+
+    setEnrolling(true);
+    try {
+      // Backend enrolls free courses (price 0) instantly, or initializes a
+      // Paystack checkout charged at this course's actual price.
+      const res = await axiosSecure.post("/enroll", { courseId: id, format: selectedFormat });
+      const data = res.data;
+      if (data.success && data.free) {
+        toast.success("🎉 Enrolled! This course is free — start learning now.");
+        navigate(getLearnRoute(), { replace: true });
+        return;
+      }
+      if (data.success && data.authorizationUrl) {
+        window.location.href = data.authorizationUrl;
+        return;
+      }
+      toast.error(data.message || "Could not start checkout — redirecting to secure payment…");
+      window.location.href = paystackCourseUrl;
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Could not start checkout — redirecting to secure payment…");
+      window.location.href = paystackCourseUrl;
+    } finally {
+      setEnrolling(false);
+    }
   };
 
   const getButtonClass = () => {
@@ -82,7 +107,10 @@ const CourseDetails = () => {
   };
 
   const getButtonLabel = () => {
-    return isEnrolled ? "▶ Continue Learning" : `Enroll for ${course?.price ? `₦${Number(course.price).toLocaleString()}` : "this course"}`;
+    if (isEnrolled) return "▶ Continue Learning";
+    if (enrolling) return "Processing…";
+    const price = Number(course?.price) || 0;
+    return price > 0 ? `Enroll for ₦${price.toLocaleString()}` : "Enroll Free — Start Learning";
   };
 
   if (courseLoading) return <LoaderSpinner />;
@@ -176,7 +204,7 @@ const CourseDetails = () => {
           <div>
             <div className="bg-zinc-950 border border-zinc-800 rounded-xl p-6 sticky top-24 space-y-5">
               <div>
-                <p className="text-3xl font-bold text-green-400">{course.price ? `₦${Number(course.price).toLocaleString()}` : "Enroll"}</p>
+                <p className="text-3xl font-bold text-green-400">{Number(course.price) > 0 ? `₦${Number(course.price).toLocaleString()}` : "Free"}</p>
                 <p className="text-gray-400 text-sm mt-1">
                   Full enrollment access — choose your format and start learning.
                 </p>
@@ -218,7 +246,8 @@ const CourseDetails = () => {
 
               <button
                 onClick={handleEnrollClick}
-                className={getButtonClass()}
+                disabled={enrolling || courseLoading}
+                className={`${getButtonClass()} ${enrolling ? "opacity-60 cursor-wait" : ""}`}
               >
                 {getButtonLabel()}
               </button>

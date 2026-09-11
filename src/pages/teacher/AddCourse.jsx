@@ -11,7 +11,7 @@ import { uploadPdf } from "../../utils/PdfUploadApi";
 export default function AddCourse() {
   const { user } = useAuth();
   const [customCategory, setCustomCategory] = useState("");
-  const [courseType, setCourseType] = useState("video"); // "video" | "handbook"
+  const [courseType] = useState("video"); // "video" | "handbook" (setter removed — type selector UI no longer exists)
   const [videoUrl, setVideoUrl] = useState("");
   const [pdfFile, setPdfFile] = useState(null);
   const [htmlFile, setHtmlFile] = useState(null);
@@ -85,7 +85,7 @@ export default function AddCourse() {
         }
         const coursePayload = {
           ...data,
-          price: 5000,
+          price: Number(data.price) || 5000,
           hasVideo: true,
           hasPdf: Boolean(pdfFile),
           resourceVideoUrl: videoUrl,
@@ -156,7 +156,7 @@ export default function AddCourse() {
 
         const coursePayload = {
           ...data,
-          price: 5000,
+          price: Number(data.price) || 5000,
           hasVideo: false,
           hasPdf: true, // mark as document-based
           resourceVideoUrl: "",

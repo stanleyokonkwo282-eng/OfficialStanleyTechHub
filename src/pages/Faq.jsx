@@ -11,7 +11,7 @@ const faqs = [
   {
     question: "Do the courses cost money?",
     answer:
-      "No. Each course has its own one-time enrollment fee paid via Paystack. A separate verification fee only applies if you want a shareable certificate after passing the exam.",
+      "Each course has its own one-time enrollment fee (₦2,500 – ₦5,000 depending on the course), and several foundation courses are completely free. Paid enrollments are processed securely via Paystack. A separate verification fee only applies if you want a shareable certificate after passing the exam.",
   },
   {
     question: "What payment methods are supported?",

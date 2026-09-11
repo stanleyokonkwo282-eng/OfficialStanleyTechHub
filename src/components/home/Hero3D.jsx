@@ -13,7 +13,7 @@ const metrics = [
   { icon: "🎓", value: "25+", label: "Digital Courses", sub: "Video & PDF formats", hero: true, span: "sm:col-span-2" },
   { icon: "🎬", value: "90+", label: "Video Lessons", sub: "Step-by-step tutorials", span: "" },
   { icon: "📜", value: "₦10,000", label: "Certificate", sub: "Unique verification ID", span: "" },
-  { icon: "🏆", value: "₦5,000", label: "Enrollment", sub: "Instant access via Paystack", span: "sm:col-span-2 sm:col-start-2" },
+  { icon: "🏆", value: "From ₦2,500", label: "Enrollment", sub: "Instant access via Paystack", span: "sm:col-span-2 sm:col-start-2" },
 ];
 
 function useMousePosition() {

@@ -1,6 +1,6 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useParams, useSearchParams } from "react-router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import LoaderDotted from "../../components/common/LoaderDotted";
 import useAuth from "../../hooks/useAuth";
@@ -13,6 +13,7 @@ const StripeWrapper = () => {
   const [searchParams] = useSearchParams();
   const axiosSecure = useAxiosSecure();
   const reference = searchParams.get("reference");
+  const [initiating, setInitiating] = useState(false);
 
   const { data: courseDetails } = useQuery({
     queryKey: ["courseDetails", user?.email, id],
@@ -112,21 +113,44 @@ const StripeWrapper = () => {
             <div className="border border-gray-400 rounded-lg p-6 bg-gray-50 text-gray-700 space-y-4">
               <div className="flex justify-between">
                 <span>Amount</span>
-                <span>{courseDetails?.price ? `₦${Number(courseDetails.price).toLocaleString()}` : "One-time fee"}</span>
+                <span>{Number(courseDetails?.price) > 0 ? `₦${Number(courseDetails.price).toLocaleString()}` : "Free"}</span>
               </div>
               <div className="border-t pt-4 flex justify-between font-semibold text-gray-900">
                 <span>Total</span>
-                <span>{courseDetails?.price ? `₦${Number(courseDetails.price).toLocaleString()}` : "One-time fee"}</span>
+                <span>{Number(courseDetails?.price) > 0 ? `₦${Number(courseDetails.price).toLocaleString()}` : "Free"}</span>
               </div>
               <button
-                onClick={() => {
-                  sessionStorage.setItem("enrollmentFormat", courseDetails?.hasPdf ? "pdf" : "video");
+                onClick={async () => {
+                  const format = courseDetails?.hasPdf ? "pdf" : "video";
+                  sessionStorage.setItem("enrollmentFormat", format);
                   sessionStorage.setItem("enrollmentCourseId", id);
-                  window.location.href = paystackCourseUrl;
+                  setInitiating(true);
+                  try {
+                    // Per-course Paystack checkout (free courses enroll instantly)
+                    const res = await axiosSecure.post("/enroll", { courseId: id, format });
+                    const data = res.data;
+                    if (data.success && data.free) {
+                      toast.success("🎉 Enrolled! This course is free.");
+                      window.location.href = `/dashboard/learn/${id}`;
+                      return;
+                    }
+                    if (data.success && data.authorizationUrl) {
+                      window.location.href = data.authorizationUrl;
+                      return;
+                    }
+                    toast.error(data.message || "Could not start checkout — using secure payment page…");
+                    window.location.href = paystackCourseUrl;
+                  } catch (err) {
+                    toast.error(err.response?.data?.message || "Could not start checkout — using secure payment page…");
+                    window.location.href = paystackCourseUrl;
+                  } finally {
+                    setInitiating(false);
+                  }
                 }}
-                className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-lg transition"
+                disabled={initiating}
+                className="w-full bg-green-500 hover:bg-green-600 disabled:opacity-60 text-white font-bold py-3 rounded-lg transition"
               >
-                Pay with Card (Paystack)
+                {initiating ? "Connecting to Paystack…" : "Pay with Card (Paystack)"}
               </button>
               <p className="text-center text-gray-500 text-xs mt-2">
                 You will be redirected to Paystack to complete payment securely.
