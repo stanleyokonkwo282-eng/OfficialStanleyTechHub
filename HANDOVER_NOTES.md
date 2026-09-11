@@ -220,6 +220,13 @@
 - **Teacher price fix**: `AddCourse.jsx` / `UpdateCourse.jsx` previously **overrode the teacher's typed price with a hardcoded 5000**; now they send the form value (`Number(data.price) || 5000`).
 - **Live DB migration done**: 25 courses updated (17 main seed + 8 legacy titles). Revenue per ₦5,000 sale: Paystack fee ₦175 → teacher ₦4,500 / platform ₦500.
 
+### Format Filter (Video / PDF) — FIXED 2026-09-11
+- **Bug**: Clicking "🎥 Video Courses" or "📄 PDF Handbooks" on `/courses` showed "No Courses Found". 25 of 26 live courses had **no `hasVideo`/`hasPdf` flags** (the original seed script never set them), and the backend `getApprovedCourses` filter (`?format=video` → `matchStage.hasVideo = true`) matched nothing. Only the AI Handbook had flags.
+- **Fix (DB migration)**: Derived flags from real content — for each course, counted `lessons` docs with a non-empty `videoUrl` (linked via ObjectId `courseId`). 25 courses set `hasVideo: true` (3–7 YouTube lessons each), AI Handbook stays `hasPdf: true`. Verified in DB.
+- **Fix (seed)**: `seedCourses.js` now persists `hasVideo: true` on all paid courses so future re-seeds don't regress.
+- **Note**: Courses with **zero lessons** (the 6 unseeded free-tier courses) still have no flags — they won't appear in either filtered list until lessons are added. That's correct behavior.
+- Backend `getApprovedCourses` needed no code change — flags were the only problem.
+
 ### Certificate Payment (₦10,000)
 - **Frontend**: `Certificate.jsx` calls `POST /api/certificates/paystack/initialize` → redirects to Paystack.
 - **Return Flow**: `GET /api/certificates/paystack/verify/:reference` verifies and marks certificate approved.
