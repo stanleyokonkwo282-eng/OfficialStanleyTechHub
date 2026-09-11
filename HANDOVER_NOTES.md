@@ -1,11 +1,18 @@
 # Creators Hub Academy — Handover Notes
 
 **Last Updated:** 2026-09-11
-**Status:** Production Live — Auth Overhaul + Premium Signup (build verified, ready to deploy)
+**Status:** Production Live — Folder Merge + Auth Overhaul Deployed (build verified, pushed to main)
 **Frontend Repo:** https://github.com/stanleyokonkwo282-eng/OfficialStanleyTechHub
 **Backend Repo:** https://github.com/stanleyokonkwo282-eng/creators-hub-academy-backend
 **Live Frontend:** https://creators-hub-academy.vercel.app
 **Live Backend:** https://creators-hub-academy-backend.onrender.com
+
+## Folder Merge Cleanup (2026-09-11)
+
+- **Merged into one structure:** `PROJECT LMS 2026/` now holds exactly two live folders — `OfficialStanleyTechHub/` (frontend, repo `OfficialStanleyTechHub`, branch `main`) and `mentora-lms-server/` (backend, repo `creators-hub-academy-backend`, branch `main`). Stale `HANDOVER_NOTES.md` copy at `PROJECT LMS 2026/` root left untouched (archived 2026-08-22 version; canonical notes live inside each repo).
+- **Frontend duplicates removed:** deleted stale `agents/hi` + `quirky-gauge` worktree checkouts and branches (both fully merged into `main` long ago — `main` is AHEAD of them: auth-fix commit `a9d6794` + HandbookViewer fix), removed dead `creators-hub-academy-2` gitlink entry (`160000` submodule stub pointing at `2d62ce9`, working tree was an empty folder) via `git rm --cached` + `rmdir`. `git worktree list` is now single-entry `[main]`. Committed as `984d9d2`, pushed to `origin/main`, `npm run build` passes (2,540 modules).
+- **Backend duplicates checked, nothing to merge:** `mentora-lms-server.worktrees/hi` sits at the SAME commit as `main` (`cc1e452`, zero diff) — it is a redundant checkout, not a fork. Backend `main` is clean and already pushed (`Everything up-to-date`). Safe to delete that folder manually in Explorer (it is locked while the backend `node` process/IDE holds it — close the server + VS Code folder handle, then delete `mentora-lms-server.worktrees/`). Same for the leftover empty `OfficialStanleyTechHub.worktrees/hi` shell (EBUSY-locked by the IDE file watcher; restart VS Code or delete on reboot — harmless, git no longer tracks it).
+- **Deploy:** frontend pushed → Vercel auto-deploys from `main`; backend already in sync → Render redeploys only if triggered. Verify live: login/signup/logout smoke test per the Auth Overhaul checklist below.
 
 ## Auth Overhaul + Premium Signup (2026-09-11)
 
