@@ -1,5 +1,3 @@
-
-- The HTML upload no longer falls back to the PDF endpoint (multer rejects non-PDFs there). It surfaces the real failure: the HTTP status code, or a network error, plus a hint to retry in 1-2 min if the backend is still deploying (404).
 # Creators Hub Academy — Handover Notes
 
 **Last Updated:** 2026-09-11 (night, 2nd pass)
