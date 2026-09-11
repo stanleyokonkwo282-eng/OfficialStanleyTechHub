@@ -227,6 +227,13 @@
 - **Note**: Courses with **zero lessons** (the 6 unseeded free-tier courses) still have no flags — they won't appear in either filtered list until lessons are added. That's correct behavior.
 - Backend `getApprovedCourses` needed no code change — flags were the only problem.
 
+## Portfolio / Biography Page (NEW 2026-09-11)
+- **New route `/portfolio`** → `src/pages/Portfolio.jsx`, a premium in-app biography (dark indigo/violet theme, Playfair Display serif + Inter/Poppins, animated ambient glow blobs, framer-motion reveals, hover-lift expertise cards).
+- Replaces the old external GitHub link (`https://github.com/stanleyokonkwo282-eng`) on the About page — the "View My Portfolio" button now navigates internally via `<MotionLink to="/portfolio">` (keeps the tracking toast + `FaIdBadge` icon).
+- Sections: Executive hero, Zeal for God & JSP (Journey of the Spirit), 4-card Multidisciplinary Expertise grid (Software Eng, Multimedia/Broadcast, Admin & Accounting, Enterprise Brands), Roots & Journey, signature quote. WhatsApp CTA + `tel:` phone links built in.
+- Google Fonts: added `Playfair Display` (600/700 + italic 400) to the existing font preconnect block in `index.html`.
+- `About.jsx`: imports switched `react-icons/fa` → `fa6`; `MotionLink = motion(Link)` wraps the button so `whileHover/whileTap` still animate.
+
 ### Certificate Payment (₦10,000)
 - **Frontend**: `Certificate.jsx` calls `POST /api/certificates/paystack/initialize` → redirects to Paystack.
 - **Return Flow**: `GET /api/certificates/paystack/verify/:reference` verifies and marks certificate approved.
