@@ -15,7 +15,16 @@
 - **Fix shipped in this pass:** a **Build Info diagnostics strip** (collapsible `<details>`) on the Login card that prints `domain`, `project`, **Firebase key prefix**, and whether the in-app reset handler is wired. Instantly exposes a stale cached bundle: if `key:` prefix ≠ `AIzaSyCrsEIp`, the browser is serving an old build → hard-refresh (`Ctrl+Shift+R`). Harmless read-only display of already-public bundle values.
 - **Action for the operator:** when the user reports the issue again, ask them to expand **Build info** on `/login` and confirm the key prefix shows `AIzaSyCrsEIp`, then request ONE reset from THAT page and open only the NEWEST email. If their emails still show `apiKey=AIzaSyChAL0L…`, they are using an old cached page / old email — not this deployment.
 
-## 4th-Round Diagnosis — user pasted the raw 403 `PERMISSION_DENIED / API_KEY_HTTP_REFERRER_BLOCKED` (2026-09-11, night, follow-up)
+## 5th-Round Diagnosis — user found the duplication in Firebase Console (2026-09-11, night)
+- **User's screenshot (Firebase Console project list):** there are **TWO Creators Hub Academy projects** — `creators-hub-academy-2026` (the one `.env.local` + live build point to) and `creators-hub-academy` (legacy). App must stay on `creators-hub-academy-2026`.
+- **Forenstally confirmed:** the 403 error's `consumer: "projects/1000269402915"` = the `messagingSenderId` in `.env.local` → the **restricted old key (`AIzaSyChAL0L…`) and the working key (`AIzaSyCrsEIp…`) belong to the SAME project** `creators-hub-academy-2026`. That project therefore has (or had) **two Web app configs**: one with the current unrestricted key (used by live build), one with the old **referrer-restricted** key (used by stale cached builds/old emails). The referrer restriction on the old key is what produces `API_KEY_HTTP_REFERRER_BLOCKED` on Firebase's own hosted reset page.
+- **Fix (console, 5 min, user only):**
+  1. Firebase Console → project **`creators-hub-academy-2026`** → ⚙️ **Project Settings** → **Your apps**.
+  2. Spot the web app entry whose key is `AIzaSyChAL0L…` → either turn **OFF** "Restrict keys to specific website domains (HTTP referrer)", or better, **delete that old app config** so no stale build can use it again. Keep the entry whose key is `AIzaSyCrsEIp…`.
+  3. **Authentication → Settings → Authorized domains**: add `https://creators-hub-academy.vercel.app`.
+  4. **Authentication → Sign-in method**: enable **Google** ☑️ (Email/Password should already be on).
+  5. Legacy project `creators-hub-academy` can be archived (Project Settings → gear → Archive project) once the above is verified — it is not used by this repo.
+- After the change: incognito window → live site → Build info shows `AIzaSyCrsEIp…` → request ONE reset → open NEWEST email → its link goes to `/reset-password` (never the blocked Firebase page).
 - **User error:** `{"error":{"code":403,"message":"Requests from referer https://creators-hub-academy-2026.firebaseapp.com/ are blocked." … "reason":"API_KEY_HTTP_REFERRER_BLOCKED" … consumer:"projects/1000269402915"}}`
 - **What it means:** the reset email the user clicked carried the OLD project key `AIzaSyChAL0L…`, and that key's project has **"Restrict keys to specific website domains (HTTP referrer)" enabled** — so Firebase's own hosted action page (`…firebaseapp.com/__/auth/action`) is itself blocked by the referrer restriction the moment it processes the oobCode. This is the raw, unfiltered Firebase error reaching the user’s screen.
 - **Referrer matrix test (this repo, `accounts:sendOobCode`):**
