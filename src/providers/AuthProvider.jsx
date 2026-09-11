@@ -263,36 +263,39 @@ const AuthProvider = ({ children }) => {
   }, []);
 
   const userLogout = useCallback(async () => {
-    // Best-effort admin notification. It must NEVER block the actual logout:
-    // a cold-started backend (Render free tier) or a slow SMTP server used to
-    // keep this request pending for a long time, which made the Logout button
-    // appear frozen/dead. Cap it at 4 seconds, then always sign out.
+    // Logout must be INSTANT: sign out first, redirect immediately, and fire
+    // the best-effort admin notification in the BACKGROUND (never awaited).
+    // Previously the notification POST was awaited BEFORE signOut, so a cold
+    // Render backend kept the Logout button "frozen" for up to 4 seconds.
     try {
-      if (user?.email && import.meta.env.VITE_BASE_URL) {
-        await axios.post(
-          `${import.meta.env.VITE_BASE_URL}/notifications/user-logout`,
-          {
+      if (auth && hasFirebaseConfig) {
+        await signOut(auth);
+      }
+    } catch (signOutErr) {
+      console.error("Firebase signOut failed:", signOutErr.message);
+    }
+
+    // Best-effort admin notification — FIRE-AND-FORGET. Never awaited, so it
+    // can never delay logout; keepalive:true tells the browser not to cancel
+    // the request when we hard-redirect below.
+    if (user?.email && import.meta.env.VITE_BASE_URL) {
+      try {
+        fetch(`${import.meta.env.VITE_BASE_URL}/notifications/user-logout`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
             name: user.displayName || user.name || user.email,
             email: user.email,
             phone: user.phone || "",
             role: user.role || "student",
-          },
-          { timeout: 4000 }
-        );
+          }),
+          keepalive: true,
+        }).catch(() => undefined);
+      } catch (notifyErr) {
+        console.error("Logout notification failed:", notifyErr.message);
       }
-    } catch (notifyErr) {
-      console.error("Logout notification failed:", notifyErr.message);
     }
 
-    if (!auth || !hasFirebaseConfig) {
-      window.location.href = "/login";
-      return Promise.resolve();
-    }
-    try {
-      await signOut(auth);
-    } catch (signOutErr) {
-      console.error("Firebase signOut failed:", signOutErr.message);
-    }
     // Hard reload guarantees all React caches (auth context, react-query) reset,
     // so no UI ever remains "logged in" after logout.
     if (!window.location.pathname.startsWith("/login")) {

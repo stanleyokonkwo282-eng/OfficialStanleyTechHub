@@ -84,8 +84,8 @@
 - Added **show/hide password eye** + **Remember me** (stores email in `localStorage:chub_remember_email`).
 - Forgot-password trims email, guards null `auth`, and points to spam folder.
 
-### 3. Logout audit (`AuthProvider.userLogout` + `Navbar` + `useAxiosSecure`)
-- Logout was already correct (4s-capped best-effort admin notification, `signOut` always runs, hard redirect to `/login`). Kept as-is; `useAxiosSecure` now guards null `auth`, skips the forced-logout redirect for in-login profile fetches (prevents login→401→logout loops on cold backend), adds 15s request timeout, and never redirects when already on `/login`.
+### 3. Logout — now INSTANT (`AuthProvider.userLogout`)
+- **Fix (2026-09-11):** previously the best-effort admin notification POST was **awaited BEFORE `signOut`**, so a cold/slow backend kept the Logout button frozen for up to 4s. Now: `signOut(auth)` runs first (fast, local) → hard redirect to `/login` immediately → the admin notification is **fire-and-forget** (`fetch` with `keepalive: true`, never awaited), so the backend gets it in the background but can never delay logout. `Navbar.logoutMutation` triggers this via `userLogout()`. `useAxiosSecure` guards null `auth`, skips the forced-logout redirect for in-login profile fetches (prevents login→401→logout loops on cold backend), adds 15s request timeout, and never redirects when already on `/login`.
 
 ### 4. Auth context fixes (`src/providers/AuthProvider.jsx`)
 - `onAuthStateChanged` merge now unwraps `{ success, data }`, defaults `role: "student"`, and merges displayName/photoURL from both sources (previously spread the envelope → broken dashboard state right after login).
@@ -371,7 +371,7 @@
    - `/users/profile/:id` → `res.data.data`
    - `/broadcasts`, `/broadcasts/active` → `res.data.data`
 20. **Chat polling trade-off**: The 5-second polling interval in `StudentChatForum.jsx` balances real-time feel vs. server load. For Render free tier, do not reduce below 3s to avoid cold-start timeouts. If upgrading to WebSockets in future, remove the `setInterval` in the `loadConversation` useEffect.
-21. **Logout notification is best-effort**: The admin notification POST in `userLogout` has a 4s timeout and is wrapped in try/catch. Email failures never block logout. This is intentional.
+21. **Logout is instant + notification is fire-and-forget**: `userLogout` calls `signOut(auth)` first, redirects to `/login` immediately, then POSTs the admin logout notification in the background with `fetch(..., { keepalive: true })` — never awaited, so it can NEVER delay the logout. UI feedback: the button click returns right away.
 
 ---
 
