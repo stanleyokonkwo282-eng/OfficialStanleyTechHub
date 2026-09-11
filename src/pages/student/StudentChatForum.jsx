@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { Link, useSearchParams } from "react-router";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
 import useAuth from "../../hooks/useAuth";
+import { playMessageSound, showBrowserNotification } from "../../utils/sound";
 
 export default function StudentChatForum() {
   const { user } = useAuth();
@@ -32,6 +33,9 @@ export default function StudentChatForum() {
   const isAtBottomRef = useRef(true);
   const lastReadCountRef = useRef(0);
   const [jumpToBottomVisible, setJumpToBottomVisible] = useState(false);
+  // Sound tracking: chime only for genuinely NEW messages from the OTHER
+  // party (never on first load, never for your own messages).
+  const prevMsgCountRef = useRef(0);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -103,6 +107,25 @@ export default function StudentChatForum() {
         const res = await axiosSecure.get(`/forum/history/${activePeer._id}`);
         if (isCancelled) return;
         const fetched = res.data?.data || [];
+        // 🔔 Sound: notify when the OTHER party sent a new message (skip the
+        // first load of the conversation so opening a chat never chimes).
+        const lastMsg = fetched[fetched.length - 1];
+        const lastSenderId =
+          typeof lastMsg?.sender === "object" ? lastMsg?.sender?._id : lastMsg?.sender;
+        const myId = user?._id || user?.uid || user?.id;
+        if (
+          prevMsgCountRef.current > 0 &&
+          fetched.length > prevMsgCountRef.current &&
+          lastSenderId &&
+          lastSenderId !== myId
+        ) {
+          playMessageSound();
+          showBrowserNotification(
+            "New message",
+            `${activePeer?.name || "Someone"} sent you a message`
+          );
+        }
+        prevMsgCountRef.current = fetched.length;
         // Only update state when there are genuinely newer messages,
         // to avoid triggering the scroll effect on every poll tick.
         setMessages((prev) => {
@@ -127,7 +150,7 @@ export default function StudentChatForum() {
       isCancelled = true;
       clearInterval(interval);
     };
-  }, [activePeer, axiosSecure]);
+  }, [activePeer, axiosSecure, user?._id, user?.uid, user?.id]);
 
   const handleSendMessage = async (e) => {
     e.preventDefault();

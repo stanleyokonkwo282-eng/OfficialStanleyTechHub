@@ -1,7 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { MdArrowRight, MdNotificationsActive } from "react-icons/md";
 import { TiThMenu } from "react-icons/ti";
-import { FaSun, FaMoon } from "react-icons/fa";
+import { FaSun, FaMoon, FaVolumeUp, FaVolumeMute } from "react-icons/fa";
 import { Link, NavLink } from "react-router";
 import { toast } from "react-toastify";
 import { motion, useScroll, useTransform } from "framer-motion";
@@ -10,6 +10,7 @@ import useAuth from "../../hooks/useAuth";
 import { NotificationContext } from "../../providers/NotificationContext";
 import { useContext, useEffect, useRef, useState } from "react";
 import { useTheme } from "../../context/ThemeContext";
+import { isSoundEnabled, toggleSoundEnabled, playNotificationSound } from "../../utils/sound";
 
 export default function Navbar() {
   const { user, isUserLoading, userLogout } = useAuth();
@@ -26,6 +27,15 @@ export default function Navbar() {
   const navBlur = useTransform(scrollY, [0, 100], ["blur(0px)", "blur(12px)"]);
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef(null);
+  // Notification-sound mute toggle (persists in localStorage via sound util).
+  const [soundOn, setSoundOn] = useState(isSoundEnabled());
+
+  const handleToggleSound = () => {
+    const next = toggleSoundEnabled();
+    setSoundOn(next);
+    // Preview the chime when re-enabling so the user hears what they turned on.
+    if (next) playNotificationSound();
+  };
 
   useEffect(() => {
     if (user?.role === "admin") {
@@ -210,6 +220,14 @@ export default function Navbar() {
         </div>
 
         <div className="navbar-end">
+          <button
+            onClick={handleToggleSound}
+            className="p-2 text-white hover:text-yellow-400 transition-colors"
+            aria-label={soundOn ? "Mute notification sound" : "Unmute notification sound"}
+            title={soundOn ? "Notification sound: ON (click to mute)" : "Notification sound: OFF (click to unmute)"}
+          >
+            {soundOn ? <FaVolumeUp className="text-xl" /> : <FaVolumeMute className="text-xl text-gray-500" />}
+          </button>
           <button
             onClick={toggleTheme}
             className="p-2 text-white hover:text-yellow-400 transition-colors"
