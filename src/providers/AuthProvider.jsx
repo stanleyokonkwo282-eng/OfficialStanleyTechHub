@@ -48,7 +48,20 @@ const AuthProvider = ({ children }) => {
         setFirebaseUser(currentUser);
         try {
           const dbUser = await fetchMongoUser(currentUser.email);
-          const mergedUser = { ...currentUser, ...dbUser };
+          // Backend GET /users/:email returns { success, data: {...} }.
+          // Old code spread the whole envelope ({ success, data }) onto the
+          // user object, which wiped role/points/referralCode and forced the
+          // dashboard into a broken state right after login.
+          const profile = dbUser?.data || dbUser || {};
+          const mergedUser = {
+            ...currentUser,
+            ...profile,
+            email: currentUser.email,
+            displayName:
+              currentUser.displayName || profile.name || profile.displayName || currentUser.email,
+            photoURL: currentUser.photoURL || profile.photoURL || profile.image || null,
+            role: profile.role || "student",
+          };
           setUser(mergedUser);
 
           // Notify admin about user login (once per session)
@@ -118,11 +131,43 @@ const AuthProvider = ({ children }) => {
   };
 
   const updateUserProfile = (user, name, photoURL) => {
+    if (!auth || !hasFirebaseConfig) {
+      return Promise.reject(new Error("Firebase authentication is not configured."));
+    }
     return updateProfile(user, {
       displayName: name,
-      photoURL: photoURL,
+      photoURL: photoURL || null,
     });
   };
+
+  const reloadAuthUser = useCallback(async () => {
+    if (!auth?.currentUser) return null;
+    try {
+      await auth.currentUser.reload();
+      const fresh = auth.currentUser;
+      setFirebaseUser({ ...fresh });
+      try {
+        const dbUser = await fetchMongoUser(fresh.email);
+        const profile = dbUser?.data || dbUser || {};
+        const merged = {
+          ...fresh,
+          ...profile,
+          email: fresh.email,
+          displayName: fresh.displayName || profile.name || profile.displayName || fresh.email,
+          photoURL: fresh.photoURL || profile.photoURL || profile.image || null,
+          role: profile.role || "student",
+        };
+        setUser(merged);
+        return merged;
+      } catch {
+        setUser({ ...fresh });
+        return { ...fresh };
+      }
+    } catch (err) {
+      console.error("Failed to reload auth user:", err?.message);
+      return null;
+    }
+  }, []);
 
   const userLogout = useCallback(async () => {
     // Best-effort admin notification. It must NEVER block the actual logout:
@@ -174,8 +219,9 @@ const AuthProvider = ({ children }) => {
       userLogout,
       loginWithGoogle,
       updateUserProfile,
+      reloadAuthUser,
     }),
-    [user, firebaseUser, isUserLoading, userLogout]
+    [user, firebaseUser, isUserLoading, userLogout, reloadAuthUser]
   );
 
   return (

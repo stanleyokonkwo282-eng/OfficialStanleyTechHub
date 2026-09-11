@@ -1,5 +1,5 @@
-﻿@import React, { useState, useEffect, useMemo } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import React, { useState, useEffect, useMemo } from "react";
+import { useParams, useNavigate } from "react-router";
 import {
   ArrowLeft,
   Download,
@@ -36,8 +36,7 @@ export default function HandbookViewer() {
         let res;
         try {
           res = await axiosSecure.get(`/courses/${id}`);
-        } catch (e1) {
-          try {
+        } catch (_) { try {
             res = await axiosSecure.get(`/courses/single/${id}`);
           } catch (e2) {
             throw e2;

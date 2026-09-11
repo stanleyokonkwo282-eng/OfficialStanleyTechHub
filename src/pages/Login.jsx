@@ -1,7 +1,8 @@
 import { useMutation } from "@tanstack/react-query";
 import { sendPasswordResetEmail } from "firebase/auth";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { FaLock, FaUser } from "react-icons/fa";
+import { FaEye, FaEyeSlash, FaLock, FaUser } from "react-icons/fa";
 import { Link, Navigate, useLocation, useNavigate } from "react-router";
 import { toast } from "react-toastify";
 import { motion } from "framer-motion";
@@ -12,12 +13,45 @@ import LoaderDotted from "../components/common/LoaderSpinner";
 import useAuth from "../hooks/useAuth";
 import useAxiosSecure from "../hooks/useAxiosSecure";
 
-const errorMap = {
+const getFriendlyAuthError = (error) => {
+  const code = error?.code || "";
+  const map = {
+    "auth/invalid-email": "That email address doesn't look right. Please check it and try again.",
+    "auth/missing-email": "Please enter your email address.",
+    "auth/missing-password": "Please enter your password.",
+    "auth/user-not-found": "No account found with this email. Please check it or create a new account below.",
+    "auth/wrong-password": "Incorrect password. Please try again or use “Forgot Password?”.",
+    // Firebase v9+ returns this single code for BOTH wrong-email and wrong-password
+    // (to prevent account enumeration). This is the #1 cause of generic "Login failed."
+    "auth/invalid-credential":
+      "Email or password is incorrect. Double-check both, or reset your password via “Forgot Password?”.",
+    "auth/invalid-login-credentials": "Email or password is incorrect. Please try again.",
+    "auth/user-disabled": "This account has been disabled. Please contact support@creatorshubacademy.com.",
+    "auth/too-many-requests":
+      "Too many attempts — your account is temporarily locked. Wait a few minutes or reset your password.",
+    "auth/network-request-failed":
+      "Network error. Check your internet connection and try again. (Backend may be waking up — wait ~30s and retry.)",
+    "auth/operation-not-allowed": "Email/password sign-in is disabled. Please contact support.",
+    "auth/popup-blocked": "Popup blocked. Please allow popups and try Google sign-in again.",
+    "auth/popup-closed-by-user": "Google sign-in was closed before finishing. Please try again.",
+    "auth/cancelled-popup-request": "Only one sign-in popup at a time. Please try again.",
+    "auth/unauthorized-domain": "This domain is not authorized for sign-in. Please contact support.",
+  };
+  if (map[code]) return map[code];
+  if (error?.message?.includes("Firebase authentication is not configured")) {
+    return "Login service is temporarily unavailable (missing server config). Please try again later or contact support.";
+  }
+  return "Login failed. If you just registered, wait a few seconds and retry — or use “Forgot Password?” to reset.";
+};
+
+const _legacyErrorMap = {
   "auth/invalid-email": "Invalid email address.",
   "auth/user-not-found": "No account found with this email.",
   "auth/wrong-password": "Incorrect password.",
+  "auth/invalid-credential": "Email or password is incorrect.",
   "auth/too-many-requests": "Too many attempts. Try again later.",
 };
+void _legacyErrorMap;
 
 export default function Login() {
   const { user, setUser, isUserLoading, userLogin, loginWithGoogle } =
@@ -31,20 +65,49 @@ export default function Login() {
     handleSubmit,
     getValues,
     formState: { errors },
-  } = useForm();
+  } = useForm({
+    defaultValues: {
+      email: localStorage.getItem("chub_remember_email") || "",
+      rememberMe: Boolean(localStorage.getItem("chub_remember_email")),
+    },
+  });
+  const [showPassword, setShowPassword] = useState(false);
 
   const loginMutation = useMutation({
     mutationFn: async (data) => {
-      const userCredential = await userLogin(data.email, data.password);
+      const email = String(data.email || "").trim().toLowerCase();
+      const password = String(data.password || "");
+      if (!email) throw { code: "auth/missing-email" };
+      if (!password) throw { code: "auth/missing-password" };
+      const userCredential = await userLogin(email, password);
       return userCredential.user;
     },
-    onSuccess: async (firebaseUser) => {
+    onSuccess: async (firebaseUser, variables) => {
       sessionStorage.setItem("chub_justLoggedIn", "true");
+      // “Remember me” — premium LMS convenience: pre-fill email next visit.
+      try {
+        if (variables?.rememberMe && firebaseUser?.email) {
+          localStorage.setItem("chub_remember_email", String(firebaseUser.email).toLowerCase());
+        } else {
+          localStorage.removeItem("chub_remember_email");
+        }
+      } catch {
+        /* storage unavailable — non-blocking */
+      }
       // Merge the Mongo database profile (role, points, referral code, etc.)
       // with the Firebase user so the dashboard is fully populated immediately.
+      // NOTE: backend GET /users/:email returns { success, data: {...} },
+      // NOT the user object at the top level — unwrap correctly.
       try {
         const res = await axiosSecure.get(`/users/${encodeURIComponent(firebaseUser.email)}`);
-        const merged = { ...firebaseUser, ...res.data, email: firebaseUser.email };
+        const dbProfile = res.data?.data || res.data || {};
+        const merged = {
+          ...firebaseUser,
+          ...dbProfile,
+          email: firebaseUser.email,
+          displayName: firebaseUser.displayName || dbProfile.name || dbProfile.displayName,
+          photoURL: firebaseUser.photoURL || dbProfile.photoURL || dbProfile.image,
+        };
         setUser(merged);
       } catch (err) {
         console.error("Failed to fetch Mongo user after login:", err);
@@ -61,9 +124,9 @@ export default function Login() {
       }
     },
     onError: (error) => {
-      const message = errorMap[error.code] || "Login failed.";
-      toast.error(message);
-      console.log(error);
+      const message = getFriendlyAuthError(error);
+      toast.error(message, { autoClose: 6000 });
+      console.error("[Login failed]", error?.code, error?.message, error);
     },
   });
 
@@ -76,25 +139,30 @@ export default function Login() {
       toast.info("Redirecting to Google sign-in…");
     },
     onError: (error) => {
-      const message = errorMap[error.code] || "Google login failed.";
-      toast.error(message);
-      console.log(error);
+      const message = getFriendlyAuthError(error);
+      toast.error(message === getFriendlyAuthError({}) ? "Google login failed. Please try again." : message);
+      console.error("[Google login failed]", error?.code, error?.message, error);
     },
   });
 
   // Forgot Password Handler
   const handleForgotPassword = async () => {
-    const email = getValues("email");
+    const rawEmail = getValues("email");
+    const email = String(rawEmail || "").trim();
     if (!email) {
       toast.error("Please enter your email address first.");
       return;
     }
+    if (!auth) {
+      toast.error("Password reset is unavailable right now (auth service not configured). Please contact support.");
+      return;
+    }
     try {
       await sendPasswordResetEmail(auth, email);
-      toast.success("Password reset email sent! Check your inbox.");
+      toast.success("Password reset email sent! Check your inbox (and spam folder).");
     } catch (error) {
-      const message = errorMap[error.code] || "Failed to send reset email.";
-      toast.error(message);
+      const message = getFriendlyAuthError(error);
+      toast.error(message === getFriendlyAuthError({}) ? "Failed to send reset email." : message);
     }
   };
 
@@ -185,24 +253,42 @@ export default function Login() {
                   <div className="flex items-center rounded-xl border border-white/10 bg-[#0d1d2b] px-3 py-3 transition focus-within:border-amber-400/60 focus-within:ring-2 focus-within:ring-amber-400/20">
                     <FaLock className="mr-3 text-amber-300" />
                     <input
-                      type="password"
+                      type={showPassword ? "text" : "password"}
                       {...register("password", {
                         required: "Password is required",
                       })}
                       placeholder="Enter your password"
+                      autoComplete="current-password"
                       className="w-full bg-transparent text-white placeholder-slate-500 outline-none"
                     />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((v) => !v)}
+                      className="ml-2 text-slate-400 transition hover:text-amber-300"
+                      aria-label={showPassword ? "Hide password" : "Show password"}
+                      title={showPassword ? "Hide password" : "Show password"}
+                    >
+                      {showPassword ? <FaEyeSlash /> : <FaEye />}
+                    </button>
                   </div>
                   {errors.password && (
                     <p className="mt-1 text-sm text-red-400">{errors.password.message}</p>
                   )}
                 </div>
 
-                <div className="flex justify-end">
+                <div className="flex items-center justify-between text-sm">
+                  <label className="inline-flex cursor-pointer items-center gap-2 text-slate-300">
+                    <input
+                      type="checkbox"
+                      {...register("rememberMe")}
+                      className="h-4 w-4 rounded accent-amber-400"
+                    />
+                    Remember me
+                  </label>
                   <button
                     type="button"
                     onClick={handleForgotPassword}
-                    className="text-sm font-medium text-amber-300 transition hover:text-amber-200"
+                    className="font-medium text-amber-300 transition hover:text-amber-200"
                   >
                     Forgot Password?
                   </button>

@@ -1,11 +1,46 @@
 # Creators Hub Academy — Handover Notes
 
-**Last Updated:** 2026-09-10  
-**Status:** Production Live and Verified  
-**Frontend Repo:** https://github.com/stanleyokonkwo282-eng/OfficialStanleyTechHub  
-**Backend Repo:** https://github.com/stanleyokonkwo282-eng/creators-hub-academy-backend  
-**Live Frontend:** https://creators-hub-academy.vercel.app  
-**Live Backend:** https://creators-hub-academy-backend.onrender.com  
+**Last Updated:** 2026-09-11
+**Status:** Production Live — Auth Overhaul + Premium Signup (build verified, ready to deploy)
+**Frontend Repo:** https://github.com/stanleyokonkwo282-eng/OfficialStanleyTechHub
+**Backend Repo:** https://github.com/stanleyokonkwo282-eng/creators-hub-academy-backend
+**Live Frontend:** https://creators-hub-academy.vercel.app
+**Live Backend:** https://creators-hub-academy-backend.onrender.com
+
+## Auth Overhaul + Premium Signup (2026-09-11)
+
+### 1. Root cause of the reported "Login failed." toast
+- The screenshot shows `stanley.nonibrown17@gmail.com` + generic `Login failed.` — that message only came from the fallback branch of `Login.jsx`'s tiny 4-entry `errorMap`. Firebase v9+ returns **`auth/invalid-credential`** for BOTH wrong-email and wrong-password (anti-enumeration), and that code was **not in the map**, so every real credential mistake collapsed to the useless generic toast.
+- Secondary suspects ruled out: `.env.local` Firebase keys are present and match `.env.example`; `AuthProvider.userLogin` correctly wraps `signInWithEmailAndPassword`; `useAxiosSecure` correctly attaches the ID token. Most likely the typed password simply doesn't match the Firebase account (or the account was created with Google/case-variant email), compounded by the unmapped error code hiding the real reason.
+- Also verify in Firebase Console → Authentication → Sign-in method that **Email/Password is ENABLED**, and that `creators-hub-academy.vercel.app` + `localhost` are in **Authorized domains** — either misconfiguration produces the same generic failure.
+
+### 2. Login fixes (`src/pages/Login.jsx`)
+- New `getFriendlyAuthError()` covering 14 Firebase codes (`invalid-credential`, `user-not-found`, `wrong-password`, `user-disabled`, `too-many-requests`, `network-request-failed`, `unauthorized-domain`, popup codes, …) with actionable guidance and 6s toast. Console now logs `[Login failed] code + message` for diagnosis.
+- Email is trimmed + lowercased before `signInWithEmailAndPassword`; empty email/password throw friendly codes instead of hitting Firebase.
+- Mongo merge fixed: backend `GET /users/:email` returns `{ success, data }` — code now unwraps `res.data.data` and preserves Firebase `displayName`/`photoURL` with DB fallbacks (old spread of the envelope wiped role/points).
+- Added **show/hide password eye** + **Remember me** (stores email in `localStorage:chub_remember_email`).
+- Forgot-password trims email, guards null `auth`, and points to spam folder.
+
+### 3. Logout audit (`AuthProvider.userLogout` + `Navbar` + `useAxiosSecure`)
+- Logout was already correct (4s-capped best-effort admin notification, `signOut` always runs, hard redirect to `/login`). Kept as-is; `useAxiosSecure` now guards null `auth`, skips the forced-logout redirect for in-login profile fetches (prevents login→401→logout loops on cold backend), adds 15s request timeout, and never redirects when already on `/login`.
+
+### 4. Auth context fixes (`src/providers/AuthProvider.jsx`)
+- `onAuthStateChanged` merge now unwraps `{ success, data }`, defaults `role: "student"`, and merges displayName/photoURL from both sources (previously spread the envelope → broken dashboard state right after login).
+- `updateUserProfile` null-guards `auth` and sends `photoURL: null` when empty.
+- New `reloadAuthUser()` (useCallback) reused by Signup to refresh Firebase + Mongo profile post-registration.
+
+### 5. Signup premium upgrade (`src/pages/Signup.jsx`)
+- **Photo upload added**: circular avatar preview + `Upload image (JPEG, PNG, WEBP, GIF)` button (ImageKit via `utils/ImageUploadApi.js`, 5MB cap, instant local preview) AND keep-paste-URL fallback — both write into the same `photoURL` field; submit is disabled while uploading.
+- Password **show/hide eye + live strength meter** (6-level bar + label).
+- New optional **phone** field (sent to `POST /users`), referral banner when `?ref=` present, email regex validation, non-blocking Firebase-profile + Mongo saves (a duplicate-Mongo error can no longer trap the user), post-signup `reloadAuthUser()` then redirect to `/dashboard` (was `/`).
+- Friendly signup errors incl. `email-already-in-use → "already registered, try logging in"`.
+
+### 6. Premium LMS additions recommended (not yet built)
+- Email verification gate, resend-verification, login-attempt throttling UI, session device list, 2FA-TOTP for admins, profile-completeness meter, avatar cropper, social (Google) photo import, onboard wizard (goals → recommended courses), magic-link login.
+
+### 7. Build & deploy
+- Fixed pre-existing build breaker: `HandbookViewer.jsx` line 1 `@import React` (stray `@` + BOM) and `react-router-dom` import (project uses `react-router` v7) — build now passes (`npm run build`, 2,540 modules, eslint clean on touched files).
+- Deploy: push `main` → Vercel auto-deploys frontend. No backend change required. After deploy, smoke-test: wrong password (expect specific toast), correct login (lands on /dashboard with role), Google login, forgot-password email, signup with upload + with URL-only, logout from navbar + dashboard, cold-backend login (should still succeed via Firebase user fallback).
 
 ## Full System Health Audit (2026-09-10)
 
