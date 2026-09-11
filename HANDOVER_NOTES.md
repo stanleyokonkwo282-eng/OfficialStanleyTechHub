@@ -1,11 +1,23 @@
 # Creators Hub Academy — Handover Notes
 
 **Last Updated:** 2026-09-11 (night, 2nd pass)
-**Status:** PRODUCTION LIVE — Password-Reset Hardening **verified deployed** (`09902c9`); **3rd-round diagnostics COMPLETE — root cause PROVEN via Firebase Identity Toolkit**, follow-up build `30c01b0` (diagnostics strip) pushed → Vercel auto-deploying
+**Status:** PRODUCTION LIVE — **API-KEY SAGA RESOLVED** (referrer restriction lifted on `AIzaSyChAL0L…`, verified 200 OK; see "API-Key Saga RESOLVED" below). Google provider enabled by operator. Email login + Google login + password reset all unblocked.
 **Frontend Repo:** https://github.com/stanleyokonkwo282-eng/OfficialStanleyTechHub
 **Backend Repo:** https://github.com/stanleyokonkwo282-eng/creators-hub-academy-backend
 **Live Frontend:** https://creators-hub-academy.vercel.app
 **Live Backend:** https://creators-hub-academy-backend.onrender.com
+
+## API-Key Saga RESOLVED — user lifted the key restriction in Google Cloud Console (2026-09-11, night, 3rd pass)
+- **Operator action:** Google Cloud Console → APIs & Services → Credentials → key **`CreatorHubAcademy2026 (auto created by Firebase)`** (value `AIzaSyChAL0L…`, created Aug 7 2026) — HTTP-referrer restriction lifted (set to None / domains added) + **Google sign-in provider enabled** in Firebase Authentication.
+- **Live re-test (Identity Toolkit `accounts:createAuthUri`, this night):**
+  - `AIzaSyChAL0L…` → **HTTP 200 from ALL referers** — vercel.app, firebaseapp.com, localhost, and no-referer. Previously 403 `API_KEY_HTTP_REFERRER_BLOCKED` on every referer → **restriction confirmed lifted & propagated** ✅
+  - `AIzaSyCrsEIp…` → HTTP 200 from all referers (unchanged, healthy app key) ✅
+- **Deployed bundle check:** live `https://creators-hub-academy.vercel.app` serves `assets/index-B6KvAmcb.js` containing exactly ONE key `AIzaSyCrsEIp…` + authDomain `creators-hub-academy-2026.firebaseapp.com` → live site is on the correct project with the correct key. `.env.local` matches (project `creators-hub-academy-2026`, sender `1000269402915`).
+- **Why the reset email carried the OTHER key (final mechanism):** the app sends `sendPasswordResetEmail` with `AIzaSyCrsEIp…`, but Firebase's oob-link builder embeds the project's **auto-created browser key** (`AIzaSyChAL0L…`) inside the email's `…firebaseapp.com/__/auth/action?apiKey=…` URL. Firebase's hosted action page then runs with THAT key — so it must allow referer `firebaseapp.com`. That was the single point of failure producing "Your request … has expired or the link has already been used" (a 403 behind the generic page). Now fixed at the key level. **Lesson: when a Firebase project has multiple web API keys, the reset-email action link uses the auto-created key — keep IT unrestricted or include `firebaseapp.com/*` in its referrers.**
+- **Final key roles (both belong to `creators-hub-academy-2026`):**
+  - `AIzaSyCrsEIp…` — app key (in `.env.local` + Vercel env + live bundle): login, signup, Google popup, sending reset emails. Keep unrestricted.
+  - `AIzaSyChAL0L…` — reset-email action-page key: Application restrictions None (or referrers incl. `https://creators-hub-academy-2026.firebaseapp.com/*`, `https://creators-hub-academy-2026.web.app/*`, `https://creators-hub-academy.vercel.app/*`, `http://localhost/*`); API restrictions (25 APIs) must keep **Identity Toolkit API**.
+- **Verification procedure (operator):** incognito → live site → request ONE fresh reset email (each new request invalidates previous oobCodes) → open the NEWEST email promptly → link must reach the in-app `/reset-password` page → set new password → login. No code change was needed for this fix; docs-only push (Vercel rebuild harmless).
 
 ## 3rd-Round Diagnosis — "same issues" after the fix (2026-09-11, night, `30c01b0`)
 - **Decisive Firebase API test (Identity Toolkit `accounts:sendOobCode`):**
