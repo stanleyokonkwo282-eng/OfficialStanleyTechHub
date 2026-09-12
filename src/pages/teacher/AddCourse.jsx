@@ -14,7 +14,8 @@ export default function AddCourse() {
   const [contentType, setContentType] = useState("video"); // "video" | "pdf" | "html"
   const [videoUrl, setVideoUrl] = useState("");
   const [pdfFile, setPdfFile] = useState(null);
-  const [htmlFile, setHtmlFile] = useState(null);
+    const [htmlFile, setHtmlFile] = useState(null);
+  const [isHtmlUploading, setIsHtmlUploading] = useState(false);
   const {
     register,
     handleSubmit,
@@ -130,8 +131,9 @@ export default function AddCourse() {
         let resourceHtmlUrl = "";
         if (htmlFile) {
           try {
+            setIsHtmlUploading(true);
             const formData = new FormData();
-            formData.append("file", htmlFile);
+            formData.append("html", htmlFile);
             const response = await axiosSecure.post("/upload/html", formData, {
               headers: { "Content-Type": "multipart/form-data" },
             });
@@ -141,6 +143,8 @@ export default function AddCourse() {
             const detail = htmlError?.response?.data?.message || htmlError?.message || "Unknown error";
             console.error("[HTML upload failed]", status, detail);
             throw new Error(`HTML upload failed (${detail}). If status is 404, the backend is still deploying — try again in 1–2 minutes.`);
+          } finally {
+            setIsHtmlUploading(false);
           }
         } else if (data.resourceUrl) {
           resourceHtmlUrl = data.resourceUrl.trim();
@@ -176,6 +180,7 @@ export default function AddCourse() {
   const isLoading =
     uploadImageMutation.isPending ||
     uploadPdfMutation.isPending ||
+    isHtmlUploading ||
     saveCourseMutation.isPending;
 
   return (
@@ -413,9 +418,11 @@ export default function AddCourse() {
                   ? "Uploading thumbnail..."
                   : uploadPdfMutation.isPending
                     ? "Uploading PDF..."
-                    : saveCourseMutation.isPending
-                      ? "Saving Course..."
-                      : "Uploading file..."}
+                    : isHtmlUploading
+                      ? "Uploading HTML..."
+                      : saveCourseMutation.isPending
+                        ? "Saving Course..."
+                        : "Uploading file..."}
               </>
             ) : (
               "Add Course"
