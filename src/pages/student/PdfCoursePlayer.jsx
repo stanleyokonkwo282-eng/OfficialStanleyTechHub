@@ -64,7 +64,7 @@ export default function PdfCoursePlayer() {
   });
 
   // Completion summary + exam eligibility (60% pass; exam only after all lessons).
-  const { data: completionData, refetch: refetchCompletion } = useQuery({
+  const { data: completionData } = useQuery({
     queryKey: ["pdf-completion", id, user?.email],
     queryFn: async () => {
       const res = await axiosSecure.get(`/lessons/completion/${id}/${user?.email}`);
@@ -175,7 +175,11 @@ export default function PdfCoursePlayer() {
   const prevLesson = currentIndex > 0 ? allLessons[currentIndex - 1] : null;
   const nextLesson = currentIndex < allLessons.length - 1 ? allLessons[currentIndex + 1] : null;
 
-  const pdfUrl = currentLesson?.pdfUrl || currentLesson?.videoUrl || "";
+  const pdfUrl =
+    currentLesson?.pdfUrl ||
+    currentLesson?.videoUrl ||
+    course?.resourcePdfUrl ||
+    "";
 
   const isLoading = courseLoading || lessonsLoading;
   const hasError = lessonsError || (!course && !courseLoading);

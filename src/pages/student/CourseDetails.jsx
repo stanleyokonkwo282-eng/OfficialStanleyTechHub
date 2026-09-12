@@ -48,14 +48,23 @@ const CourseDetails = () => {
     (e) => e.studentEmail === user?.email
   );
 
-  const paystackCourseUrl =
-    import.meta.env.VITE_PAYSTACK_COURSE_URL || "https://paystack.shop/pay/CreatorsHubAcademy";
-
-  const isPdfOnly = course?.hasPdf && !course?.hasVideo;
-  const isHybrid = course?.hasPdf && course?.hasVideo;
+  // Resolve real content availability from BOTH flags and resource URLs, so a
+  // course never gets stuck with zero formats (which broke enrollment before).
+  const getAvailableFormats = (c) => {
+    const fmts = [];
+    if (c?.hasVideo || c?.resourceVideoUrl || c?.videoUrl) fmts.push("video");
+    if (c?.hasPdf || c?.resourcePdfUrl) fmts.push("pdf");
+    if (c?.hasHtml || c?.resourceHtmlUrl) fmts.push("html");
+    return fmts;
+  };
 
   const getLearnRoute = () => {
-    if (isPdfOnly || (isHybrid && selectedFormat === "pdf")) {
+    const fmts = getAvailableFormats(course);
+    const fmt = fmts.includes(selectedFormat)
+      ? selectedFormat
+      : fmts[0] || "video";
+    if (fmt === "html") return `/dashboard/handbook/${id}`;
+    if (fmt === "pdf" || (course?.hasPdf && !course?.hasVideo && !fmts.includes("html"))) {
       return `/dashboard/learn-pdf/${id}`;
     }
     return `/dashboard/learn/${id}`;
@@ -72,17 +81,24 @@ const CourseDetails = () => {
       navigate(getLearnRoute(), { replace: true });
       return;
     }
-    sessionStorage.setItem("enrollmentFormat", selectedFormat);
+    const fmts = getAvailableFormats(course);
+    const effectiveFormat = fmts.includes(selectedFormat) ? selectedFormat : fmts[0];
+    if (!effectiveFormat) {
+      toast.error("This course has no learning content yet. Please contact support.");
+      return;
+    }
+    if (effectiveFormat !== selectedFormat) setSelectedFormat(effectiveFormat);
+    sessionStorage.setItem("enrollmentFormat", effectiveFormat);
     sessionStorage.setItem("enrollmentCourseId", id);
 
     setEnrolling(true);
     try {
       // Backend enrolls free courses (price 0) instantly, or initializes a
       // Paystack checkout charged at this course's actual price.
-      const res = await axiosSecure.post("/enroll", { courseId: id, format: selectedFormat });
+      const res = await axiosSecure.post("/enroll", { courseId: id, format: effectiveFormat });
       const data = res.data;
       if (data.success && data.free) {
-        toast.success("🎉 Enrolled! This course is free — start learning now.");
+        toast.success(data.message || "🎉 Enrolled! Start learning now.");
         navigate(getLearnRoute(), { replace: true });
         return;
       }
@@ -90,11 +106,11 @@ const CourseDetails = () => {
         window.location.href = data.authorizationUrl;
         return;
       }
-      toast.error(data.message || "Could not start checkout — redirecting to secure payment…");
-      window.location.href = paystackCourseUrl;
+      // NEVER silently push users to a generic Paystack shop on failures —
+      // that masked errors as "payment" and hid real bugs (incl. QA testing).
+      toast.error(data.message || "Enrollment could not start. Please try again.");
     } catch (err) {
-      toast.error(err.response?.data?.message || "Could not start checkout — redirecting to secure payment…");
-      window.location.href = paystackCourseUrl;
+      toast.error(err.response?.data?.message || "Enrollment failed. Please try again.");
     } finally {
       setEnrolling(false);
     }
@@ -122,10 +138,7 @@ const CourseDetails = () => {
       </div>
     );
 
-  const availableFormats = [];
-  if (course.hasVideo) availableFormats.push("video");
-  if (course.hasPdf) availableFormats.push("pdf");
-  if (course.hasHtml) availableFormats.push("html");
+  const availableFormats = getAvailableFormats(course);
 
   return (
     <div className="min-h-screen bg-black text-white">
@@ -192,7 +205,7 @@ const CourseDetails = () => {
                           : "bg-zinc-900 text-gray-300 border-zinc-700 hover:border-yellow-400"
                       }`}
                     >
-                      {fmt === "video" ? "🎥 Video Course" : "📄 PDF Course"}
+                      {fmt === "video" ? "🎥 Video Course" : fmt === "pdf" ? "📄 PDF Course" : "💻 HTML Course"}
                     </button>
                   ))}
                 </div>
@@ -239,7 +252,9 @@ const CourseDetails = () => {
                 <div className="flex justify-between">
                   <span className="text-gray-400">Format</span>
                   <span className="text-yellow-400 font-bold">
-                    {availableFormats.length > 1 ? "Video & PDF" : availableFormats[0]?.toUpperCase() || "N/A"}
+                    {availableFormats.length > 1
+                      ? availableFormats.map((f) => f.toUpperCase()).join(" + ")
+                      : availableFormats[0]?.toUpperCase() || "N/A"}
                   </span>
                 </div>
               </div>

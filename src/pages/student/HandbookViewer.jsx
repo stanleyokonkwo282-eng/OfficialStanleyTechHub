@@ -14,7 +14,9 @@ import {
 import useAxiosSecure from "../../hooks/useAxiosSecure";
 
 export default function HandbookViewer() {
-  const { id } = useParams();
+  // Route is /dashboard/handbook/:courseId — destructure the real param name
+  // (old code used `{ id }`, which was always undefined and broke the fetch).
+  const { courseId: id } = useParams();
   const navigate = useNavigate();
   const axiosSecure = useAxiosSecure();
 
@@ -39,7 +41,10 @@ export default function HandbookViewer() {
         } catch {
           res = await axiosSecure.get(`/courses/single/${id}`);
         }
-        const data = res.data?.data || res.data;
+        // Backend returns { success, message, course } — unwrap the course,
+        // not the envelope (old code grabbed the envelope, leaving all course
+        // fields undefined → "No Document File Linked").
+        const data = res.data?.course || res.data?.data || res.data;
         if (isMounted) {
           setCourse(data);
         }
@@ -80,7 +85,7 @@ export default function HandbookViewer() {
       uniqueId: "root-handbook",
       displayTitle: course.title || "Course Master Handbook",
       moduleTitle: "Complete Manual",
-      fileUrl: course.fileUrl || course.pdfUrl || course.videoUrl || course.handbookUrl || "",
+      fileUrl: course.resourceHtmlUrl || course.resourcePdfUrl || course.fileUrl || course.pdfUrl || course.videoUrl || course.handbookUrl || "",
     }];
   }, [course]);
 

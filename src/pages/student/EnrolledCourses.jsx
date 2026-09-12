@@ -107,6 +107,14 @@ function CourseCard({ course, userEmail, axiosSecure, navigate }) {
   const handleAction = () => {
     if (isCompleted) {
       navigate(`/dashboard/certificate/${courseId}`);
+      return;
+    }
+    // Route to the correct player for this course's actual content format
+    const info = course.courseInfo || {};
+    if (info.hasHtml || info.resourceHtmlUrl) {
+      navigate(`/dashboard/handbook/${courseId}`);
+    } else if ((info.hasPdf || info.resourcePdfUrl) && !info.hasVideo && !info.resourceVideoUrl) {
+      navigate(`/dashboard/learn-pdf/${courseId}`);
     } else {
       navigate(`/dashboard/learn/${courseId}`);
     }
