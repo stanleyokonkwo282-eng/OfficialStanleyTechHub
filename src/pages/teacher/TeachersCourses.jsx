@@ -76,8 +76,13 @@ export default function TeachersCourses() {
   if (isLoading) return <LoaderDotted />;
   return (
     <>
-      <div className="p-4">
-        <h2 className="text-2xl font-bold mb-4">My Courses</h2>
+      <div className="p-4 sm:p-6 max-w-7xl mx-auto">
+        <div className="mb-6">
+          <p className="text-xs font-semibold text-amber-400 uppercase tracking-widest mb-1">Teacher Studio</p>
+          <h2 className="text-3xl font-extrabold text-white">My Courses</h2>
+          <p className="text-sm text-zinc-400 mt-1">Manage your published courses, update content and track approvals</p>
+          <div className="h-1 w-16 bg-amber-400 mt-3 rounded-full"></div>
+        </div>
 
         {data.courses?.length === 0 ? (
           <div className="text-center py-20">
@@ -92,12 +97,12 @@ export default function TeachersCourses() {
               {data.courses?.map((course) => (
                 <div
                   key={course._id}
-                  className="card shadow-lg border border-gray-200 p-4 rounded-lg"
+                  className="group bg-gradient-to-b from-zinc-900 to-zinc-950 border border-zinc-800 hover:border-amber-400/50 rounded-2xl overflow-hidden shadow-xl transition-all duration-300 hover:shadow-amber-500/10 hover:-translate-y-1"
                 >
                   <img
                     src={course.image || course.thumbnail || "/logo.png"}
                     alt={course.title}
-                    className="w-full h-40 object-cover rounded"
+                    className="w-full h-44 object-cover group-hover:scale-105 transition-transform duration-500"
                     onError={(e) => { e.target.src = "/logo.png"; }}
                   />
                   <div className="mt-3">
@@ -125,14 +130,14 @@ export default function TeachersCourses() {
 
                     <div className="flex flex-wrap gap-2 mt-6">
                       <button
-                        className="btn btn-sm btn-info"
+                        className="flex-1 min-w-[80px] px-3 py-2 text-xs font-bold rounded-lg bg-gradient-to-r from-sky-500 to-blue-600 hover:from-sky-600 hover:to-blue-700 text-white transition-all duration-200 shadow-md"
                         onClick={() => handleEdit(course)}
                       >
                         Update
                       </button>
                       <button
                         onClick={() => handleDelete(course._id)}
-                        className="btn btn-sm btn-error"
+                        className="flex-1 min-w-[80px] px-3 py-2 text-xs font-bold rounded-lg bg-gradient-to-r from-rose-500 to-red-600 hover:from-rose-600 hover:to-red-700 text-white transition-all duration-200 shadow-md"
                       >
                         Delete
                       </button>
@@ -140,12 +145,12 @@ export default function TeachersCourses() {
                       {course.status === "approved" ? (
                         <Link
                           to={`${course._id}`}
-                          className="btn btn-sm btn-secondary"
+                          className="flex-1 min-w-[80px] text-center px-3 py-2 text-xs font-bold rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 border border-zinc-700 transition-all duration-200"
                         >
                           See Details
                         </Link>
                       ) : (
-                        <button className="btn btn-sm btn-disabled">
+                        <button className="flex-1 min-w-[80px] px-3 py-2 text-xs font-bold rounded-lg bg-zinc-800/50 text-zinc-600 cursor-not-allowed border border-zinc-800">
                           See Details
                         </button>
                       )}
@@ -156,7 +161,7 @@ export default function TeachersCourses() {
             </div>
 
             {/* Pagination Controls */}
-            <div className="mt-4 flex justify-center gap-4">
+            <div className="mt-8 flex justify-center items-center gap-3">
               <button
                 disabled={page === 1}
                 onClick={handlePrevPage}

@@ -161,6 +161,13 @@ const UpdateCourse = ({ isOpen, setIsOpen, course, refetch }) => {
       }
     };
 
+  // Close on ESC key
+  useEffect(() => {
+    const onKey = (e) => { if (e.key === "Escape") closeModal(); };
+    if (isOpen) window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  });
+
   const closeModal = () => {
     setIsOpen(false);
     reset();
@@ -173,7 +180,7 @@ const UpdateCourse = ({ isOpen, setIsOpen, course, refetch }) => {
     if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/40 z-50 flex justify-center items-center p-4">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex justify-center items-start p-4 pt-10 overflow-y-auto" onClick={(e) => { if (e.target === e.currentTarget) closeModal(); }}>
       <div className="bg-gradient-to-b from-zinc-900 to-zinc-950 w-full max-w-2xl rounded-2xl shadow-xl relative border border-zinc-800 overflow-hidden">
         {/* Premium close button */}
         <button
@@ -183,7 +190,6 @@ const UpdateCourse = ({ isOpen, setIsOpen, course, refetch }) => {
         >
           <i className="fa-solid fa-xmark text-lg group-hover:rotate-90 transition-transform"></i>
         </button>
-      </div>
 
         <div className="p-6 sm:p-8">
           <h2 className="text-2xl font-bold text-white mb-2 flex items-center gap-2">
@@ -347,12 +353,10 @@ const UpdateCourse = ({ isOpen, setIsOpen, course, refetch }) => {
                 <i className="fas fa-save"></i> Update Course
               </span>
             )}
-            {uploadImageMutation.isPending || updateCourseMutation.isPending
-              ? "Updating..."
-              : "Update Course"}
           </button>
         </form>
       </div>
+        </div>
     </div>
   );
 };
