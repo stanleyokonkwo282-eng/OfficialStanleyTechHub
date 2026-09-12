@@ -262,12 +262,12 @@ const UpdateCourse = ({ isOpen, setIsOpen, course, refetch }) => {
               Course Thumbnail
             </label>
 
-            <div className="THUMB-BOX">
+            <div className="border-2 border-dashed border-gray-600 rounded-xl p-6 hover:border-indigo-500 transition-all duration-200">
               <input
                 type="file"
                 accept="image/*"
                 {...register("image")}
-                className="THUMB-INP"
+                className="w-full text-sm text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-700 file:cursor-pointer"
               />
             </div>
             {course && course.image && (
@@ -275,24 +275,24 @@ const UpdateCourse = ({ isOpen, setIsOpen, course, refetch }) => {
                 <img
                   src={course.image}
                   alt="Current thumbnail"
-                  className="THUMB-IMG"
+                  className="w-32 h-20 object-cover rounded-lg border-2 border-indigo-500/30"
                 />
               </div>
             )}
           </div>
 
           <div>
-            <label className="LBL">Content Type</label>
+            <label className="block mb-2 text-sm font-semibold text-indigo-300 uppercase tracking-wide">Content Type</label>
             <div className="grid grid-cols-3 gap-3">
-              <button type="button" onClick={() => setContentType("video")} className={contentType === "video" ? "VON" : "VOFF"}>
+              <button type="button" onClick={() => setContentType("video")} className={contentType === "video" ? "flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all border-yellow-400 bg-yellow-400/10 text-yellow-400" : "flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all border-zinc-700 bg-zinc-800 text-zinc-400 hover:border-zinc-500"}>
                 <i className="fa-solid fa-video text-2xl"></i>
                 <span className="text-sm font-semibold">Video</span>
               </button>
-              <button type="button" onClick={() => setContentType("pdf")} className={contentType === "pdf" ? "PON" : "POFF"}>
+              <button type="button" onClick={() => setContentType("pdf")} className={contentType === "pdf" ? "flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all border-blue-400 bg-blue-400/10 text-blue-400" : "flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all border-zinc-700 bg-zinc-800 text-zinc-400 hover:border-zinc-500"}>
                 <i className="fa-solid fa-file-pdf text-2xl"></i>
                 <span className="text-sm font-semibold">PDF</span>
               </button>
-              <button type="button" onClick={() => setContentType("html")} className={contentType === "html" ? "HON" : "HOFF"}>
+              <button type="button" onClick={() => setContentType("html")} className={contentType === "html" ? "flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all border-purple-400 bg-purple-400/10 text-purple-400" : "flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all border-zinc-700 bg-zinc-800 text-zinc-400 hover:border-zinc-500"}>
                 <i className="fa-solid fa-code text-2xl"></i>
                 <span className="text-sm font-semibold">HTML</span>
               </button>
@@ -301,16 +301,16 @@ const UpdateCourse = ({ isOpen, setIsOpen, course, refetch }) => {
 
           {contentType === "video" && (
             <div>
-              <label className="LBL">YouTube Video URL</label>
-              <input type="url" value={videoUrl} onChange={(e) => setVideoUrl(e.target.value)} placeholder="https://www.youtube.com/watch?v=..." className="INP" />
+              <label className="block mb-2 text-sm font-semibold text-indigo-300 uppercase tracking-wide">YouTube Video URL</label>
+              <input type="url" value={videoUrl} onChange={(e) => setVideoUrl(e.target.value)} placeholder="https://www.youtube.com/watch?v=..." className="w-full px-4 py-3 bg-gray-800/50 border-2 border-dashed border-gray-600 rounded-xl text-white focus:outline-none focus:border-indigo-500 transition-all duration-200" />
             </div>
           )}
 
           {contentType === "pdf" && (
             <div>
-              <label className="LBL">Upload PDF</label>
-              <div className="BOX">
-                <input type="file" accept="application/pdf" onChange={(e) => setPdfFile(e.target.files[0])} className="FINP" />
+              <label className="block mb-2 text-sm font-semibold text-indigo-300 uppercase tracking-wide">Upload PDF</label>
+              <div className="border-2 border-dashed border-gray-600 rounded-xl p-6 hover:border-indigo-500 transition-all duration-200">
+                <input type="file" accept="application/pdf" onChange={(e) => setPdfFile(e.target.files[0])} className="w-full text-sm text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-700 file:cursor-pointer" />
                 {pdfFile && (<p className="text-xs text-gray-400 mt-2">{pdfFile.name}</p>)}
               </div>
               {course && course.resourcePdfUrl && (<p className="text-xs text-indigo-400 mt-2">Current: {course.resourcePdfUrl}</p>)}
@@ -319,14 +319,14 @@ const UpdateCourse = ({ isOpen, setIsOpen, course, refetch }) => {
 
           {contentType === "html" && (
             <div>
-              <label className="LBL">Upload HTML</label>
-              <div className="BOX">
-                <input type="file" accept=".html,.htm,text/html" onChange={(e) => setHtmlFile(e.target.files[0])} className="FINP" />
+              <label className="block mb-2 text-sm font-semibold text-indigo-300 uppercase tracking-wide">Upload HTML</label>
+              <div className="border-2 border-dashed border-gray-600 rounded-xl p-6 hover:border-indigo-500 transition-all duration-200">
+                <input type="file" accept=".html,.htm,text/html" onChange={(e) => setHtmlFile(e.target.files[0])} className="w-full text-sm text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-600 file:text-white hover:file:bg-indigo-700 file:cursor-pointer" />
                 {htmlFile && (<p className="text-xs text-gray-400 mt-2">{htmlFile.name}</p>)}
               </div>
               <div className="mt-3">
-                <label className="LBL">HTML URL (fallback)</label>
-                <input type="url" value={htmlUrl} onChange={(e) => setHtmlUrl(e.target.value)} placeholder="https://..." className="INP" />
+                <label className="block mb-2 text-sm font-semibold text-indigo-300 uppercase tracking-wide">HTML URL (fallback)</label>
+                <input type="url" value={htmlUrl} onChange={(e) => setHtmlUrl(e.target.value)} placeholder="https://..." className="w-full px-4 py-3 bg-gray-800/50 border-2 border-dashed border-gray-600 rounded-xl text-white focus:outline-none focus:border-indigo-500 transition-all duration-200" />
               </div>
               {course && course.resourceHtmlUrl && !htmlFile && (<p className="text-xs text-indigo-400 mt-2">Current: {course.resourceHtmlUrl}</p>)}
             </div>
@@ -334,11 +334,19 @@ const UpdateCourse = ({ isOpen, setIsOpen, course, refetch }) => {
 
           <button
             type="submit"
-            className="btn btn-primary w-full"
-            disabled={
-              uploadImageMutation.isPending || updateCourseMutation.isPending
-            }
+            className="w-full px-6 py-4 bg-gradient-to-r from-indigo-600 to-blue-700 hover:from-indigo-700 hover:to-blue-800 text-white font-bold rounded-xl transition-all duration-300 transform hover:scale-[1.02] shadow-lg shadow-indigo-900/50 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={uploadImageMutation.isPending || uploadPdfMutation.isPending || updateCourseMutation.isPending}
           >
+            {uploadImageMutation.isPending || uploadPdfMutation.isPending || updateCourseMutation.isPending ? (
+              <span className="flex items-center gap-2">
+                <span className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></span>
+                Updating...
+              </span>
+            ) : (
+              <span className="flex items-center gap-2">
+                <i className="fas fa-save"></i> Update Course
+              </span>
+            )}
             {uploadImageMutation.isPending || updateCourseMutation.isPending
               ? "Updating..."
               : "Update Course"}
