@@ -28,6 +28,7 @@ const CourseDetails = () => {
       const formats = [];
       if (course.hasVideo) formats.push("video");
       if (course.hasPdf) formats.push("pdf");
+      if (course.hasHtml) formats.push("html");
       if (formats.length === 1 && formats[0] !== selectedFormat) {
         setSelectedFormat(formats[0]);
       }
@@ -124,6 +125,7 @@ const CourseDetails = () => {
   const availableFormats = [];
   if (course.hasVideo) availableFormats.push("video");
   if (course.hasPdf) availableFormats.push("pdf");
+  if (course.hasHtml) availableFormats.push("html");
 
   return (
     <div className="min-h-screen bg-black text-white">
