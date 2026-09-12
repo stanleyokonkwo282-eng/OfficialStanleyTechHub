@@ -441,3 +441,17 @@ Handbook courses can now be **PDF or HTML** (interactive, rendered in an iframe)
 - Operator: Stanley Chukwunonso Okonkwo
 - Location: Lagos, Nigeria
 - GitHub: https://github.com/stanleyokonkwo282-eng
+
+## QA Tester Free-Access System (2026-09-11, night)
+- **Purpose:** the owner (`stanley.okonkwo282@gmail.com`) needed to walk every student-facing PAID flow end-to-end — course enrollment, certificate purchase (₦10k), teacher subscription (₦12.5k+/mo), and chat-point top-up — without spending any real money, so bugs are caught BEFORE students pay.
+- **Mechanism:** new backend util `mentora-lms-server/utils/qaAccess.js` exports `isQaTester(email)`. Allowlist = default `stanley.okonkwo282@gmail.com` + anything in env `QA_TESTER_EMAILS` (comma-separated). Case-insensitive, trimmed.
+- **Free bypasses added (all create REAL database records marked `paymentMethod: "qa_free"` so every downstream step — player access, emails, receipts — is exercised):**
+  1. `POST /api/enroll` (`enrollmentController.secureEnroll`): QA tester on a PAID course gets an instant Enrollment (`paymentMethod: "qa_free"`, `paystackReference: QA-…`) + cohort count + enrollment emails, response `{ success, free: true, qaBypass: true }` → frontend redirects straight to the player.
+  2. `POST /api/certificates/paystack/initialize` (`certificateController`): QA tester gets an instantly APPROVED + VERIFIED Certificate (`paymentMethod: "qa_free"`, `QA-CERT-…`). Frontend already handles `alreadyApproved: true` → shows certificate immediately.
+  3. `POST /api/subscriptions/initialize` (`subscriptionController`): QA tester gets an ACTIVE Subscription for the requested plan + user upgraded to `role: teacher`, `subscription.status: active`, bundled chat points added. (`authorizationUrl: null` — frontend no-ops when no URL.)
+  4. `POST /api/forum/topup-initialize` (`forumController`): QA tester gets the selected points package added instantly (`QA-TOPUP-…` recorded in `paidTopups`), response `{ success, newBalance, pointsAdded }` — matches what `StudentChatForum` reads.
+- **Admin role confirmed:** `stanley.okonkwo282@gmail.com` was already `role: admin` in MongoDB (verified via one-off script, `ROLE-UPDATED:admin->admin`). Full admin dashboard access + QA free access = complete oversight.
+- **Bonus bug fixed (student-facing):** HTML courses could NOT be enrolled — `Enrollment.enrolledFormat` enum and `secureEnroll` format validation only allowed `video`/`pdf`. Both now include `"html"` (plus a new `hasHtml` track check). `CourseDetails.jsx` `availableFormats` also now pushes `html` so HTML-only courses show an enroll path.
+- **Deploy:** backend commit `69f2959` (pushed `e045f6c..69f2959` → Render auto-deploys); frontend commit `68c0428` (pushed `d52fc71..68c0428` → Vercel auto-deploys). `.env.example` documents `QA_TESTER_EMAILS`.
+- **Adding/removing testers with zero code change:** edit `QA_TESTER_EMAILS` on Render → redeploy.
+- **Security notes:** only allowlisted emails trigger any bypass; students see zero change. All bypasses still run through `verifyToken` (authenticated). Mitigation if ever abused: remove email from allowlist + these records are transparently `qa_free`.
