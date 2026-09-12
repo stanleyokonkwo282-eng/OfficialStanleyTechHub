@@ -66,6 +66,13 @@ export default function DashboardSidebar() {
           </NavLink>
         )}
         {user?.role === "admin" && (
+          <NavLink to="/dashboard/exams" className={linkStyle}>
+            <LinkTile title="Exam Management">
+              <FaGraduationCap />
+            </LinkTile>
+          </NavLink>
+        )}
+        {user?.role === "admin" && (
           <NavLink to="/dashboard/payouts" className={linkStyle}>
             <LinkTile title="Teacher Payouts">
               <FaMoneyBillWave />

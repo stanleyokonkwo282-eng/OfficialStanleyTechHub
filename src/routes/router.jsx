@@ -54,6 +54,7 @@ const VerifyCertificate = lazyImport(() => import("../pages/VerifyCertificate"))
 const CourseAssignments = lazyImport(() => import("../pages/student/CourseAssignments"));
 const Certificate = lazyImport(() => import("../pages/student/Certificate"));
 const ExamPage = lazyImport(() => import("../pages/student/ExamPage"));
+const ManageExams = lazyImport(() => import("../pages/admin/ManageExams"));
 const Referrals = lazyImport(() => import("../pages/student/Referrals"));
 const StudentChatForum = lazyImport(() => import("../pages/student/StudentChatForum"));
 const StripeWrapper = lazyImport(() => import("../pages/student/StripeWrapper"));
@@ -205,6 +206,14 @@ const router = createBrowserRouter([
             element: (
               <RoleBasedRoute allowedRoles={["admin"]}>
                 <ManageCertificates />
+              </RoleBasedRoute>
+            ),
+          },
+          {
+            path: "exams",
+            element: (
+              <RoleBasedRoute allowedRoles={["admin"]}>
+                <ManageExams />
               </RoleBasedRoute>
             ),
           },

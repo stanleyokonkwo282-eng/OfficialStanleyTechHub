@@ -12,6 +12,7 @@ import {
   Menu,
   CheckCircle2,
   FileCode,
+  Award,
 } from "lucide-react";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
 
@@ -27,6 +28,8 @@ export default function HandbookViewer() {
   const [error, setError] = useState(null);
   const [activeLessonId, setActiveLessonId] = useState(null);
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [examInfo, setExamInfo] = useState(null);
+  const [examCheckDone, setExamCheckDone] = useState(false);
 
   // Safe fetch that tries multiple endpoints before failing
   useEffect(() => {
@@ -67,6 +70,17 @@ export default function HandbookViewer() {
     return () => {
       isMounted = false;
     };
+  }, [id, axiosSecure]);
+
+  // Check if exam exists for this course
+  useEffect(() => {
+    if (!id) return;
+    let mounted = true;
+    axiosSecure.get(`/exam/${id}`)
+      .then((res) => { if (mounted && res.data?.exam) setExamInfo(res.data.exam); })
+      .catch(() => {})
+      .finally(() => { if (mounted) setExamCheckDone(true); });
+    return () => { mounted = false; };
   }, [id, axiosSecure]);
 
   // Flatten lessons safely
@@ -254,6 +268,15 @@ export default function HandbookViewer() {
               >
                 Next <ChevronRight className="w-4 h-4" />
               </button>
+              {examInfo && examCheckDone && (
+                <button
+                  onClick={() => navigate(`/dashboard/exam/${id}`)}
+                  className="flex items-center gap-1 px-4 py-1.5 rounded-xl text-xs font-black transition bg-gradient-to-r from-amber-500 to-amber-600 text-zinc-950 hover:from-amber-400 hover:to-amber-500 shadow-lg shadow-amber-500/20"
+                >
+                  <Award className="w-3.5 h-3.5" />
+                  Complete Manual & Take Exam
+                </button>
+              )}
             </div>
           </div>
 
