@@ -227,6 +227,16 @@
 - **Note**: Courses with **zero lessons** (the 6 unseeded free-tier courses) still have no flags — they won't appear in either filtered list until lessons are added. That's correct behavior.
 - Backend `getApprovedCourses` needed no code change — flags were the only problem.
 
+## HTML Courses — Courses page filter (NEW 2026-09-11)
+Added full HTML course discoverability alongside Video and PDF.
+
+| Layer | Change |
+|---|---|
+| **Backend** (`mentora-lms-server`) | `controllers/courseController.js` `getApprovedCourses`: new `else if (format === "html")` branch → `{ hasHtml: true, hasVideo: false, hasPdf: false }`; comment updated to mention `html`. `seedCourses.js` persisted `hasHtml` on HTML courses. |
+| **Frontend** (`OfficialStanleyTechHub`) | `Courses.jsx`: format filter now includes **💻 HTML Courses** option (sends `format=html` to the backend), and course cards show a **💻 HTML Course** badge (purple) + a **🎥 + 💻 Hybrid** badge for video+html combos. Filter buttons use icons. |
+
+**Test after both deploys propagate:** Courses page → click **💻 HTML Courses** → see HTML courses. Cards show 💻 badges.
+
 ## HTML Handbook Support (NEW 2026-09-11)
 Handbook courses can now be **PDF or HTML** (interactive, rendered in an iframe). The viewer (`HandbookViewer.jsx`) already detects type via `isHtml` (`.html` extension, `data:text/html`, or `/documents/` path) and shows "Interactive HTML Course" vs "Handbook Study Portal".
 
