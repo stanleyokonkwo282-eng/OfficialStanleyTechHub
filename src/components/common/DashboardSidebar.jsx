@@ -65,7 +65,7 @@ export default function DashboardSidebar() {
             </LinkTile>
           </NavLink>
         )}
-        {user?.role === "admin" && (
+        {["admin", "teacher"].includes(user?.role) && (
           <NavLink to="/dashboard/exams" className={linkStyle}>
             <LinkTile title="Exam Management">
               <FaGraduationCap />

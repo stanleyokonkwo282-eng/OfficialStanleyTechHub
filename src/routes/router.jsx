@@ -212,7 +212,7 @@ const router = createBrowserRouter([
           {
             path: "exams",
             element: (
-              <RoleBasedRoute allowedRoles={["admin"]}>
+              <RoleBasedRoute allowedRoles={["admin", "teacher"]}>
                 <ManageExams />
               </RoleBasedRoute>
             ),

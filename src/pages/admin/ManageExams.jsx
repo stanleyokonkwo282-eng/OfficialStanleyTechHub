@@ -2,11 +2,13 @@ import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
+import useAuth from "../../hooks/useAuth";
 import { Plus, Trash2, Save, CheckCircle } from "lucide-react";
 
 export default function ManageExams() {
   const axiosSecure = useAxiosSecure();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   const [selectedCourseId, setSelectedCourseId] = useState("");
   const [questions, setQuestions] = useState([]);
@@ -15,14 +17,29 @@ export default function ManageExams() {
   const [savedExam, setSavedExam] = useState(null);
 
   const { data: coursesData } = useQuery({
-    queryKey: ["admin-courses-for-exam"],
+    queryKey: ["exam-courses", user?.email, user?.role],
     queryFn: async () => {
-      const res = await axiosSecure.get("/courses?limit=100");
+      // Teachers: use their dedicated endpoint; admins: fetch all approved
+      const url =
+        user?.role === "teacher"
+          ? "/courses/teacher/" + encodeURIComponent(user.email)
+          : "/courses?limit=100";
+      const res = await axiosSecure.get(url);
       return res.data?.courses || res.data?.data || [];
     },
   });
 
-  const courses = Array.isArray(coursesData) ? coursesData : [];
+  const coursesRaw = Array.isArray(coursesData) ? coursesData : [];
+  // Teachers see only their own courses; admins see all
+  const courses =
+    user?.role === "teacher"
+      ? coursesRaw.filter(
+          (c) =>
+            c.instructorEmail === user.email ||
+            c.teacherEmail === user.email ||
+            c.createdBy === user.email
+        )
+      : coursesRaw;
 
   useEffect(() => {
     if (!selectedCourseId) {
