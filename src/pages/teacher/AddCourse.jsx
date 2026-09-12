@@ -11,7 +11,7 @@ import { uploadPdf } from "../../utils/PdfUploadApi";
 export default function AddCourse() {
   const { user } = useAuth();
   const [customCategory, setCustomCategory] = useState("");
-  const [courseType] = useState("video"); // "video" | "handbook" (setter removed — type selector UI no longer exists)
+  const [contentType, setContentType] = useState("video"); // "video" | "pdf" | "html"
   const [videoUrl, setVideoUrl] = useState("");
   const [pdfFile, setPdfFile] = useState(null);
   const [htmlFile, setHtmlFile] = useState(null);
@@ -67,27 +67,19 @@ export default function AddCourse() {
       const imageUrl = await uploadImageMutation.mutateAsync(imageFile);
       data.image = imageUrl;
 
-      // --- Video course path ---
-      if (courseType === "video") {
+      // --- VIDEO CONTENT ---
+      if (contentType === "video") {
         if (!videoUrl) {
           throw new Error("Please provide a YouTube/video URL for video courses.");
-        }
-        let resourcePdfUrl = "";
-        if (pdfFile && pdfFile.size > 10 * 1024 * 1024) {
-          toast.error("PDF file is too large. Please keep it under 10MB.");
-          return;
-        }
-        if (pdfFile) {
-          const pdfUploadResult = await uploadPdfMutation.mutateAsync(pdfFile);
-          resourcePdfUrl = pdfUploadResult.url;
         }
         const coursePayload = {
           ...data,
           price: Number(data.price) || 5000,
+          contentType: "video",
           hasVideo: true,
-          hasPdf: Boolean(pdfFile),
+          hasPdf: false,
+          hasHtml: false,
           resourceVideoUrl: videoUrl,
-          resourcePdfUrl,
           rating: Math.floor(Math.random() * 5) + 1,
         };
         delete coursePayload.name;
@@ -98,86 +90,81 @@ export default function AddCourse() {
         return;
       }
 
-      // --- Handbook course path (PDF or HTML) ---
-      if (courseType === "handbook") {
+      // --- PDF HANDBOOK ---
+      if (contentType === "pdf") {
         let resourcePdfUrl = "";
-        let resourceHtmlUrl = "";
-
-        // Priority 1: Uploaded HTML file
-        if (htmlFile) {
-          if (!htmlFile.name.endsWith(".html") && !htmlFile.name.endsWith(".htm")) {
-            toast.error("Please upload an HTML file (.html or .htm) for handbook courses.");
-            return;
-          }
-          const formData = new FormData();
-          formData.append("html", htmlFile);
-          let lastError = "";
-          try {
-            const uploadRes = await fetch(`${import.meta.env.VITE_BASE_URL}/upload/html`, {
-              method: "POST",
-              body: formData,
-            });
-            if (uploadRes.ok) {
-              const dataResp = await uploadRes.json();
-              resourceHtmlUrl = dataResp.url || dataResp.htmlUrl || "";
-            } else {
-              lastError = `HTML upload endpoint returned ${uploadRes.status}`;
-            }
-          } catch (err) {
-            lastError = err?.message || "Network error contacting upload service";
-          }
-          if (!resourceHtmlUrl) {
-            const hint = lastError ? ` (${lastError})` : "";
-            throw new Error(
-              `HTML upload failed.${hint} If the upload endpoint returned 404, the backend is likely still deploying — try again in 1–2 minutes.`
-            );
-          }
-        }
-
-        // Priority 2: Uploaded PDF file
-        if (!resourceHtmlUrl && !resourcePdfUrl && pdfFile) {
+        if (pdfFile) {
           if (pdfFile.size > 10 * 1024 * 1024) {
-            toast.error("PDF file is too large. Please keep it under 10MB.");
-            return;
+            throw new Error("PDF file is too large. Please keep it under 10MB.");
           }
           const pdfUploadResult = await uploadPdfMutation.mutateAsync(pdfFile);
           resourcePdfUrl = pdfUploadResult.url;
+        } else if (data.resourceUrl) {
+          resourcePdfUrl = data.resourceUrl.trim();
         }
-
-        // Priority 3: Direct URL (paste a link to an HTML or PDF file)
-        if (!resourceHtmlUrl && !resourcePdfUrl) {
-          // If user pasted a video URL by mistake, block it
-          if (videoUrl) {
-            throw new Error("Handbook courses need an HTML/PDF file or URL — not a video link. Switch to Video Course type.");
-          }
-          const pastedUrl = data.handbookUrl || data.pdfUrl || data.resourceHtmlUrl || "";
-          if (!pastedUrl) {
-            throw new Error("Please upload an HTML/PDF file or paste a document URL for handbook courses.");
-          }
-          // Detect type from file extension
-          if (pastedUrl.toLowerCase().match(/\.html?($|#|\?)/) || pastedUrl.startsWith("data:text/html")) {
-            resourceHtmlUrl = pastedUrl;
-          } else {
-            resourcePdfUrl = pastedUrl;
-          }
+        if (!resourcePdfUrl) {
+          throw new Error("Please upload a PDF file or provide a PDF URL.");
         }
 
         const coursePayload = {
           ...data,
-          price: Number(data.price) || 5000,
+          price: Number(data.price) || 0,
+          contentType: "pdf",
+          hasPdf: true,
           hasVideo: false,
-          hasPdf: true, // document-based (PDF or HTML)
-          resourceVideoUrl: "",
+          hasHtml: false,
           resourcePdfUrl,
-          resourceHtmlUrl,
           rating: Math.floor(Math.random() * 5) + 1,
         };
         delete coursePayload.name;
+        delete coursePayload.resourceUrl;
         if (coursePayload.category === "Others") {
           coursePayload.category = customCategory;
         }
         saveCourseMutation.mutate(coursePayload);
         return;
+      }
+
+      // --- HTML HANDBOOK ---
+      if (contentType === "html") {
+        let resourceHtmlUrl = "";
+        if (htmlFile) {
+          try {
+            const formData = new FormData();
+            formData.append("file", htmlFile);
+            const response = await axiosSecure.post("/upload/html", formData, {
+              headers: { "Content-Type": "multipart/form-data" },
+            });
+            resourceHtmlUrl = response?.data?.url || "";
+          } catch (htmlError) {
+            const status = htmlError?.response?.status;
+            const detail = htmlError?.response?.data?.message || htmlError?.message || "Unknown error";
+            console.error("[HTML upload failed]", status, detail);
+            throw new Error(`HTML upload failed (${detail}). If status is 404, the backend is still deploying — try again in 1–2 minutes.`);
+          }
+        } else if (data.resourceUrl) {
+          resourceHtmlUrl = data.resourceUrl.trim();
+        }
+        if (!resourceHtmlUrl) {
+          throw new Error("Please upload an HTML file or provide an HTML URL.");
+        }
+
+        const coursePayload = {
+          ...data,
+          price: Number(data.price) || 0,
+          contentType: "html",
+          hasHtml: true,
+          hasVideo: false,
+          hasPdf: false,
+          resourceHtmlUrl,
+          rating: Math.floor(Math.random() * 5) + 1,
+        };
+        delete coursePayload.name;
+        delete coursePayload.resourceUrl;
+        if (coursePayload.category === "Others") {
+          coursePayload.category = customCategory;
+        }
+        saveCourseMutation.mutate(coursePayload);
       }
     } catch (err) {
       const message = err?.message || "Failed to process course uploads";
@@ -319,49 +306,71 @@ export default function AddCourse() {
           </div>
 
           <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 space-y-4">
-            <h3 className="text-white font-bold text-lg">Course Content</h3>
+            <h3 className="text-white font-bold text-lg">Course Content Type</h3>
             <p className="text-gray-400 text-sm">
-              Upload video and/or PDF content for this course. Students will choose their preferred format at enrollment.
+              Choose the content type for this course. Upload a file or paste a URL.
             </p>
 
-            <div>
-              <label className="block mb-2 text-sm font-semibold text-yellow-400 uppercase tracking-wide">
-                Upload Video
-              </label>
-              <input
-                type="url"
-                value={videoUrl}
-                onChange={(e) => setVideoUrl(e.target.value)}
-                placeholder="https://www.youtube.com/watch?v=..."
-                className="w-full bg-zinc-900 border border-zinc-700 text-white placeholder-zinc-500 rounded-lg px-4 py-3 focus:outline-none focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400 transition-colors"
-              />
-              <p className="text-zinc-500 text-xs mt-2">
-                Paste a YouTube or embeddable video URL. Required if you want a video track.
-              </p>
+            <div className="grid grid-cols-3 gap-3">
+              <button type="button" onClick={() => setContentType("video")}
+                className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${contentType === "video" ? "border-yellow-400 bg-yellow-400/10 text-yellow-400" : "border-zinc-700 bg-zinc-800 text-zinc-400 hover:border-zinc-500"}`}>
+                <span className="text-2xl">🎥</span>
+                <span className="text-sm font-semibold">Video</span>
+                <span className="text-xs opacity-70">YouTube URL</span>
+              </button>
+              <button type="button" onClick={() => setContentType("pdf")}
+                className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${contentType === "pdf" ? "border-yellow-400 bg-yellow-400/10 text-yellow-400" : "border-zinc-700 bg-zinc-800 text-zinc-400 hover:border-zinc-500"}`}>
+                <span className="text-2xl">📄</span>
+                <span className="text-sm font-semibold">PDF</span>
+                <span className="text-xs opacity-70">Document</span>
+              </button>
+              <button type="button" onClick={() => setContentType("html")}
+                className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${contentType === "html" ? "border-yellow-400 bg-yellow-400/10 text-yellow-400" : "border-zinc-700 bg-zinc-800 text-zinc-400 hover:border-zinc-500"}`}>
+                <span className="text-2xl">🌐</span>
+                <span className="text-sm font-semibold">HTML</span>
+                <span className="text-xs opacity-70">Interactive</span>
+              </button>
             </div>
 
-            <div>
-              <label className="block mb-2 text-sm font-semibold text-yellow-400 uppercase tracking-wide">
-                Upload PDF
-              </label>
-              <div className="border-2 border-dashed border-zinc-700 rounded-lg p-4 hover:border-yellow-400 transition-colors">
-                <input
-                  type="file"
-                  accept="application/pdf"
-                  onChange={(e) => setPdfFile(e.target.files[0])}
-                  className="w-full text-gray-400 text-sm
-                    file:mr-4 file:py-2 file:px-4
-                    file:rounded-lg file:border-0
-                    file:text-sm file:font-semibold
-                    file:bg-yellow-400 file:text-black
-                    hover:file:bg-yellow-500
-                    file:cursor-pointer cursor-pointer"
-                />
-                <p className="text-zinc-500 text-xs mt-2">
-                  {pdfFile ? pdfFile.name : "Select a PDF file. Max 10MB for fast loading."}
-                </p>
+            {contentType === "video" && (
+              <div>
+                <label className="block mb-2 text-sm font-semibold text-yellow-400 uppercase tracking-wide">YouTube Video URL</label>
+                <input type="url" value={videoUrl} onChange={(e) => setVideoUrl(e.target.value)}
+                  placeholder="https://www.youtube.com/watch?v=..."
+                  className="w-full bg-zinc-900 border border-zinc-700 text-white placeholder-zinc-500 rounded-lg px-4 py-3 focus:outline-none focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400 transition-colors" />
+                <p className="text-zinc-500 text-xs mt-2">Paste a YouTube or embeddable video URL. Required for video courses.</p>
               </div>
-            </div>
+            )}
+
+            {contentType === "pdf" && (
+              <div>
+                <label className="block mb-2 text-sm font-semibold text-yellow-400 uppercase tracking-wide">Upload PDF</label>
+                <div className="border-2 border-dashed border-zinc-700 rounded-lg p-4 hover:border-yellow-400 transition-colors">
+                  <input type="file" accept="application/pdf,.pdf" onChange={(e) => setPdfFile(e.target.files[0])}
+                    className="w-full text-gray-400 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-yellow-400 file:text-black hover:file:bg-yellow-500 file:cursor-pointer cursor-pointer" />
+                  <p className="text-zinc-500 text-xs mt-2">{pdfFile ? pdfFile.name : "Select a PDF file. Max 10MB."}</p>
+                </div>
+                <p className="text-zinc-600 text-xs mt-2">— or —</p>
+                <input type="url" {...register("resourceUrl")} placeholder="https://example.com/document.pdf"
+                  className="w-full bg-zinc-900 border border-zinc-700 text-white placeholder-zinc-500 rounded-lg px-4 py-3 mt-2 focus:outline-none focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400 transition-colors" />
+                <p className="text-zinc-500 text-xs mt-1">Paste a direct PDF URL instead of uploading.</p>
+              </div>
+            )}
+
+            {contentType === "html" && (
+              <div>
+                <label className="block mb-2 text-sm font-semibold text-yellow-400 uppercase tracking-wide">Upload HTML</label>
+                <div className="border-2 border-dashed border-zinc-700 rounded-lg p-4 hover:border-yellow-400 transition-colors">
+                  <input type="file" accept=".html,.htm,text/html" onChange={(e) => setHtmlFile(e.target.files[0])}
+                    className="w-full text-gray-400 text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-yellow-400 file:text-black hover:file:bg-yellow-500 file:cursor-pointer cursor-pointer" />
+                  <p className="text-zinc-500 text-xs mt-2">{htmlFile ? htmlFile.name : "Select an HTML file (.html or .htm). Stored on ImageKit."}</p>
+                </div>
+                <p className="text-zinc-600 text-xs mt-2">— or —</p>
+                <input type="url" {...register("resourceUrl")} placeholder="https://example.com/course-page.html"
+                  className="w-full bg-zinc-900 border border-zinc-700 text-white placeholder-zinc-500 rounded-lg px-4 py-3 mt-2 focus:outline-none focus:border-yellow-400 focus:ring-1 focus:ring-yellow-400 transition-colors" />
+                <p className="text-zinc-500 text-xs mt-1">Paste a direct HTML URL instead of uploading.</p>
+              </div>
+            )}
           </div>
 
           <div>
@@ -404,7 +413,9 @@ export default function AddCourse() {
                   ? "Uploading thumbnail..."
                   : uploadPdfMutation.isPending
                     ? "Uploading PDF..."
-                    : "Saving Course..."}
+                    : saveCourseMutation.isPending
+                      ? "Saving Course..."
+                      : "Uploading file..."}
               </>
             ) : (
               "Add Course"
