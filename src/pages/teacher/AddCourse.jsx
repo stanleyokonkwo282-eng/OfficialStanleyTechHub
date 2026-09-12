@@ -129,6 +129,7 @@ export default function AddCourse() {
       // --- HTML HANDBOOK ---
       if (contentType === "html") {
         let resourceHtmlUrl = "";
+        let htmlContent = "";
         if (htmlFile) {
           try {
             setIsHtmlUploading(true);
@@ -138,6 +139,7 @@ export default function AddCourse() {
               headers: { "Content-Type": "multipart/form-data" },
             });
             resourceHtmlUrl = response?.data?.url || "";
+            htmlContent = response?.data?.htmlContent || "";
           } catch (htmlError) {
             const status = htmlError?.response?.status;
             const detail = htmlError?.response?.data?.message || htmlError?.message || "Unknown error";
@@ -149,7 +151,7 @@ export default function AddCourse() {
         } else if (data.resourceUrl) {
           resourceHtmlUrl = data.resourceUrl.trim();
         }
-        if (!resourceHtmlUrl) {
+        if (!resourceHtmlUrl && !htmlContent) {
           throw new Error("Please upload an HTML file or provide an HTML URL.");
         }
 
@@ -161,6 +163,7 @@ export default function AddCourse() {
           hasVideo: false,
           hasPdf: false,
           resourceHtmlUrl,
+          resourceHtmlContent: htmlContent || "",
           rating: Math.floor(Math.random() * 5) + 1,
         };
         delete coursePayload.name;

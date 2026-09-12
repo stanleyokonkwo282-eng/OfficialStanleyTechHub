@@ -1,10 +1,12 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useParams, useNavigate } from "react-router";
 import {
   ArrowLeft,
   Download,
   ExternalLink,
   BookOpen,
+  ChevronUp,
+  ChevronDown,
   ChevronLeft,
   ChevronRight,
   Menu,
@@ -116,10 +118,24 @@ export default function HandbookViewer() {
     course?.pdfUrl ||
     "";
 
+  // PRIMARY source: full HTML text saved in MongoDB (immune to CDN 403s).
+  const htmlContent = course?.resourceHtmlContent || "";
+
   const isHtml =
+    Boolean(htmlContent) ||
     documentSource.toLowerCase().includes(".html") ||
     documentSource.startsWith("data:text/html") ||
     documentSource.startsWith("/documents/");
+
+  // Floating scroll controls scroll the document inside the iframe.
+  const iframeRef = useRef(null);
+  const scrollDoc = (dir) => {
+    try {
+      iframeRef.current?.contentWindow?.scrollBy({ top: dir * 450, behavior: "smooth" });
+    } catch {
+      /* cross-origin URL — native iframe scrolling still works */
+    }
+  };
 
   if (loading) {
     return (
@@ -243,8 +259,17 @@ export default function HandbookViewer() {
 
           {/* DOCUMENT IFRAME */}
           <div className="flex-1 min-h-[600px] w-full rounded-2xl overflow-hidden border border-white/10 bg-[#000000] relative shadow-2xl">
-            {documentSource ? (
+            {htmlContent ? (
               <iframe
+                ref={iframeRef}
+                srcDoc={htmlContent}
+                title="Handbook Viewport"
+                className="w-full h-full min-h-[600px] border-0 rounded-2xl bg-white"
+                sandbox="allow-scripts allow-same-origin allow-popups"
+              />
+            ) : documentSource ? (
+              <iframe
+                ref={iframeRef}
                 src={documentSource}
                 title="Handbook Viewport"
                 className="w-full h-full min-h-[600px] border-0 rounded-2xl bg-white"
@@ -259,6 +284,24 @@ export default function HandbookViewer() {
                 </p>
               </div>
             )}
+
+            {/* FLOATING SCROLL CONTROLS */}
+            <div className="absolute bottom-4 right-4 z-10 flex flex-col gap-2">
+              <button
+                onClick={() => scrollDoc(-1)}
+                title="Scroll up"
+                className="w-10 h-10 rounded-full bg-zinc-900/90 border border-white/15 text-amber-400 hover:bg-zinc-800 hover:text-amber-300 flex items-center justify-center shadow-lg transition"
+              >
+                <ChevronUp className="w-5 h-5" />
+              </button>
+              <button
+                onClick={() => scrollDoc(1)}
+                title="Scroll down"
+                className="w-10 h-10 rounded-full bg-zinc-900/90 border border-white/15 text-amber-400 hover:bg-zinc-800 hover:text-amber-300 flex items-center justify-center shadow-lg transition"
+              >
+                <ChevronDown className="w-5 h-5" />
+              </button>
+            </div>
           </div>
         </main>
 

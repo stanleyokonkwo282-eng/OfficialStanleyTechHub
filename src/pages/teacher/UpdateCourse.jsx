@@ -93,9 +93,10 @@ const UpdateCourse = ({ isOpen, setIsOpen, course, refetch }) => {
         }
 
         // Handle HTML upload (Endpoint is /upload/html)
+        let htmlContent = "";
         if (htmlFile) {
-          if (htmlFile.size > 10 * 1024 * 1024) {
-            toast.error("HTML file is too large. Please keep it under 10MB.");
+          if (htmlFile.size > 8 * 1024 * 1024) {
+            toast.error("HTML file is too large. Please keep it under 8MB.");
             return;
           }
           try {
@@ -105,7 +106,8 @@ const UpdateCourse = ({ isOpen, setIsOpen, course, refetch }) => {
               headers: { "Content-Type": "multipart/form-data" },
             });
             resourceHtmlUrl = response?.data?.url || response?.data?.htmlUrl || "";
-            if (!resourceHtmlUrl) {
+            htmlContent = response?.data?.htmlContent || "";
+            if (!resourceHtmlUrl && !htmlContent) {
               toast.error("HTML upload failed: empty response from server.");
               return;
             }
@@ -142,10 +144,11 @@ const UpdateCourse = ({ isOpen, setIsOpen, course, refetch }) => {
         } else if (contentType === "html") {
           payload.hasVideo = false;
           payload.hasPdf = false;
-          payload.hasHtml = Boolean(htmlFile || resourceHtmlUrl);
+          payload.hasHtml = Boolean(htmlFile || resourceHtmlUrl || htmlContent);
           payload.resourceVideoUrl = "";
           payload.resourcePdfUrl = "";
           payload.resourceHtmlUrl = resourceHtmlUrl;
+          payload.resourceHtmlContent = htmlContent || course?.resourceHtmlContent || "";
         }
 
         // Set contentType field for frontend filtering
