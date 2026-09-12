@@ -21,6 +21,14 @@ const AllCourses = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [formatFilter, setFormatFilter] = useState("all");
 
+  // Filter options — video (YouTube), PDF handbooks, and HTML courses
+  const formatOptions = [
+    { value: "all", label: "All Formats", icon: "🌐" },
+    { value: "video", label: "Video Courses", icon: "🎥" },
+    { value: "pdf", label: "PDF Handbooks", icon: "📄" },
+    { value: "html", label: "HTML Courses", icon: "💻" },
+  ];
+
   const { data, refetch, isLoading } = useQuery({
     queryKey: ["courses", { page: currentPage, searchTerm, format: formatFilter }],
     queryFn: fetchCourses,
@@ -82,11 +90,7 @@ const AllCourses = () => {
 
         {/* Format filter — YouTube video courses and PDF handbooks live apart */}
         <div className="flex gap-2 mb-8 justify-center flex-wrap">
-          {[
-            { value: "all", label: "All Formats" },
-            { value: "video", label: "🎥 Video Courses" },
-            { value: "pdf", label: "📄 PDF Handbooks" },
-          ].map((opt) => (
+          {formatOptions.map((opt) => (
             <button
               key={opt.value}
               onClick={() => handleFormatChange(opt.value)}
@@ -96,7 +100,7 @@ const AllCourses = () => {
                   : "bg-zinc-900 text-gray-300 border-zinc-700 hover:border-yellow-400"
               }`}
             >
-              {opt.label}
+              {opt.icon} {opt.label}
             </button>
           ))}
         </div>
@@ -122,14 +126,20 @@ const AllCourses = () => {
                   <h3 className="text-lg font-semibold text-white leading-tight flex-1">{course.title}</h3>
                 </div>
                 <div className="flex items-center gap-2">
-                  {course.hasVideo && !course.hasPdf && (
+                  {course.hasVideo && !course.hasPdf && !course.hasHtml && (
                     <span className="text-[10px] font-bold uppercase tracking-wider bg-red-500/15 text-red-400 border border-red-500/30 rounded-full px-2 py-0.5">🎥 Video</span>
                   )}
-                  {course.hasPdf && !course.hasVideo && (
+                  {course.hasPdf && !course.hasVideo && !course.hasHtml && (
                     <span className="text-[10px] font-bold uppercase tracking-wider bg-sky-500/15 text-sky-400 border border-sky-500/30 rounded-full px-2 py-0.5">📄 PDF Handbook</span>
                   )}
-                  {course.hasVideo && course.hasPdf && (
+                  {course.hasHtml && !course.hasVideo && !course.hasPdf && (
+                    <span className="text-[10px] font-bold uppercase tracking-wider bg-purple-500/15 text-purple-400 border border-purple-500/30 rounded-full px-2 py-0.5">💻 HTML Course</span>
+                  )}
+                  {course.hasVideo && course.hasPdf && !course.hasHtml && (
                     <span className="text-[10px] font-bold uppercase tracking-wider bg-amber-500/15 text-amber-400 border border-amber-500/30 rounded-full px-2 py-0.5">🎥 + 📄 Hybrid</span>
+                  )}
+                  {course.hasHtml && course.hasVideo && (
+                    <span className="text-[10px] font-bold uppercase tracking-wider bg-violet-500/15 text-violet-400 border border-violet-500/30 rounded-full px-2 py-0.5">🎥 + 💻 Hybrid</span>
                   )}
                 </div>
 
