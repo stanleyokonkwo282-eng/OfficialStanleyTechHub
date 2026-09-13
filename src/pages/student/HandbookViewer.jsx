@@ -141,6 +141,17 @@ export default function HandbookViewer() {
     documentSource.startsWith("data:text/html") ||
     documentSource.startsWith("/documents/");
 
+  // Blob URL for full screen + download (immune to CDN 403s)
+  const htmlBlobUrl = useMemo(() => {
+    if (!htmlContent) return "";
+    try {
+      const blob = new Blob([htmlContent], { type: "text/html" });
+      return URL.createObjectURL(blob);
+    } catch {
+      return "";
+    }
+  }, [htmlContent]);
+
   // Floating scroll controls scroll the document inside the iframe.
   const iframeRef = useRef(null);
   const scrollDoc = (dir) => {
@@ -199,21 +210,19 @@ export default function HandbookViewer() {
         </div>
 
         <div className="flex items-center gap-2">
-          {documentSource && (
-            <a
-              href={documentSource}
-              target="_blank"
-              rel="noopener noreferrer"
+          {htmlBlobUrl && (
+            <button
+              onClick={() => window.open(htmlBlobUrl, "_blank")}
               className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 border border-white/10 text-xs font-bold text-zinc-200 transition"
             >
               <ExternalLink className="w-3.5 h-3.5 text-cyan-400" />
               <span className="hidden md:inline">Open Full Screen</span>
-            </a>
+            </button>
           )}
-          {documentSource && (
+          {htmlBlobUrl && (
             <a
-              href={documentSource}
-              download
+              href={htmlBlobUrl}
+              download={(course?.title || "handbook") + ".html"}
               className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-zinc-950 text-xs font-black transition shadow-lg shadow-amber-500/20"
             >
               <Download className="w-3.5 h-3.5" />
