@@ -17,7 +17,7 @@ export default function TeachersCourses() {
   const axiosSecure = useAxiosSecure();
 
   const { data, isLoading, refetch } = useQuery({
-    queryKey: ["my-courses", user.email],
+    queryKey: ["my-courses", user.email, page],
     queryFn: async () => {
       const res = await axiosSecure.get(
         `/courses/teacher/${user.email}?page=${page}&limit=9`
