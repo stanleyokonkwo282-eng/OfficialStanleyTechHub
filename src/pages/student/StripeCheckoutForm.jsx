@@ -74,16 +74,31 @@ const StripeCheckoutForm = ({ courseDetails }) => {
     }
   };
 
+  const cardElementOptions = {
+    style: {
+      base: {
+        color: "#ffffff",
+        fontFamily: "Inter, ui-sans-serif, system-ui, sans-serif",
+        fontSize: "14px",
+        "::placeholder": { color: "#71717a" },
+        iconColor: "#fbbf24",
+      },
+      invalid: { color: "#f87171", iconColor: "#f87171" },
+    },
+  };
+
   return (
     <form
       onSubmit={handleSubmit}
-      className="w-full p-4 shadow rounded border border-gray-200"
+      className="w-full rounded-2xl border border-zinc-800 bg-zinc-900/60 p-5 shadow-xl backdrop-blur-sm space-y-4"
     >
-      <CardElement className="border p-2 rounded mb-4" />
+      <div className="rounded-xl border border-zinc-700 bg-zinc-950/60 p-3 transition focus-within:border-amber-500">
+        <CardElement options={cardElementOptions} />
+      </div>
       <button
         type="submit"
         disabled={!stripe || !clientSecret || savePaymentMutation.isPending}
-        className="bg-blue-600 text-white py-2 px-4 rounded w-full"
+        className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 disabled:opacity-50 disabled:cursor-not-allowed text-zinc-950 font-black transition shadow-lg shadow-amber-500/20 active:scale-[0.99]"
       >
         {savePaymentMutation.isPending ? "Processing..." : "Pay"}
       </button>

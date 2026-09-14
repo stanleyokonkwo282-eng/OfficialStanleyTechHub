@@ -735,7 +735,7 @@ export default function CoursePlayer() {
                                    href={vimeoWatchUrl}
                                    target="_blank"
                                    rel="noreferrer"
-                                   className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg transition"
+                                   className="px-6 py-3 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-white font-bold rounded-lg transition"
                                  >
                                    ▶ Watch on Vimeo
                                  </a>

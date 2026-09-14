@@ -169,7 +169,7 @@ export default function TeachersCourses() {
               >
                 Previous
               </button>
-              <div className="px-4 py-1 border border-gray-300 rounded">
+              <div className="px-4 py-1.5 border border-zinc-700 bg-zinc-900 text-zinc-200 rounded-lg text-sm font-semibold">
                 Page: {page} of {data.totalPages}
               </div>
               <button

@@ -80,9 +80,9 @@ export default function GiveFeedbackModal({
       disabled={addFeedbackMutation.isPending}
       className={`${
         addFeedbackMutation.isLoading
-          ? "bg-blue-400 cursor-not-allowed"
-          : "bg-blue-600 hover:bg-blue-700"
-      } text-white px-4 py-2 rounded`}
+          ? "bg-amber-400/60 cursor-not-allowed"
+          : "bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500"
+      } text-zinc-950 font-bold px-5 py-2.5 rounded-xl transition shadow-lg shadow-amber-500/20`}
     >
       {addFeedbackMutation.isPending ? "Submitting..." : "Submit Feedback"}
     </button>
@@ -94,28 +94,30 @@ export default function GiveFeedbackModal({
       disabled={addFeedbackMutation.isPending}
       className={`${
         addFeedbackMutation.isLoading
-          ? "bg-blue-400 cursor-not-allowed"
-          : "bg-blue-600 hover:bg-blue-700"
-      } text-white px-4 py-2 rounded`}
+          ? "bg-amber-400/60 cursor-not-allowed"
+          : "bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500"
+      } text-zinc-950 font-bold px-5 py-2.5 rounded-xl transition shadow-lg shadow-amber-500/20`}
     >
       {addFeedbackMutation.isPending ? "Submitting..." : "Update Feedback"}
     </button>
   );
 
   return (
-    <div className="fixed inset-0 bg-[#00000090] z-50 flex justify-center items-center">
+    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex justify-center items-center p-4">
       <div
         ref={modalRef}
-        className="bg-white rounded-xl w-full max-w-md p-6 shadow-lg relative animate-fadeIn"
+        className="relative w-full max-w-md rounded-2xl border border-zinc-800 bg-zinc-950/95 shadow-2xl shadow-black/60 p-6 animate-fadeIn overflow-hidden"
       >
+        <div className="h-1 w-full bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 absolute top-0 left-0" />
         <button
-          className="absolute top-2 right-2 text-gray-400 hover:text-red-500"
+          className="absolute top-3 right-3 h-8 w-8 rounded-full border border-white/10 bg-white/5 text-gray-300 hover:text-white hover:bg-white/10 flex items-center justify-center transition"
           onClick={() => setIsModalOpen(false)}
+          aria-label="Close feedback modal"
         >
           ✖
         </button>
 
-        <h2 className="text-xl font-semibold mb-4">Give Feedback</h2>
+        <h2 className="text-xl font-bold text-white mb-4">Give Feedback</h2>
 
         <form
           onSubmit={handleSubmit(
@@ -124,26 +126,26 @@ export default function GiveFeedbackModal({
           className="space-y-4"
         >
           <div>
-            <label className="block mb-1 text-sm font-medium text-gray-700">
+            <label className="block mb-1.5 text-sm font-medium text-zinc-300">
               Description
             </label>
             <textarea
               {...register("description", { required: true })}
               defaultValue={existingFeedbacks[0]?.description || ""}
               rows={4}
-              className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              className="w-full rounded-xl border border-zinc-700 bg-zinc-900/80 p-3 text-white placeholder:text-zinc-500 focus:outline-none focus:border-amber-500 transition"
               placeholder="Write your feedback..."
             />
           </div>
 
           <div className="mb-4">
-            <label className="block mb-2 text-sm font-medium text-gray-700">
+            <label className="block mb-2 text-sm font-medium text-zinc-300">
               Rating
             </label>
             <StarRatings
               rating={rating}
-              starRatedColor="#ffd700"
-              starHoverColor="#ffc107"
+              starRatedColor="#fbbf24"
+              starHoverColor="#f59e0b"
               changeRating={(newRating) => setRating(newRating)}
               numberOfStars={5}
               name="rating"

@@ -83,9 +83,9 @@ const CourseSummery = () => {
   if (isLoading) return <LoaderDotted />;
 
   return (
-    <div className="p-6 flex-1 mx-auto">
-      <h2 className="text-2xl font-semibold mb-4">
-        Class Progress <span className="text-lg">({courseInfo.title})</span>
+    <div className="p-6 flex-1 mx-auto max-w-7xl text-white">
+      <h2 className="text-2xl font-black text-white mb-6">
+        Class Progress <span className="text-zinc-400 text-lg font-semibold">({courseInfo.title})</span>
       </h2>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -107,7 +107,7 @@ const CourseSummery = () => {
         <div className="text-right">
           <button
             onClick={() => setModalOpen(true)}
-            className="btn btn-success"
+            className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-zinc-950 font-bold transition shadow-lg shadow-amber-500/20"
           >
             Create Assignment
           </button>
@@ -116,12 +116,13 @@ const CourseSummery = () => {
 
       {/* MODAL */}
       {modalOpen && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
-          <div className="bg-white p-6 rounded-md w-[400px]">
-            <h3 className="text-lg font-semibold mb-4">Add Assignment</h3>
+        <div className="fixed inset-0 flex items-center justify-center bg-black/70 backdrop-blur-sm z-50 p-4">
+          <div className="relative w-full max-w-md bg-zinc-950/95 border border-zinc-800 rounded-2xl p-6 shadow-2xl shadow-black/60 animate-fadeIn overflow-hidden">
+            <div className="h-1 w-full bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 absolute top-0 left-0" />
+            <h3 className="text-lg font-bold text-white mb-4">Add Assignment</h3>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
               <div>
-                <label htmlFor="title" className="label mb-1">
+                <label htmlFor="title" className="block mb-1 text-sm font-medium text-zinc-300">
                   Assignment Title:
                 </label>
                 <input
@@ -129,12 +130,12 @@ const CourseSummery = () => {
                   type="text"
                   placeholder="Write title here..."
                   {...register("title", { required: true })}
-                  className="input input-bordered w-full"
+                  className="w-full px-4 py-2.5 rounded-xl bg-zinc-900 border border-zinc-700 text-white placeholder:text-zinc-500 focus:outline-none focus:border-amber-500 transition"
                 />
               </div>
 
               <div>
-                <label htmlFor="deadline" className="label mb-1">
+                <label htmlFor="deadline" className="block mb-1 text-sm font-medium text-zinc-300">
                   Deadline:
                 </label>
                 <input
@@ -142,18 +143,18 @@ const CourseSummery = () => {
                   id="deadline"
                   type="date"
                   {...register("deadline", { required: true })}
-                  className="input input-bordered w-full"
+                  className="w-full px-4 py-2.5 rounded-xl bg-zinc-900 border border-zinc-700 text-white [color-scheme:dark] focus:outline-none focus:border-amber-500 transition"
                 />
               </div>
 
               <div>
-                <label htmlFor="description" className="label mb-1">
+                <label htmlFor="description" className="block mb-1 text-sm font-medium text-zinc-300">
                   Description:
                 </label>
                 <textarea
                   placeholder="Assignment Description"
                   {...register("description", { required: true })}
-                  className="textarea textarea-bordered w-full"
+                  className="w-full px-4 py-2.5 rounded-xl bg-zinc-900 border border-zinc-700 text-white placeholder:text-zinc-500 focus:outline-none focus:border-amber-500 transition resize-none"
                 ></textarea>
               </div>
 
@@ -162,14 +163,14 @@ const CourseSummery = () => {
                   <button
                     type="button"
                     onClick={() => setModalOpen(false)}
-                    className="btn btn-outline"
+                    className="px-4 py-2 rounded-xl border border-zinc-700 text-zinc-300 hover:border-zinc-500 hover:text-white transition"
                   >
                     Cancel
                   </button>
                 )}
                 <button
                   type="submit"
-                  className="btn btn-primary"
+                  className="px-5 py-2 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-zinc-950 font-bold transition shadow-lg shadow-amber-500/20 disabled:opacity-60"
                   disabled={addAssignmentMutation.isPending}
                 >
                   {addAssignmentMutation.isPending
@@ -189,8 +190,8 @@ export default CourseSummery;
 
 // Reusable card component
 const Card = ({ title, count }) => (
-  <div className="bg-white shadow-md p-4 rounded-md">
-    <h4 className="text-lg font-medium">{title}</h4>
-    <p className="text-2xl font-bold text-blue-600 mt-2">{count}</p>
+  <div className="bg-zinc-950 border border-zinc-800 rounded-2xl p-5 shadow-lg hover:border-amber-500/30 transition">
+    <h4 className="text-sm font-semibold text-zinc-400 uppercase tracking-wide">{title}</h4>
+    <p className="text-3xl font-black text-amber-400 mt-2">{count}</p>
   </div>
 );

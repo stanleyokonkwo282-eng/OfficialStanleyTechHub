@@ -66,58 +66,71 @@ const StripeWrapper = () => {
 
   if (reference) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-        <div className="max-w-7xl mx-auto bg-white rounded-lg shadow-lg p-8 text-center">
-          <h2 className="text-2xl font-semibold mb-4 text-gray-800">Verifying Payment...</h2>
-          <p className="text-gray-600">Please wait while we confirm your enrollment.</p>
+      <div className="min-h-screen bg-[#0a0a0f] text-white flex items-center justify-center p-6 relative overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-amber-500/10 blur-[130px]" aria-hidden />
+          <div className="absolute bottom-0 right-0 w-96 h-96 rounded-full bg-purple-500/10 blur-[130px]" aria-hidden />
+        </div>
+        <div className="relative w-full max-w-xl rounded-3xl border border-zinc-800 bg-zinc-950/80 backdrop-blur-xl shadow-2xl shadow-black/60 p-10 text-center">
+          <div className="mx-auto mb-5 h-12 w-12 rounded-2xl bg-amber-400/15 border border-amber-400/30 flex items-center justify-center">
+            <div className="h-6 w-6 border-2 border-amber-400/30 border-t-amber-400 rounded-full animate-spin" />
+          </div>
+          <h2 className="text-2xl font-black text-white mb-2">Verifying Payment...</h2>
+          <p className="text-zinc-400">Please wait while we confirm your enrollment.</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-      <div className="max-w-7xl mx-auto bg-white rounded-lg shadow-lg p-8">
-        <h2 className="text-3xl font-semibold mb-8 text-gray-800 text-center">
-          Checkout
-        </h2>
-        <hr className="mb-8" />
-        <div className=" grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-20 ">
+    <div className="min-h-screen bg-[#0a0a0f] text-white py-12 px-4 relative overflow-hidden">
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute -top-24 -left-24 w-96 h-96 rounded-full bg-amber-500/10 blur-[130px]" aria-hidden />
+        <div className="absolute bottom-0 right-0 w-96 h-96 rounded-full bg-purple-500/10 blur-[130px]" aria-hidden />
+      </div>
+      <div className="relative max-w-5xl mx-auto rounded-3xl border border-zinc-800 bg-zinc-950/80 backdrop-blur-xl shadow-2xl shadow-black/60 p-8 md:p-12">
+        <div className="flex items-center gap-3 mb-8">
+          <div className="p-2.5 rounded-xl bg-amber-400/15 border border-amber-400/25 text-amber-400">
+            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3 10h18M7 15h2m4 0h2m-9-9h10a2 2 0 012 2v8a2 2 0 01-2 2H6a2 2 0 01-2-2V8a2 2 0 012-2z" /></svg>
+          </div>
           <div>
-            <h2 className="text-2xl font-semibold mb-4 text-gray-800">
-              Payment Account
-            </h2>
-            <div className="space-y-2 text-gray-700">
-              <p>
-                <strong>Name:</strong> {user?.displayName || "Guest User"}
-              </p>
-              <p>
-                <strong>Email:</strong> {user?.email || "Not provided"}
-              </p>
+            <h2 className="text-3xl font-black text-white">Checkout</h2>
+            <p className="text-zinc-400 text-sm">Secure enrollment — pay safely with Paystack</p>
+          </div>
+        </div>
+        <hr className="border-zinc-800 mb-8" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-16">
+          <div>
+            <h3 className="text-xl font-bold text-white mb-4">Payment Account</h3>
+            <div className="space-y-3 rounded-2xl border border-zinc-800 bg-zinc-900/50 p-5 text-sm">
+              <div className="flex justify-between gap-4">
+                <span className="text-zinc-400">Name</span>
+                <span className="text-white font-semibold text-right">{user?.displayName || "Guest User"}</span>
+              </div>
+              <div className="flex justify-between gap-4">
+                <span className="text-zinc-400">Email</span>
+                <span className="text-white font-semibold text-right break-all">{user?.email || "Not provided"}</span>
+              </div>
             </div>
 
             <div className="mt-8">
-              <h3 className="text-xl font-semibold mb-2 text-gray-800">
-                Selected Course
-              </h3>
-              <p className="text-gray-600 font-semibold leading-relaxed">
+              <h3 className="text-lg font-bold text-white mb-2">Selected Course</h3>
+              <p className="text-zinc-300 font-semibold leading-relaxed">
                 {courseDetails?.title}
               </p>
             </div>
           </div>
 
           <div>
-            <h2 className="text-2xl font-semibold mb-4 text-gray-800">
-              Order Summary
-            </h2>
-            <div className="border border-gray-400 rounded-lg p-6 bg-gray-50 text-gray-700 space-y-4">
-              <div className="flex justify-between">
-                <span>Amount</span>
-                <span>{Number(courseDetails?.price) > 0 ? `₦${Number(courseDetails.price).toLocaleString()}` : "Free"}</span>
+            <h3 className="text-xl font-bold text-white mb-4">Order Summary</h3>
+            <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 p-6 space-y-4">
+              <div className="flex justify-between text-sm">
+                <span className="text-zinc-400">Amount</span>
+                <span className="text-white font-bold">{Number(courseDetails?.price) > 0 ? `₦${Number(courseDetails.price).toLocaleString()}` : "Free"}</span>
               </div>
-              <div className="border-t pt-4 flex justify-between font-semibold text-gray-900">
-                <span>Total</span>
-                <span>{Number(courseDetails?.price) > 0 ? `₦${Number(courseDetails.price).toLocaleString()}` : "Free"}</span>
+              <div className="border-t border-zinc-800 pt-4 flex justify-between items-center">
+                <span className="text-zinc-300 font-semibold">Total</span>
+                <span className="text-amber-400 text-xl font-black">{Number(courseDetails?.price) > 0 ? `₦${Number(courseDetails.price).toLocaleString()}` : "Free"}</span>
               </div>
               <button
                 onClick={async () => {
@@ -148,11 +161,11 @@ const StripeWrapper = () => {
                   }
                 }}
                 disabled={initiating}
-                className="w-full bg-green-500 hover:bg-green-600 disabled:opacity-60 text-white font-bold py-3 rounded-lg transition"
+                className="w-full py-3.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 disabled:opacity-60 disabled:cursor-not-allowed text-zinc-950 font-black transition shadow-lg shadow-amber-500/20 active:scale-[0.99]"
               >
                 {initiating ? "Connecting to Paystack…" : "Pay with Card (Paystack)"}
               </button>
-              <p className="text-center text-gray-500 text-xs mt-2">
+              <p className="text-center text-zinc-500 text-xs mt-2">
                 You will be redirected to Paystack to complete payment securely.
               </p>
             </div>
