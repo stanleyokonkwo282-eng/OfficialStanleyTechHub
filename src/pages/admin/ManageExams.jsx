@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
+import Swal from "sweetalert2";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
 import useAuth from "../../hooks/useAuth";
 import { Plus, Trash2, Save, CheckCircle } from "lucide-react";
@@ -40,6 +41,9 @@ export default function ManageExams() {
             c.createdBy === user.email
         )
       : coursesRaw;
+
+  // The currently selected course — used to resolve courseTitle when saving.
+  const selectedCourse = courses.find((c) => c._id === selectedCourseId);
 
   useEffect(() => {
     if (!selectedCourseId) {
@@ -128,6 +132,7 @@ export default function ManageExams() {
       if (validQuestions.length === 0) throw new Error("Add at least one question.");
       const res = await axiosSecure.post("/exam/create", {
         courseId: selectedCourseId,
+        courseTitle: selectedCourse?.title || "",
         questions: validQuestions,
         passMark: Number(passMark) || 60,
         maxAttempts: Number(maxAttempts) || 2,
@@ -145,6 +150,43 @@ export default function ManageExams() {
       toast.error(err?.response?.data?.message || err.message || "Failed to save.");
     },
   });
+
+  const deleteMutation = useMutation({
+    mutationFn: async () => {
+      const res = await axiosSecure.delete(`/exam/${selectedCourseId}`);
+      return res.data;
+    },
+    onSuccess: () => {
+      toast.success("Exam deleted successfully");
+      queryClient.invalidateQueries({ queryKey: ["exam"] });
+      setQuestions([createEmptyQuestion()]);
+      setSavedExam(null);
+      setPassMark(60);
+      setMaxAttempts(2);
+    },
+    onError: (err) => {
+      toast.error(err?.response?.data?.message || err.message || "Failed to delete exam.");
+    },
+  });
+
+  const handleDeleteExam = () => {
+    if (!savedExam) return;
+    Swal.fire({
+      title: "Delete this exam?",
+      text: "This action cannot be undone. All existing student attempts for this exam will be removed.",
+      icon: "warning",
+      background: "#18181b",
+      color: "#fff",
+      showCancelButton: true,
+      confirmButtonText: "Yes, delete exam",
+      confirmButtonColor: "#ef4444",
+      cancelButtonColor: "#3f3f46",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        deleteMutation.mutate();
+      }
+    });
+  };
 
   return (
     <div className="min-h-screen bg-[#0a0a0f] text-white p-6">
@@ -165,20 +207,33 @@ export default function ManageExams() {
             {courses.map((c) => (
               <option key={c._id} value={c._id}>{c.title}</option>
             ))}
-          </select>
+        </select>
         </div>
 
         {selectedCourseId && (
           <>
             {savedExam && (
-              <div className="bg-green-900/30 border border-green-700/50 rounded-xl p-4 mb-6 flex items-center gap-3">
-                <CheckCircle className="w-5 h-5 text-green-400 shrink-0" />
-                <div>
-                  <p className="text-green-300 text-sm font-semibold">Exam already exists for this course</p>
-                  <p className="text-green-400/70 text-xs">
-                    {savedExam.questions?.length || 0} questions . {savedExam.passMark}% pass mark . {savedExam.maxAttempts} max attempts
-                  </p>
+              <div className="bg-green-900/30 border border-green-700/50 rounded-xl p-4 mb-6 flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <CheckCircle className="w-5 h-5 text-green-400 shrink-0" />
+                  <div>
+                    <p className="text-green-300 text-sm font-semibold">
+                      Exam already exists for this course — edit below and re-save to update
+                    </p>
+                    <p className="text-green-400/70 text-xs">
+                      {savedExam.questions?.length || 0} questions · {savedExam.passMark}% pass mark · {savedExam.maxAttempts} max attempts
+                    </p>
+                  </div>
                 </div>
+                <button
+                  type="button"
+                  onClick={handleDeleteExam}
+                  disabled={deleteMutation.isPending}
+                  className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-red-400 border border-red-500/30 rounded-lg hover:bg-red-500/10 hover:border-red-400 transition disabled:opacity-60 disabled:cursor-not-allowed"
+                >
+                  <Trash2 className="w-4 h-4" />
+                  {deleteMutation.isPending ? "Deleting…" : "Delete Exam"}
+                </button>
               </div>
             )}
 
