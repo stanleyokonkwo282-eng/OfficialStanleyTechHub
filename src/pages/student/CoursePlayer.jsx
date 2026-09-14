@@ -4,6 +4,7 @@ import { toast } from "react-toastify";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Copy, Check, Sparkles } from "lucide-react";
 import LoaderSpinner from "../../components/common/LoaderSpinner";
+import AiAssistant from "../../components/common/AiAssistant";
 import useAuth from "../../hooks/useAuth";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
 import PremiumCourseReader from "../../components/common/PremiumCourseReader";
@@ -71,14 +72,8 @@ export default function CoursePlayer() {
   const [selectedFormat, setSelectedFormat] = useState('video');
   const [copiedCodeId, setCopiedCodeId] = useState(null);
 
-  // --- AI Assistant States ---
-  const [aiDrawerOpen, setAiDrawerOpen] = useState(false);
-  const [chatMessages, setChatMessages] = useState([
-    { sender: "ai", text: "Hello! I'm your AI Course Assistant. Ask me anything about this lesson or course!" }
-  ]);
-  const [chatInput, setChatInput] = useState("");
-  const [aiLoading, setAiLoading] = useState(false);
-  const chatEndRef = useRef(null);
+  // AI chat lives in the shared AiAssistant component (same premium drawer in
+  // video / PDF / HTML portals). Kept here only for tree-shaking safety.
 
   // --- Data fetching (unchanged) ---
   const { data: lessonsData, isLoading: lessonsLoading } = useQuery({
@@ -122,34 +117,6 @@ export default function CoursePlayer() {
   const enrollmentId = enrollmentData?.enrollments?.find(
     (e) => e.studentEmail === user?.email
   )?._id;
-
-  // --- Fetch saved AI chat history for the active lesson ---
-  const { data: chatHistoryData, dataUpdatedAt } = useQuery({
-    queryKey: ["ai-chat-history", courseId, activeLesson?._id, user?.email],
-    queryFn: async () => {
-      const res = await axiosSecure.get(
-        `/ai/chat-history/${courseId}/${activeLesson._id}/${user?.email}`
-      );
-      return res.data;
-    },
-    enabled: !!activeLesson?._id && !!user?.email,
-  });
-
-  // --- Populate chat with saved history when lesson changes ---
-  useEffect(() => {
-    if (!activeLesson?._id) return;
-
-    const messages = chatHistoryData?.messages;
-    if (messages?.length > 0) {
-      setChatMessages(
-        messages.map((m) => ({ sender: m.sender, text: m.text }))
-      );
-    } else {
-      setChatMessages([
-        { sender: "ai", text: "Hello! I'm your AI Course Assistant. Ask me anything about this lesson or course!" }
-      ]);
-    }
-  }, [activeLesson?._id, chatHistoryData?.messages, dataUpdatedAt]);
 
   // --- Mutations ---
   const markCompleteMutation = useMutation({
@@ -589,41 +556,8 @@ export default function CoursePlayer() {
 
   const isCompleted = (lessonId) => progressData?.completedLessonIds?.includes(lessonId);
 
-  // --- Send message to AI Assistant ---
-  const handleSendAiMessage = async (e) => {
-    e.preventDefault();
-    if (!chatInput.trim() || aiLoading) return;
-
-    const userMessage = chatInput.trim();
-    setChatInput("");
-    setChatMessages(prev => [...prev, { sender: "user", text: userMessage }]);
-    setAiLoading(true);
-
-    try {
-      const res = await axiosSecure.post("/ai/chat", {
-        prompt: userMessage,
-        lessonTitle: activeLesson?.lessonTitle || "General",
-        lessonDescription: activeLesson?.lessonDescription || "",
-        courseId,
-        lessonId: activeLesson?._id,
-        studentEmail: user?.email,
-      });
-      setChatMessages(prev => [...prev, { sender: "ai", text: res.data.reply }]);
-    } catch (error) {
-      console.error("AI assistant request failed:", error);
-      const status = error?.response?.status;
-      const backendMessage = error?.response?.data?.error || error?.response?.data?.message || "";
-      const quotaExceeded = status === 429 || /quota|rate limit|resource_exhausted/i.test(backendMessage || error?.message || "");
-
-      const friendlyMessage = quotaExceeded
-        ? "The AI tutor is temporarily rate-limited because the Gemini free-tier quota has been reached. Please try again in a few minutes."
-        : "Sorry, the AI tutor is currently unavailable. Please retry in a moment.";
-
-      setChatMessages(prev => [...prev, { sender: "ai", text: friendlyMessage }]);
-    } finally {
-      setAiLoading(false);
-    }
-  };
+  // AI chat is handled by the shared <AiAssistant /> drawer below (handles the
+  // backend's HTTP-200 soft-error flag, Retry, and course-aware offline help).
 
   if (lessonsLoading) return <LoaderSpinner />;
   if (!isEnrolled) {
@@ -945,19 +879,15 @@ export default function CoursePlayer() {
           )}
         </div>
 
-        {/* Floating AI Assistant Button */}
-        <div className="fixed bottom-24 right-4 z-40 md:bottom-6 md:right-6">
-          <button
-            onClick={() => setAiDrawerOpen(true)}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-full border border-white/15 bg-white/10 text-white font-bold text-xs shadow-[0_12px_40px_rgba(124,58,237,0.4)] backdrop-blur-xl transition-all duration-200 hover:scale-[1.02] active:scale-95"
-            aria-label="Open AI Tutor"
-          >
-            <span className="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-indigo-500 text-purple-100 shadow-lg shadow-purple-900/40">
-              <Sparkles className="w-4 h-4" />
-            </span>
-            <span>AI Tutor</span>
-          </button>
-        </div>
+        {/* Shared premium AI drawer — same in video / PDF / HTML portals */}
+        <AiAssistant
+          courseId={courseId}
+          courseTitle={lessonsData?.courseTitle || ""}
+          lessonId={activeLesson?._id}
+          lessonTitle={activeLesson?.lessonTitle || "General"}
+          lessonDescription={activeLesson?.lessonDescription || ""}
+          lessonsForFallback={lessonsData?.lessons || []}
+        />
 
         {/* Floating Course Content Drawer Button (mobile only) */}
         <button
@@ -967,64 +897,6 @@ export default function CoursePlayer() {
           📚 Content
         </button>
 
-        {/* AI Assistant Chat Drawer */}
-        {aiDrawerOpen && (
-          <div className="fixed inset-y-3 right-3 z-50 flex w-[92vw] max-w-md flex-col overflow-hidden rounded-[28px] border border-white/10 bg-zinc-950/75 shadow-[0_30px_80px_rgba(0,0,0,0.8)] backdrop-blur-2xl sm:inset-y-6 sm:right-6">
-            <div className="flex items-center justify-between border-b border-white/10 bg-white/5 px-4 py-3.5">
-              <div className="flex items-center gap-2 text-white">
-                <span className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-purple-500 to-indigo-500 text-sm">🤖</span>
-                <h3 className="font-semibold">AI Course Assistant</h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => setAiDrawerOpen(false)}
-                aria-label="Close AI assistant"
-                className="flex h-9 w-9 items-center justify-center rounded-full border border-white/10 bg-white/5 text-xl text-gray-300 hover:bg-white/10 hover:text-white"
-              >
-                &times;
-              </button>
-            </div>
-
-            <div className="flex-1 overflow-y-auto space-y-3 bg-[radial-gradient(circle_at_top,_rgba(168,85,247,0.14),_transparent_42%)] p-4">
-              {chatMessages.map((msg, idx) => (
-                <div key={idx} className={`flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}>
-                  <div className={`max-w-[85%] rounded-2xl p-3 text-sm shadow-lg ${
-                    msg.sender === "user"
-                      ? "bg-gradient-to-r from-yellow-300 to-amber-400 text-black font-medium"
-                      : "border border-white/10 bg-white/5 text-gray-100"
-                  }`}>
-                    {msg.text}
-                  </div>
-                </div>
-              ))}
-              {aiLoading && (
-                <div className="flex justify-start">
-                  <div className="animate-pulse rounded-2xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-gray-300">
-                    Thinking...
-                  </div>
-                </div>
-              )}
-              <div ref={chatEndRef} />
-            </div>
-
-            <form onSubmit={handleSendAiMessage} className="flex gap-2 border-t border-white/10 bg-zinc-950/80 p-3">
-              <input
-                type="text"
-                value={chatInput}
-                onChange={(e) => setChatInput(e.target.value)}
-                placeholder="Ask a question about this lesson..."
-                className="flex-1 rounded-xl border border-zinc-700 bg-zinc-900/80 px-3 py-2 text-sm text-white placeholder:text-zinc-400 focus:border-yellow-400 focus:outline-none"
-              />
-              <button
-                type="submit"
-                disabled={aiLoading}
-                className="rounded-xl bg-yellow-400 px-4 py-2 text-sm font-semibold text-black hover:bg-yellow-500 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                Send
-              </button>
-            </form>
-          </div>
-        )}
         <div className={`
           fixed md:static top-0 right-0 h-full w-80 bg-zinc-950 border-l border-zinc-800 overflow-y-auto z-30 transition-transform duration-300
           ${drawerOpen ? 'translate-x-0' : 'translate-x-full md:translate-x-0'}

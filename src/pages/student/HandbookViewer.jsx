@@ -15,6 +15,29 @@ import {
   Award,
 } from "lucide-react";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
+import AiAssistant from "../../components/common/AiAssistant";
+
+function HandbookAi({ course, courseId, activeLesson, lessonsList }) {
+  return (
+    <AiAssistant
+      courseId={courseId}
+      courseTitle={course?.title || ""}
+      lessonId={undefined}
+      lessonTitle={activeLesson?.displayTitle || course?.title || "General"}
+      lessonDescription={activeLesson?.moduleTitle || ""}
+      lessonsForFallback={[
+        {
+          moduleTitle: "Complete Manual",
+          lessons: (lessonsList || []).map((l) => ({
+            lessonTitle: l.displayTitle,
+            lessonDescription: l.moduleTitle,
+          })),
+        },
+      ]}
+      floatingOffsetClass="bottom-24 md:bottom-6"
+    />
+  );
+}
 
 export default function HandbookViewer() {
   // Route is /dashboard/handbook/:courseId — destructure the real param name
@@ -382,6 +405,7 @@ export default function HandbookViewer() {
           </div>
         </aside>
       </div>
+      <HandbookAi course={course} courseId={id} activeLesson={activeLesson} lessonsList={lessonsList} />
     </div>
   );
 }

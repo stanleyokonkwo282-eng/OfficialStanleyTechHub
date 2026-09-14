@@ -2,6 +2,7 @@ import { useState, useMemo, useCallback, useEffect } from "react";
 import { useNavigate, useParams } from "react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "react-toastify";
+import AiAssistant from "../../components/common/AiAssistant";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
 import useAuth from "../../hooks/useAuth";
 import {
@@ -459,6 +460,17 @@ export default function PdfCoursePlayer() {
           </div>
         </aside>
       </div>
+
+      {/* Premium AI Tutor — same drawer as video + HTML portals */}
+      <AiAssistant
+        courseId={id}
+        courseTitle={course?.title || ""}
+        lessonId={currentLesson?._id}
+        lessonTitle={currentLesson?.lessonTitle || course?.title || "General"}
+        lessonDescription={currentLesson?.lessonDescription || currentLesson?.moduleTitle || ""}
+        lessonsForFallback={modules}
+        floatingOffsetClass="bottom-24 md:bottom-6"
+      />
     </div>
   );
 }
