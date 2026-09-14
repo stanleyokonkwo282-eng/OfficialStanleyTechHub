@@ -1,7 +1,11 @@
 import { getDatabase, ref, push } from "firebase/database";
 import "../../firebase.config.js";
+import { canUse } from "./cookieConsent";
 
 const STORAGE_KEY = "chub_portfolioLink_events";
+
+// Analytics-gated: no local + no remote tracking until the learner opts in.
+const allowed = () => canUse("analytics");
 
 const readEvents = () => {
   try {
@@ -37,6 +41,7 @@ const logToRTDB = async (event) => {
 };
 
 export const trackLinkView = (meta) => {
+  if (!allowed()) return null;
   const events = readEvents();
   const event = baseEvent("view", meta);
   events.push(event);
@@ -45,6 +50,7 @@ export const trackLinkView = (meta) => {
 };
 
 export const trackLinkClick = (meta) => {
+  if (!allowed()) return null;
   const events = readEvents();
   const event = baseEvent("click", meta);
   events.push(event);

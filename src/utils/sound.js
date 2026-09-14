@@ -1,11 +1,15 @@
 // Lightweight Web Audio chime generator — no external audio files needed.
 // Provides: admin-notification chime, incoming chat-message ping, a persistent
-// mute toggle (localStorage), and desktop notifications for background tabs.
+// mute toggle (localStorage, preferences-gated), and desktop notifications.
+
+import { canUse } from "./cookieConsent";
 
 const SOUND_ENABLED_KEY = "cha_sound_enabled";
+const prefsAllowed = () => canUse("preferences");
 
 export const isSoundEnabled = () => {
   try {
+    if (!prefsAllowed()) return true; // default ON, just don't persist without consent
     return localStorage.getItem(SOUND_ENABLED_KEY) !== "off";
   } catch {
     return true;
@@ -14,6 +18,7 @@ export const isSoundEnabled = () => {
 
 export const setSoundEnabled = (enabled) => {
   try {
+    if (!prefsAllowed()) return;
     localStorage.setItem(SOUND_ENABLED_KEY, enabled ? "on" : "off");
   } catch {
     /* storage unavailable */

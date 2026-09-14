@@ -10,6 +10,7 @@ import HeadTag from "../components/common/HeadTag";
 import LoaderDotted from "../components/common/LoaderSpinner";
 import useAuth from "../hooks/useAuth";
 import useAxiosSecure from "../hooks/useAxiosSecure";
+import { canUse } from "../utils/cookieConsent";
 
 const getFriendlyAuthError = (error) => {
   const code = error?.code || "";
@@ -80,8 +81,8 @@ export default function Login() {
     formState: { errors },
   } = useForm({
     defaultValues: {
-      email: localStorage.getItem("chub_remember_email") || "",
-      rememberMe: Boolean(localStorage.getItem("chub_remember_email")),
+      email: canUse("preferences") ? localStorage.getItem("chub_remember_email") || "" : "",
+      rememberMe: canUse("preferences") ? Boolean(localStorage.getItem("chub_remember_email")) : false,
     },
   });
   const [showPassword, setShowPassword] = useState(false);
@@ -97,9 +98,11 @@ export default function Login() {
     },
     onSuccess: async (firebaseUser, variables) => {
       sessionStorage.setItem("chub_justLoggedIn", "true");
-      // “Remember me” — premium LMS convenience: pre-fill email next visit.
+      // “Remember me” — only persisted with preferences consent.
       try {
-        if (variables?.rememberMe && firebaseUser?.email) {
+        if (!canUse("preferences")) {
+          localStorage.removeItem("chub_remember_email");
+        } else if (variables?.rememberMe && firebaseUser?.email) {
           localStorage.setItem("chub_remember_email", String(firebaseUser.email).toLowerCase());
         } else {
           localStorage.removeItem("chub_remember_email");

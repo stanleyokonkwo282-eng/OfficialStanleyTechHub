@@ -40,7 +40,15 @@ export default function PrivacyPolicy() {
           <section>
             <h2 className="text-2xl font-bold text-white mb-2">5. Cookies</h2>
             <p>
-              We use cookies to enhance your browsing experience, analyze site traffic, and personalize content. You can disable cookies in your browser settings, though some features may not function properly.
+              We use strictly-necessary cookies to run the platform (login, security) and —
+              only with your consent — preference cookies (theme, resume-learning, remembered
+              email), analytics cookies (portfolio views, lesson usage) and marketing cookies
+              (referral attribution). You can accept, reject or customize at any time via the
+              cookie banner or the Cookie Settings link in the footer. See our{" "}
+              <a href="/cookie-policy" className="text-amber-400 hover:text-amber-300 underline underline-offset-2">
+                Cookie Policy
+              </a>{" "}
+              for the full list. Disabling necessary cookies will prevent login and course access.
             </p>
           </section>
 

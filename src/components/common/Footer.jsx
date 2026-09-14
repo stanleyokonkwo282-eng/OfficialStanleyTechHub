@@ -1,6 +1,8 @@
 import { FaWhatsapp } from "react-icons/fa";
 import { Link } from "react-router";
+import { Cookie } from "lucide-react";
 import logo from "../../assets/logo.png";
+import { openCookieSettings } from "../../utils/cookieConsent";
 
 export default function Footer() {
   return (
@@ -62,6 +64,7 @@ export default function Footer() {
           <h2 className="text-base font-bold mb-4 text-white uppercase tracking-wide">Legal</h2>
           <ul className="space-y-2 text-sm text-gray-400">
             <li><Link to="/privacy-policy" className="hover:text-yellow-400 transition-colors">Privacy Policy</Link></li>
+            <li><Link to="/cookie-policy" className="hover:text-yellow-400 transition-colors">Cookie Policy</Link></li>
             <li><Link to="/terms-of-service" className="hover:text-yellow-400 transition-colors">Terms of Service</Link></li>
             <li><Link to="/refund-policy" className="hover:text-yellow-400 transition-colors">Refund Policy</Link></li>
           </ul>
@@ -89,6 +92,12 @@ export default function Footer() {
 
       <div className="mt-10 border-t border-zinc-800 pt-6 text-center text-gray-500 text-sm">
         © {new Date().getFullYear()} Creators Hub Academy. All rights reserved. — Skills Today • Success Tomorrow
+        <span className="mt-2 flex items-center justify-center gap-2">
+          <Cookie className="h-3.5 w-3.5 text-zinc-600" />
+          <button onClick={openCookieSettings} className="hover:text-yellow-400 transition-colors underline underline-offset-2">
+            Cookie Settings
+          </button>
+        </span>
       </div>
     </footer>
   );

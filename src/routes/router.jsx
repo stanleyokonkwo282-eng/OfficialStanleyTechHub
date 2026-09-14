@@ -47,6 +47,7 @@ const AcademyPortal = lazyImport(() => import("../components/common/AcademyPorta
 const FAQ = lazyImport(() => import("../pages/Faq"));
 const NotFound = lazyImport(() => import("../pages/NotFound"));
 const PrivacyPolicy = lazyImport(() => import("../pages/PrivacyPolicy"));
+const CookiePolicy = lazyImport(() => import("../pages/CookiePolicy"));
 const TermsOfService = lazyImport(() => import("../pages/TermsOfService"));
 const RefundPolicy = lazyImport(() => import("../pages/RefundPolicy"));
 const Unauthorized = lazyImport(() => import("../pages/Unauthorized"));
@@ -77,6 +78,7 @@ const router = createBrowserRouter([
       { path: "/contact", element: <Contact /> },
       { path: "/faq", element: <FAQ /> },
       { path: "/privacy-policy", element: <PrivacyPolicy /> },
+      { path: "/cookie-policy", element: <CookiePolicy /> },
       { path: "/terms-of-service", element: <TermsOfService /> },
       { path: "/refund-policy", element: <RefundPolicy /> },
       { path: "/courses", element: <Courses /> },

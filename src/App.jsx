@@ -6,6 +6,7 @@ import "slick-carousel/slick/slick.css";
 import "./App.css";
 import Footer from "./components/common/Footer";
 import GoToTopButton from "./components/common/GoToTopButton";
+import CookieConsent from "./components/common/CookieConsent";
 import Navbar from "./components/common/Navbar";
 import ErrorBoundary from "./components/common/ErrorBoundary";
 import { AuthProvider } from "./providers/AuthProvider";
@@ -21,6 +22,7 @@ function App() {
           <Footer />
           <ToastContainer position="top-right" autoClose={3000} />
           <GoToTopButton />
+          <CookieConsent />
         </NotificationProvider>
       </AuthProvider>
     </ErrorBoundary>
