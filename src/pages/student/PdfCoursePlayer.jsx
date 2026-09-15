@@ -371,9 +371,20 @@ export default function PdfCoursePlayer() {
                     Exam Ready — Take the Exam (Pass mark {completionData?.exam?.passMark ?? 60}%)
                   </button>
                 ) : (
-                  <p className="text-[11px] text-zinc-500 max-w-xs text-right">
-                    Course complete! Your exam will appear here once the instructor publishes it.
-                  </p>
+                  <div className="flex flex-col sm:items-end gap-2 shrink-0">
+                    <p className="text-[11px] text-zinc-500 max-w-xs sm:text-right">
+                      Course complete! Your exam will appear here once an exam is published for this course.
+                    </p>
+                    {(user?.role === "admin" || user?.role === "teacher") && (
+                      <button
+                        onClick={() => navigate(`/dashboard/exams?courseId=${id}`)}
+                        className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 border border-amber-500/40 text-amber-400 text-xs font-black transition"
+                      >
+                        <ClipboardCheck className="w-3.5 h-3.5" />
+                        Create an exam for this course
+                      </button>
+                    )}
+                  </div>
                 )
               ) : (
                 <p className="text-[11px] text-zinc-500 max-w-xs text-right">

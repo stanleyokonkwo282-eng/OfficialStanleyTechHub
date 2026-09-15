@@ -12,9 +12,12 @@ import {
   Menu,
   CheckCircle2,
   FileCode,
-  Award,
+  GraduationCap,
+  PlusCircle,
 } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
+import useAuth from "../../hooks/useAuth";
 import AiAssistant from "../../components/common/AiAssistant";
 
 function HandbookAi({ course, courseId, activeLesson, lessonsList }) {
@@ -45,6 +48,7 @@ export default function HandbookViewer() {
   const { courseId: id } = useParams();
   const navigate = useNavigate();
   const axiosSecure = useAxiosSecure();
+  const { user } = useAuth();
 
   const [course, setCourse] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -105,6 +109,30 @@ export default function HandbookViewer() {
       .finally(() => { if (mounted) setExamCheckDone(true); });
     return () => { mounted = false; };
   }, [id, axiosSecure]);
+
+  // Completion summary + exam eligibility for the handbook track. Mirrors the
+  // PDF player so an HTML course can unlock its final exam exactly like a PDF one.
+  const { data: completionData } = useQuery({
+    queryKey: ["handbook-completion", id, user?.email],
+    queryFn: async () => {
+      const res = await axiosSecure.get(`/lessons/completion/${id}/${user?.email}`);
+      return res.data || { totalLessons: 0, completedLessons: 0, percentage: 0, isComplete: false, exam: null };
+    },
+    enabled: !!id && !!user?.email,
+    retry: false,
+  });
+
+  // HTML/PDF handbooks ship as ONE document with no Lesson rows, so there are no
+  // per-lesson checkpoints — that counts as complete (matches backend documentOnly).
+  const documentOnly =
+    Boolean(completionData?.documentOnly) ||
+    Boolean(
+      completionData &&
+        (completionData.totalLessons || 0) === 0 &&
+        (course?.hasHtml || course?.hasPdf) &&
+        !course?.hasVideo
+    );
+  const courseIsComplete = Boolean(completionData?.isComplete) || documentOnly;
 
   // Flatten lessons safely
   const lessonsList = useMemo(() => {
@@ -300,14 +328,66 @@ export default function HandbookViewer() {
               >
                 Next <ChevronRight className="w-4 h-4" />
               </button>
-              {examInfo && examCheckDone && (
+            </div>
+          </div>
+
+          {/* PROGRESS + EXAM ACCESS */}
+          <div className="bg-[#0d121d] border border-white/10 rounded-2xl p-4 mb-3 shadow-lg">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="min-w-0">
+                <p className="text-[10px] font-bold text-amber-500 uppercase tracking-wider mb-1">
+                  Course Progress
+                </p>
+                {documentOnly ? (
+                  <p className="text-xs text-zinc-300">
+                    Self-paced handbook — read at your own pace, then sit your final exam.
+                  </p>
+                ) : (
+                  <p className="text-xs text-zinc-300">
+                    {completionData?.completedLessons || 0} of{" "}
+                    {completionData?.totalLessons || lessonsList.length} lessons completed (
+                    {completionData?.percentage || 0}%)
+                  </p>
+                )}
+                {!documentOnly && (
+                  <div className="w-full sm:w-72 h-2 rounded-full bg-zinc-800 mt-2 overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-amber-500 to-amber-400 rounded-full transition-all"
+                      style={{ width: `${completionData?.percentage || 0}%` }}
+                    />
+                  </div>
+                )}
+              </div>
+
+              {examInfo && courseIsComplete ? (
                 <button
                   onClick={() => navigate(`/dashboard/exam/${id}`)}
-                  className="flex items-center gap-1 px-4 py-1.5 rounded-xl text-xs font-black transition bg-gradient-to-r from-amber-500 to-amber-600 text-zinc-950 hover:from-amber-400 hover:to-amber-500 shadow-lg shadow-amber-500/20"
+                  className="flex items-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-zinc-950 font-black text-sm transition shadow-lg shadow-amber-500/30 shrink-0"
                 >
-                  <Award className="w-3.5 h-3.5" />
-                  Complete Manual & Take Exam
+                  <GraduationCap className="w-4 h-4" />
+                  {`Take the Final Exam (Pass mark ${examInfo?.passMark ?? 60}%)`}
                 </button>
+              ) : examCheckDone && !examInfo ? (
+                <div className="flex flex-col sm:items-end gap-2 shrink-0">
+                  <p className="text-[11px] text-zinc-500 max-w-xs sm:text-right">
+                    {courseIsComplete
+                      ? "Handbook complete! Your final exam appears here as soon as an exam is published for this course."
+                      : "Read through the full handbook to unlock your final exam."}
+                  </p>
+                  {(user?.role === "admin" || user?.role === "teacher") && (
+                    <button
+                      onClick={() => navigate(`/dashboard/exams?courseId=${id}`)}
+                      className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-zinc-800 hover:bg-zinc-700 border border-amber-500/40 text-amber-400 text-xs font-black transition"
+                    >
+                      <PlusCircle className="w-3.5 h-3.5" />
+                      Create an exam for this course
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <p className="text-[11px] text-zinc-500 max-w-xs sm:text-right">
+                  Read through the full handbook to unlock your final exam.
+                </p>
               )}
             </div>
           </div>
