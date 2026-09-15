@@ -42,6 +42,21 @@ export default function Certificate() {
     enabled: !!user?.email,
   });
 
+  // Exam attempts also gate the certificate flow: passing the final exam
+  // unlocks the request even if lesson-checkpoint progress lags (e.g. HTML
+  // handbooks are a single document, not per-lesson checkpoints).
+  const { data: attemptsData } = useQuery({
+    queryKey: ["cert-attempts", courseId, user?.email],
+    queryFn: async () => {
+      const res = await axiosSecure.get(
+        `/exam/attempts/${courseId}/${user?.email}`
+      );
+      return res.data;
+    },
+    enabled: !!user?.email,
+  });
+  const attempts = attemptsData?.attempts || [];
+
   const paystackInitMutation = useMutation({
     mutationFn: async () => {
       const res = await axiosSecure.post("/certificates/paystack/initialize", {
@@ -119,9 +134,13 @@ export default function Certificate() {
 
   const courseName = courseData?.course?.title || "Digital Skills Course";
   const certificate = certData?.certificate;
+  const alreadyPassedExam = attempts.some((a) => a.passed);
 
-  // Not completed yet
-  if (!progressData?.percentage || progressData?.percentage < 100) {
+  // Not completed yet — lessons-complete OR exam-passed both unlock the flow
+  // (the exam pass is authoritative for single-document HTML handbooks).
+  const showNotCompleted =
+    (!progressData?.percentage || progressData?.percentage < 100) && !alreadyPassedExam;
+  if (showNotCompleted) {
     return (
       <div className="min-h-screen bg-black flex flex-col items-center justify-center gap-4 px-4">
         <div className="text-6xl">📚</div>
@@ -237,7 +256,11 @@ export default function Certificate() {
     );
   }
 
-  // Course complete — show payment options
+  // Course complete — show payment options.
+  // Passing the exam unlocks certificates even if lesson checkpoints lag
+  // (HTML handbooks are a single document, not per-lesson checkpoints).
+  // NOTE: the render gate above already enforces this rule, so the unlock
+  // state here is informational only.
   return (
     <div className="min-h-screen bg-black text-white py-10 px-4">
       <div className="max-w-2xl mx-auto">
