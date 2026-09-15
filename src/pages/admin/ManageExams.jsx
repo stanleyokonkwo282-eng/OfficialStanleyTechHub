@@ -5,7 +5,7 @@ import { toast } from "react-toastify";
 import Swal from "sweetalert2";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
 import useAuth from "../../hooks/useAuth";
-import { Plus, Trash2, Save, CheckCircle } from "lucide-react";
+import { Plus, Trash2, Save, CheckCircle, Sparkles } from "lucide-react";
 
 export default function ManageExams() {
   const axiosSecure = useAxiosSecure();
@@ -155,6 +155,53 @@ export default function ManageExams() {
     },
   });
 
+  // AI draft: the backend reads the stored handbook text (Gemini) and returns
+  // MCQs for review. Nothing is saved until the author presses Save Exam.
+  const generateMutation = useMutation({
+    mutationFn: async () => {
+      const res = await axiosSecure.post(`/exam/generate/${selectedCourseId}`);
+      return res.data;
+    },
+    onSuccess: (data) => {
+      const drafted = (data?.questions || []).map((q, i) => ({
+        _id: `ai-${Date.now()}-${i}`,
+        question: q.question,
+        options:
+          q.options.length >= 4
+            ? q.options.slice(0, 4)
+            : [...q.options, "", "", "", ""].slice(0, 4),
+        correctAnswer: q.correctAnswer,
+      }));
+      setQuestions(drafted);
+      toast.success(
+        `AI drafted ${drafted.length} questions from the handbook — review, edit if needed, then Save.`
+      );
+    },
+    onError: (err) => {
+      toast.error(err?.response?.data?.message || err.message || "AI generation failed.");
+    },
+  });
+
+  const handleGenerate = () => {
+    if (!selectedCourseId || generateMutation.isPending) return;
+    // Guard: replacing a non-empty editor that already mirrors a saved exam.
+    if (savedExam && questions.some((q) => q.question.trim())) {
+      Swal.fire({
+        title: "Generate a new AI draft?",
+        text: "The questions in the editor will be replaced by the AI draft. The saved exam only changes after you press Save.",
+        icon: "question",
+        background: "#18181b",
+        color: "#fff",
+        showCancelButton: true,
+        confirmButtonText: "Generate draft",
+        confirmButtonColor: "#f59e0b",
+        cancelButtonColor: "#3f3f46",
+      }).then((r) => r.isConfirmed && generateMutation.mutate());
+      return;
+    }
+    generateMutation.mutate();
+  };
+
   const deleteMutation = useMutation({
     mutationFn: async () => {
       const res = await axiosSecure.delete(`/exam/${selectedCourseId}`);
@@ -269,12 +316,23 @@ export default function ManageExams() {
             <div className="space-y-4 mb-6">
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-bold text-white">Questions ({questions.length})</h2>
-                <button
-                  onClick={addQuestion}
-                  className="flex items-center gap-2 px-4 py-2 bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold rounded-xl text-sm transition"
-                >
-                  <Plus className="w-4 h-4" /> Add Question
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={handleGenerate}
+                    disabled={generateMutation.isPending}
+                    title="Draft exam questions automatically from the stored handbook text"
+                    className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-violet-500 to-fuchsia-500 hover:from-violet-400 hover:to-fuchsia-400 text-white font-bold rounded-xl text-sm transition shadow-lg shadow-violet-500/20 disabled:opacity-60 disabled:cursor-not-allowed"
+                  >
+                    <Sparkles className={`w-4 h-4 ${generateMutation.isPending ? "animate-pulse" : ""}`} />
+                    {generateMutation.isPending ? "AI is reading the handbook…" : "Generate with AI"}
+                  </button>
+                  <button
+                    onClick={addQuestion}
+                    className="flex items-center gap-2 px-4 py-2 bg-amber-500 hover:bg-amber-400 text-zinc-950 font-bold rounded-xl text-sm transition"
+                  >
+                    <Plus className="w-4 h-4" /> Add Question
+                  </button>
+                </div>
               </div>
 
               {questions.map((q, qIdx) => (
