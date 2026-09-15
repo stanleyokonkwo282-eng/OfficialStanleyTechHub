@@ -84,6 +84,14 @@ export default function CoursePlayer() {
     },
   });
 
+  const { data: completionData } = useQuery({
+    queryKey: ["video-completion", courseId, user?.email],
+    queryFn: async () => {
+      const res = await axiosSecure.get(`/lessons/completion/${courseId}/${user?.email}`);
+      return res.data || { totalLessons: 0, completedLessons: 0, percentage: 0, isComplete: false, exam: null };
+    },
+    enabled: !!user?.email,
+  });
   const { data: progressData, refetch: refetchProgress } = useQuery({
     queryKey: ["progress", courseId, user?.email],
     queryFn: async () => {
@@ -130,6 +138,7 @@ export default function CoursePlayer() {
     },
     onSuccess: (data) => {
       refetchProgress();
+      queryClient.invalidateQueries({ queryKey: ["video-completion"] });
       completedRef.current = true;
       if (data.courseCompleted) {
         toast.success("🎉 Course completed! Take the exam to get your certificate.");
@@ -585,7 +594,8 @@ export default function CoursePlayer() {
     );
   }
 
-  const courseCompleted = progressData?.percentage === 100;
+  const courseCompleted =
+    progressData?.percentage === 100 || completionData?.isComplete === true;
   const attempts = attemptsData?.attempts || [];
   const hasPassed = attempts.some(a => a.passed);
   const isLocked = attempts.length >= 2 && !hasPassed;

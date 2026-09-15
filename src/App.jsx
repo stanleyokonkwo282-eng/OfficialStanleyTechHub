@@ -24,7 +24,7 @@ function App() {
           <GoToTopButton />
           <CookieConsent />
           {/* Hidden host for the Google Translate widget (driven by LanguageSwitcher). */}
-          <div id="chub-google-translate" aria-hidden="true" className="hidden" />
+          <div id="chub-google-translate" aria-hidden="true" style={{ display: "none" }} />
         </NotificationProvider>
       </AuthProvider>
     </ErrorBoundary>

@@ -1,5 +1,15 @@
 @import "tailwindcss";
 
+/*
+ * Tailwind CSS v4 @plugin directive — loads DaisyUI as a Tailwind plugin.
+ * This IS valid Tailwind v4 syntax (see https://tailwindcss.com/docs/functions-and-directives)
+ * and is the officially recommended DaisyUI installation method
+ * (see https://daisyui.com/docs/install/).
+ *
+ * The "Unknown at rule @plugin" warning in VS Code is a false positive
+ * from the built-in CSS language service, which doesn't recognise
+ * Tailwind-specific at-rules. See .vscode/settings.json for the suppression.
+ */
 @plugin "daisyui";
 
 /* Override DaisyUI's base colors for the Creators Hub dark theme */

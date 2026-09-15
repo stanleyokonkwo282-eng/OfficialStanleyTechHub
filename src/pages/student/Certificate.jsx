@@ -43,8 +43,8 @@ export default function Certificate() {
   });
 
   // Exam attempts also gate the certificate flow: passing the final exam
-  // unlocks the request even if lesson-checkpoint progress lags (e.g. HTML
-  // handbooks are a single document, not per-lesson checkpoints).
+  // unlocks the request even if lesson-checkpoint progress lags (e.g.
+  // document-only courses such as HTML handbooks have no checkpoints).
   const { data: attemptsData } = useQuery({
     queryKey: ["cert-attempts", courseId, user?.email],
     queryFn: async () => {
@@ -137,7 +137,8 @@ export default function Certificate() {
   const alreadyPassedExam = attempts.some((a) => a.passed);
 
   // Not completed yet — lessons-complete OR exam-passed both unlock the flow
-  // (the exam pass is authoritative for single-document HTML handbooks).
+  // (the exam pass is authoritative for document-only courses such as HTML
+  // handbooks, which have no per-lesson checkpoints).
   const showNotCompleted =
     (!progressData?.percentage || progressData?.percentage < 100) && !alreadyPassedExam;
   if (showNotCompleted) {
@@ -256,11 +257,8 @@ export default function Certificate() {
     );
   }
 
-  // Course complete — show payment options.
-  // Passing the exam unlocks certificates even if lesson checkpoints lag
-  // (HTML handbooks are a single document, not per-lesson checkpoints).
-  // NOTE: the render gate above already enforces this rule, so the unlock
-  // state here is informational only.
+  // Course complete — show payment options. Passing the exam unlocks certificates
+  // even if lesson checkpoints lag (document-only courses have no checkpoints).
   return (
     <div className="min-h-screen bg-black text-white py-10 px-4">
       <div className="max-w-2xl mx-auto">
