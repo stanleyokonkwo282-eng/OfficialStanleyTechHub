@@ -15,7 +15,8 @@ import {
   GraduationCap,
   PlusCircle,
 } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { toast } from "react-toastify";
 import useAxiosSecure from "../../hooks/useAxiosSecure";
 import useAuth from "../../hooks/useAuth";
 import AiAssistant from "../../components/common/AiAssistant";
@@ -49,6 +50,7 @@ export default function HandbookViewer() {
   const navigate = useNavigate();
   const axiosSecure = useAxiosSecure();
   const { user } = useAuth();
+  const queryClient = useQueryClient();
 
   const [course, setCourse] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -57,6 +59,7 @@ export default function HandbookViewer() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [examInfo, setExamInfo] = useState(null);
   const [examCheckDone, setExamCheckDone] = useState(false);
+  const [completedLessonIds, setCompletedLessonIds] = useState({});
 
   // Safe fetch that tries multiple endpoints before failing
   useEffect(() => {
@@ -133,6 +136,27 @@ export default function HandbookViewer() {
         !course?.hasVideo
     );
   const courseIsComplete = Boolean(completionData?.isComplete) || documentOnly;
+
+  // Multi-lesson HTML handbooks (a handbook split into modules/lessons rather than
+  // one long document) still need per-lesson checkpoints, otherwise progress could
+  // never reach 100%. Single-document handbooks are auto-satisfied above.
+  const completeLessonMutation = useMutation({
+    mutationFn: async (lesson) => {
+      const res = await axiosSecure.post("/lessons/complete", {
+        lessonId: lesson._id,
+        courseId: id,
+        studentEmail: user?.email,
+      });
+      return res.data;
+    },
+    onSuccess: async (_, lesson) => {
+      setCompletedLessonIds((prev) => ({ ...prev, [String(lesson._id)]: true }));
+      await queryClient.invalidateQueries({ queryKey: ["handbook-completion"] });
+      toast.success("Lesson marked as complete! ✅");
+    },
+    onError: (err) =>
+      toast.error(err?.response?.data?.message || "Could not mark lesson complete."),
+  });
 
   // Flatten lessons safely
   const lessonsList = useMemo(() => {
@@ -328,6 +352,24 @@ export default function HandbookViewer() {
               >
                 Next <ChevronRight className="w-4 h-4" />
               </button>
+              {!documentOnly && activeLesson?._id && (
+                <button
+                  onClick={() => completeLessonMutation.mutate(activeLesson)}
+                  disabled={
+                    completeLessonMutation.isPending ||
+                    Boolean(completedLessonIds[String(activeLesson._id)])
+                  }
+                  title="Mark this handbook lesson as fully read"
+                  className={`flex items-center gap-1 px-3.5 py-1.5 rounded-xl text-xs font-black transition disabled:opacity-60 ${
+                    completedLessonIds[String(activeLesson._id)]
+                      ? "bg-emerald-500/15 border border-emerald-500/40 text-emerald-400 cursor-default"
+                      : "bg-emerald-500/90 hover:bg-emerald-400 text-zinc-950 shadow-lg shadow-emerald-500/20"
+                  }`}
+                >
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  {completedLessonIds[String(activeLesson._id)] ? "Read" : "Mark as Read"}
+                </button>
+              )}
             </div>
           </div>
 
