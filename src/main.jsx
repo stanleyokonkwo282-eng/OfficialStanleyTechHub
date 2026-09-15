@@ -90,6 +90,15 @@ if (typeof window !== "undefined") {
   }, true);
 
   const removeExtensionErrors = () => {
+    // NOTE: Google Translate's own nodes (goog-te-*, skiptranslate,
+    // goog-gt-tt) are allow-listed here — never remove them, or the
+    // LanguageSwitcher translation breaks.
+    const isTranslateNode = (el) =>
+      el.id === "chub-google-translate" ||
+      el.id === "goog-gt-tt" ||
+      (el.className &&
+        typeof el.className === "string" &&
+        (el.className.includes("goog-te") || el.className.includes("skiptranslate")));
     const selectors = [
       '[class*="extension"]',
       '[class*="sidebar"]',
@@ -97,6 +106,7 @@ if (typeof window !== "undefined") {
       '[id*="sidebar"]',
     ];
     document.querySelectorAll(selectors.join(", ")).forEach((el) => {
+      if (isTranslateNode(el) || el.closest?.("#chub-google-translate, #goog-gt-tt")) return;
       const text = (el.textContent || "").toLowerCase();
       if (
         text.includes("cannot read") ||

@@ -2,6 +2,7 @@ import { FaWhatsapp } from "react-icons/fa";
 import { Link } from "react-router";
 import { Cookie } from "lucide-react";
 import logo from "../../assets/logo.png";
+import LanguageSwitcher from "./LanguageSwitcher";
 import { openCookieSettings } from "../../utils/cookieConsent";
 
 export default function Footer() {
@@ -92,11 +93,14 @@ export default function Footer() {
 
       <div className="mt-10 border-t border-zinc-800 pt-6 text-center text-gray-500 text-sm">
         © {new Date().getFullYear()} Creators Hub Academy. All rights reserved. — Skills Today • Success Tomorrow
-        <span className="mt-2 flex items-center justify-center gap-2">
-          <Cookie className="h-3.5 w-3.5 text-zinc-600" />
-          <button onClick={openCookieSettings} className="hover:text-yellow-400 transition-colors underline underline-offset-2">
-            Cookie Settings
-          </button>
+        <span className="mt-2 flex items-center justify-center gap-4 flex-wrap">
+          <LanguageSwitcher variant="footer" />
+          <span className="inline-flex items-center gap-2">
+            <Cookie className="h-3.5 w-3.5 text-zinc-600" />
+            <button onClick={openCookieSettings} className="hover:text-yellow-400 transition-colors underline underline-offset-2">
+              Cookie Settings
+            </button>
+          </span>
         </span>
       </div>
     </footer>

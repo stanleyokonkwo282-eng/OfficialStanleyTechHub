@@ -6,6 +6,7 @@ import { Link, NavLink } from "react-router";
 import { toast } from "react-toastify";
 import { motion, useScroll, useTransform } from "framer-motion";
 import logo from "../../assets/logo.png";
+import LanguageSwitcher from "./LanguageSwitcher";
 import useAuth from "../../hooks/useAuth";
 import { NotificationContext } from "../../providers/NotificationContext";
 import { useContext, useEffect, useRef, useState } from "react";
@@ -220,6 +221,8 @@ export default function Navbar() {
         </div>
 
         <div className="navbar-end">
+          {/* Site language — full-page translation */}
+          <LanguageSwitcher />
           <button
             onClick={handleToggleSound}
             className="p-2 text-white hover:text-yellow-400 transition-colors"

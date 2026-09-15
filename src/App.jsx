@@ -23,6 +23,8 @@ function App() {
           <ToastContainer position="top-right" autoClose={3000} />
           <GoToTopButton />
           <CookieConsent />
+          {/* Hidden host for the Google Translate widget (driven by LanguageSwitcher). */}
+          <div id="chub-google-translate" aria-hidden="true" className="hidden" />
         </NotificationProvider>
       </AuthProvider>
     </ErrorBoundary>
