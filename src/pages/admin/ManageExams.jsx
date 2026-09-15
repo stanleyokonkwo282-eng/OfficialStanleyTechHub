@@ -159,7 +159,11 @@ export default function ManageExams() {
   // MCQs for review. Nothing is saved until the author presses Save Exam.
   const generateMutation = useMutation({
     mutationFn: async () => {
-      const res = await axiosSecure.post(`/exam/generate/${selectedCourseId}`);
+      // 120s: AI generation legitimately takes 30–90s — the shared axios
+      // instance defaults to 15s, which would abort a healthy generation.
+      const res = await axiosSecure.post(`/exam/generate/${selectedCourseId}`, null, {
+        timeout: 120000,
+      });
       return res.data;
     },
     onSuccess: (data) => {
@@ -324,7 +328,7 @@ export default function ManageExams() {
                     className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-violet-500 to-fuchsia-500 hover:from-violet-400 hover:to-fuchsia-400 text-white font-bold rounded-xl text-sm transition shadow-lg shadow-violet-500/20 disabled:opacity-60 disabled:cursor-not-allowed"
                   >
                     <Sparkles className={`w-4 h-4 ${generateMutation.isPending ? "animate-pulse" : ""}`} />
-                    {generateMutation.isPending ? "AI is reading the handbook…" : "Generate with AI"}
+                    {generateMutation.isPending ? "Generating… may take ~1 min" : "Generate with AI"}
                   </button>
                   <button
                     onClick={addQuestion}

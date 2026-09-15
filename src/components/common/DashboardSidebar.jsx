@@ -4,23 +4,28 @@ import { IoDocumentsSharp } from "react-icons/io5";
 import { LuBookUser, LuShare2 } from "react-icons/lu";
 import { MdAddToPhotos, MdUpload } from "react-icons/md";
 import { PiChalkboardTeacherBold } from "react-icons/pi";
+import { useState } from "react";
 import { NavLink } from "react-router";
+import { FaBars } from "react-icons/fa";
 import useAuth from "../../hooks/useAuth";
 import { useTheme } from "../../context/ThemeContext";
 
 export default function DashboardSidebar() {
   const { user } = useAuth();
   const { theme, toggleTheme } = useTheme();
+  // Full-parity mobile drawer: on phones the sidebar column is hidden, so the
+  // SAME links are exposed through a floating hamburger + slide-in drawer.
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const closeMobile = () => setMobileOpen(false);
 
   const linkStyle = ({ isActive }) =>
     isActive
       ? "text-yellow-400 bg-zinc-800 rounded-lg px-3 py-2 block"
       : "text-gray-300 hover:text-yellow-400 hover:bg-zinc-800 rounded-lg px-3 py-2 block transition-all";
 
-  return (
-    <div className="w-3/12 bg-zinc-950 border-r border-zinc-800 text-white p-6 space-y-4 hidden md:block min-h-screen">
-      <h2 className="text-xl font-bold mb-6 text-white">Dashboard</h2>
-      <nav className="flex flex-col space-y-1">
+  // Shared link set — rendered in the desktop sidebar AND the mobile drawer.
+  const navLinks = (
+    <>
 
         {/* Admin Links */}
         {user?.role === "admin" && (
@@ -177,8 +182,55 @@ export default function DashboardSidebar() {
           {theme === "dark" ? <FaSun className="text-lg" /> : <FaMoon className="text-lg" />}
           {theme === "dark" ? "Light Mode" : "Dark Mode"}
         </button>
-      </nav>
-    </div>
+    </>
+  );
+
+  return (
+    <>
+      {/* Desktop sidebar (unchanged) */}
+      <div className="w-3/12 bg-zinc-950 border-r border-zinc-800 text-white p-6 space-y-4 hidden md:block min-h-screen">
+        <h2 className="text-xl font-bold mb-6 text-white">Dashboard</h2>
+        <nav className="flex flex-col space-y-1">{navLinks}</nav>
+      </div>
+
+      {/* Mobile: floating hamburger button */}
+      <button
+        onClick={() => setMobileOpen(true)}
+        aria-label="Open dashboard menu"
+        className="md:hidden fixed bottom-4 right-4 z-30 bg-yellow-400 text-black p-3.5 rounded-full shadow-lg shadow-yellow-400/30"
+      >
+        <FaBars className="text-xl" />
+      </button>
+
+      {/* Mobile backdrop */}
+      <div
+        onClick={closeMobile}
+        className={`md:hidden fixed inset-0 bg-black/70 z-40 transition-opacity duration-300 ${
+          mobileOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+        }`}
+      />
+
+      {/* Mobile slide-in drawer — SAME links as desktop (full parity) */}
+      <div
+        className={`md:hidden fixed inset-y-0 left-0 w-72 max-w-[85vw] bg-zinc-950 border-r border-zinc-800 text-white z-50 transform transition-transform duration-300 overflow-y-auto ${
+          mobileOpen ? "translate-x-0" : "-translate-x-full"
+        }`}
+      >
+        <div className="flex items-center justify-between p-4 border-b border-zinc-800">
+          <h2 className="text-xl font-bold text-white">Dashboard</h2>
+          <button
+            onClick={closeMobile}
+            aria-label="Close dashboard menu"
+            className="text-zinc-400 hover:text-white text-2xl leading-none px-2"
+          >
+            &times;
+          </button>
+        </div>
+        <nav className="flex flex-col space-y-1 p-4" onClick={closeMobile}>
+          {navLinks}
+        </nav>
+      </div>
+    </>
   );
 }
 
