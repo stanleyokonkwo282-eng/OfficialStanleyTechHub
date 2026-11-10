@@ -141,7 +141,7 @@ const BeTeacher = () => {
       <HeadTag
         title="Become a Teacher | Creators Hub Academy"
         description="Apply to teach on Creators Hub Academy. Create and sell courses, track student progress, and receive payments directly to your bank account."
-        path="/be-teacher"
+        path="/become-teacher"
       />
       <div className="min-h-screen bg-black py-10 px-4">
         <div className="max-w-4xl mx-auto">

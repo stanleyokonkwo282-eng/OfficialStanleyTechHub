@@ -7,7 +7,7 @@ Disallow: /reset-password
 Disallow: /unauthorized
 Disallow: /404
 Disallow: /500
-Disallow: /verify-certificate
+Disallow: /verify
 Disallow: /profile/
 
 Sitemap: https://creators-hub-academy.vercel.app/sitemap.xml

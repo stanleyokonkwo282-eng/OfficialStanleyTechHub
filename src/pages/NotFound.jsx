@@ -9,7 +9,6 @@ const NotFound = () => {
       <HeadTag
         title="Creators Hub Academy | Page Not Found"
         description="The page you're looking for doesn't exist. Head back to the homepage or browse our courses."
-        path="/404"
         noindex
       />
       <div className="min-h-screen flex items-center justify-center bg-black px-6">

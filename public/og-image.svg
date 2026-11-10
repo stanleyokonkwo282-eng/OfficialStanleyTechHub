@@ -1,7 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
-  <rect width="1200" height="630" fill="#030b17"/>
-  <circle cx="600" cy="315" r="200" fill="#facc15" opacity="0.15"/>
-  <rect x="50" y="50" width="1100" height="530" fill="none" stroke="#facc15" stroke-width="4" rx="24"/>
-  <text x="600" y="300" font-family="Arial, sans-serif" font-size="48" font-weight="bold" fill="#ffffff" text-anchor="middle">Creators Hub Academy</text>
-  <text x="600" y="370" font-family="Arial, sans-serif" font-size="28" fill="#facc15" text-anchor="middle">Learn. Create. Lead.</text>
-</svg>

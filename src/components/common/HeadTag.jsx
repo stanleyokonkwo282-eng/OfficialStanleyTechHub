@@ -4,7 +4,7 @@ import { organizationSchema, websiteSchema, breadcrumbSchema } from "../../utils
 const SITE = "https://creators-hub-academy.vercel.app";
 const DEFAULT_DESCRIPTION =
   "Creators Hub Academy – Premium online learning platform for creators. Learn tech, design, and freelancing from expert mentors.";
-const DEFAULT_OG_IMAGE = "/og-image.svg";
+const DEFAULT_OG_IMAGE = "/logo.png";
 
 export default function HeadTag({
   title = "Creators Hub Academy | Learn. Create. Lead.",

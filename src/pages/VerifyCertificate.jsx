@@ -40,7 +40,7 @@ export default function VerifyCertificate() {
       <HeadTag
         title="Certificate Verification | Creators Hub Academy"
         description="Verify a Creators Hub Academy certificate. Enter a certificate ID to check its authenticity."
-        path="/verify-certificate"
+        path="/verify"
         noindex
       />
       <div className="max-w-2xl mx-auto">

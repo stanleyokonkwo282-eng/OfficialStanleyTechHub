@@ -26,9 +26,14 @@
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://creators-hub-academy.vercel.app/be-teacher</loc>
+    <loc>https://creators-hub-academy.vercel.app/become-teacher</loc>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://creators-hub-academy.vercel.app/verify</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
   </url>
   <url>
     <loc>https://creators-hub-academy.vercel.app/portfolio</loc>
