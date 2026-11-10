@@ -19,7 +19,11 @@ export default function CookiePolicy() {
   return (
     <div className="min-h-screen bg-black text-white py-16 px-6">
       <div className="max-w-3xl mx-auto">
-        <HeadTag title="Cookie Policy | Creators Hub Academy" />
+        <HeadTag
+          title="Cookie Policy | Creators Hub Academy"
+          description="Creators Hub Academy Cookie Policy — what cookies we use, why, and how to manage your preferences."
+          path="/cookie-policy"
+        />
         <p className="flex items-center gap-2 text-amber-400 text-sm font-bold tracking-wide uppercase">
           <Cookie className="h-4 w-4" /> Transparency first
         </p>

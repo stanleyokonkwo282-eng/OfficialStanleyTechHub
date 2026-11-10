@@ -26,7 +26,7 @@ function SectionFallback() {
 export default function Home() {
   return (
     <section>
-      <HeadTag title="Creators Hub Academy | Learn. Create. Lead." />
+      <HeadTag title="Creators Hub Academy | Learn. Create. Lead." path="/" />
       <QuotesHero />
       <Suspense fallback={<SectionFallback />}>
         <Hero3D />

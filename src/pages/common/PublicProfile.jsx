@@ -36,7 +36,11 @@ export default function PublicProfile() {
 
   return (
     <>
-      <HeadTag title={`${data.displayName || data.name || "Profile"} | Creators Hub Academy`} />
+      <HeadTag
+        title={`${data.displayName || data.name || "Profile"} | Creators Hub Academy`}
+        description={`Public profile of ${data.displayName || data.name} on Creators Hub Academy. ${data.role || "Student"} — ${data.bio || ""}`}
+        path={`/profile/${identifier}`}
+      />
       <div className="min-h-screen bg-black py-8 px-4">
         <div className="max-w-2xl mx-auto bg-zinc-950 border border-zinc-800 rounded-2xl p-8">
           <div className="flex flex-col items-center gap-4">

@@ -4,7 +4,11 @@ export default function RefundPolicy() {
   return (
     <div className="min-h-screen bg-black text-white py-16 px-6">
       <div className="max-w-3xl mx-auto">
-        <HeadTag title="Refund Policy | Creators Hub Academy" />
+        <HeadTag
+          title="Refund Policy | Creators Hub Academy"
+          description="Creators Hub Academy Refund Policy — eligibility, non-refundable items, and how to request a refund."
+          path="/refund-policy"
+        />
         <h1 className="text-4xl font-black text-white mb-4">Refund Policy</h1>
         <p className="text-gray-400 mb-8">Last updated: August 2026</p>
 

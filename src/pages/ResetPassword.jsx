@@ -196,7 +196,12 @@ export default function ResetPassword() {
 
   return (
     <>
-      <HeadTag title="Creators Hub Academy | Reset Password" />
+      <HeadTag
+        title="Creators Hub Academy | Reset Password"
+        description="Reset your Creators Hub Academy password. Use the link from your reset email to set a new password."
+        path="/reset-password"
+        noindex
+      />
       <div className="flex min-h-screen items-center justify-center bg-black px-4 py-10">
         <motion.div
           initial={{ opacity: 0, y: 30 }}

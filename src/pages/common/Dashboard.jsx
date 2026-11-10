@@ -25,7 +25,7 @@ export default function DashBoard() {
   if (isUserLoading) return <LoaderDotted />;
   return (
     <>
-      <HeadTag title="Creators Hub Academy | Dashboard" />
+      <HeadTag title="Creators Hub Academy | Dashboard" path="/dashboard" noindex />
       <div className="min-h-screen flex bg-black">
         {/* Sidebar */}
         <DashboardSidebar />

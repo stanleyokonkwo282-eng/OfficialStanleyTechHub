@@ -4,7 +4,12 @@ import HeadTag from "../components/common/HeadTag";
 const Unauthorized = () => {
   return (
     <>
-      <HeadTag title="Creators Hub Academy | Unauthorized" />
+      <HeadTag
+        title="Creators Hub Academy | Unauthorized"
+        description="You don't have permission to view this page. Return to the homepage or log in."
+        path="/unauthorized"
+        noindex
+      />
       <div className="min-h-screen flex items-center justify-center bg-black px-4">
         <div className="bg-zinc-950 border border-zinc-800 shadow-xl rounded-2xl p-10 max-w-md text-center">
           <h1 className="text-4xl font-bold text-yellow-400 mb-4">403</h1>

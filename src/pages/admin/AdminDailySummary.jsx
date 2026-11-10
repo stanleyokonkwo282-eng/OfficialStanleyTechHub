@@ -42,7 +42,12 @@ export default function AdminDailySummary() {
 
   return (
     <>
-      <HeadTag title="Daily Login Summary | Creators Hub Academy" />
+      <HeadTag
+        title="Daily Login Summary | Creators Hub Academy"
+        description="Send a daily login summary to the admin email on Creators Hub Academy."
+        path="/admin/daily-summary"
+        noindex
+      />
       <div className="p-6 bg-black text-white min-h-screen">
         <div className="max-w-2xl mx-auto">
           <h2 className="text-3xl font-bold text-yellow-400 mb-4">Daily Login Summary</h2>

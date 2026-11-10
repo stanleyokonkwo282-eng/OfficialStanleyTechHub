@@ -33,7 +33,11 @@ export default function CategoryCourses() {
 
   return (
     <>
-      <HeadTag title={`${displayCategory} Courses | Creators Hub Academy`} />
+      <HeadTag
+        title={`${displayCategory} Courses | Creators Hub Academy`}
+        description={`Enroll in ${displayCategory} courses on Creators Hub Academy. Practical digital skills with verified certificates.`}
+        path={`/courses/category/${category}`}
+      />
       <div className="min-h-screen bg-black text-white px-4 py-10">
         <div className="max-w-7xl mx-auto">
           <h1 className="text-4xl font-bold mb-6 text-center">

@@ -113,7 +113,7 @@ export default function ProfileEdit() {
 
   return (
     <>
-      <HeadTag title="Creators Hub Academy | Edit Profile" />
+      <HeadTag title="Creators Hub Academy | Edit Profile" path="/dashboard/profile/edit" noindex />
       <div className="min-h-screen py-4 px-2 md:p-10 bg-black">
         <div className="w-full md:max-w-2xl mx-auto">
           <h2 className="text-3xl font-bold text-white mb-6">Edit Profile</h2>

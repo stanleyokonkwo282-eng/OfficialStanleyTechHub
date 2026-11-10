@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import LoaderSpinner from "../components/common/LoaderSpinner";
 import useAxiosSecure from "../hooks/useAxiosSecure";
+import HeadTag from "../components/common/HeadTag";
 
 export default function VerifyCertificate() {
   const { certificateId: paramId } = useParams();
@@ -36,6 +37,12 @@ export default function VerifyCertificate() {
 
   return (
     <div className="min-h-screen bg-black text-white py-16 px-4">
+      <HeadTag
+        title="Certificate Verification | Creators Hub Academy"
+        description="Verify a Creators Hub Academy certificate. Enter a certificate ID to check its authenticity."
+        path="/verify-certificate"
+        noindex
+      />
       <div className="max-w-2xl mx-auto">
 
         {/* Header */}

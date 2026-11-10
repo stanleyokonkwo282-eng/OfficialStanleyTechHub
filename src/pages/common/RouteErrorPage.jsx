@@ -9,7 +9,12 @@ const RouteErrorPage = () => {
 
   return (
     <>
-      <HeadTag title="Creators Hub Academy | Unexpected Error" />
+      <HeadTag
+        title="Creators Hub Academy | Unexpected Error"
+        description="An unexpected error occurred on Creators Hub Academy. Try again or go to the homepage."
+        path="/500"
+        noindex
+      />
       <div className="min-h-screen flex items-center justify-center bg-black px-6 text-white">
         <div className="text-center max-w-md w-full p-8 border border-neutral-800 bg-neutral-950 rounded-2xl shadow-2xl">
           <div className="flex justify-center mb-6">

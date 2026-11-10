@@ -4,7 +4,11 @@ export default function PrivacyPolicy() {
   return (
     <div className="min-h-screen bg-black text-white py-16 px-6">
       <div className="max-w-3xl mx-auto">
-        <HeadTag title="Privacy Policy | Creators Hub Academy" />
+        <HeadTag
+          title="Privacy Policy | Creators Hub Academy"
+          description="Creators Hub Academy Privacy Policy — how we collect, use, and protect your personal data. Governed by Nigerian law (NDPR)."
+          path="/privacy-policy"
+        />
         <h1 className="text-4xl font-black text-white mb-4">Privacy Policy</h1>
         <p className="text-gray-400 mb-8">Last updated: August 2026</p>
 

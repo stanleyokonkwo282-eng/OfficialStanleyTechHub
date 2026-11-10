@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useState } from "react";
 import { FaMinus, FaPlus } from "react-icons/fa";
+import HeadTag from "../components/common/HeadTag";
 
 const faqs = [
   {
@@ -69,6 +70,11 @@ export default function FaqSection() {
 
   return (
     <section className="bg-black py-16 px-4">
+      <HeadTag
+        title="FAQ | Creators Hub Academy"
+        description="Frequently asked questions about Creators Hub Academy — enrollment, payments, certificates, and more."
+        path="/faq"
+      />
       <div className="max-w-7xl mx-auto">
         <h2 className="text-4xl font-bold text-center mb-10 text-white">
           Frequently{" "}

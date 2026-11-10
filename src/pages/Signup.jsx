@@ -175,7 +175,12 @@ export default function Signup() {
 
   return (
     <>
-      <HeadTag title="Creators Hub Academy | Signup" />
+      <HeadTag
+        title="Creators Hub Academy | Signup"
+        description="Create a Creators Hub Academy account. Sign up with email, password, and optional profile photo."
+        path="/signup"
+        noindex
+      />
       <div className="min-h-screen flex items-center justify-center bg-black px-4">
         <motion.div
           initial={{ opacity: 0, y: 30, scale: 0.96 }}

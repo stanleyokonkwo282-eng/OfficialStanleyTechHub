@@ -63,7 +63,11 @@ const AllCourses = () => {
 
   return (
     <>
-      <HeadTag title="All Courses | Creators Hub Academy" />
+      <HeadTag
+        title="All Courses | Creators Hub Academy"
+        description="Browse and enroll in digital skills courses — video, PDF handbooks, and HTML courses. One-time fee, lifetime access."
+        path="/courses"
+      />
       <div className="max-w-7xl mx-auto px-4 py-10 bg-black min-h-screen">
         <h2 className="text-3xl font-bold mb-2 text-center text-white">All Courses</h2>
         <p className="text-center text-gray-400 mb-4 text-sm">

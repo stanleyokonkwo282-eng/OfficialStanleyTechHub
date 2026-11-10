@@ -70,7 +70,12 @@ export default function AdminManagePayouts() {
 
   return (
     <>
-      <HeadTag title="Manage Payouts | Creators Hub Academy" />
+      <HeadTag
+        title="Manage Payouts | Creators Hub Academy"
+        description="Manage teacher payout requests on Creators Hub Academy."
+        path="/admin/payouts"
+        noindex
+      />
       <div className="p-6 bg-black text-white min-h-screen">
         <h2 className="text-3xl font-bold text-yellow-400 mb-6">Teacher Payouts</h2>
 

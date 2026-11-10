@@ -105,7 +105,12 @@ export default function TeacherPayout() {
 
   return (
     <>
-      <HeadTag title="Teacher Payout & Earnings | Creators Hub Academy" />
+      <HeadTag
+        title="Teacher Payout & Earnings | Creators Hub Academy"
+        description="Manage your teacher payouts and view earnings on Creators Hub Academy."
+        path="/dashboard/payouts"
+        noindex
+      />
       <div className="min-h-screen bg-black py-8 px-4">
         <div className="max-w-5xl mx-auto">
           <h2 className="text-3xl font-bold text-white mb-8">Payout & Earnings</h2>

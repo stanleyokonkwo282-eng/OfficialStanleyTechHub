@@ -6,7 +6,12 @@ import HeadTag from "../components/common/HeadTag";
 const NotFound = () => {
   return (
     <>
-      <HeadTag title="Creators Hub Academy | Page Not Found" />
+      <HeadTag
+        title="Creators Hub Academy | Page Not Found"
+        description="The page you're looking for doesn't exist. Head back to the homepage or browse our courses."
+        path="/404"
+        noindex
+      />
       <div className="min-h-screen flex items-center justify-center bg-black px-6">
         <div className="text-center">
           <div className="h-56 w-56 mx-auto">

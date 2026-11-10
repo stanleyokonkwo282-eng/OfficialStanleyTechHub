@@ -99,7 +99,12 @@ export default function AdminNotifications() {
 
   return (
     <>
-      <HeadTag title="Creators Hub Academy | Notifications" />
+      <HeadTag
+        title="Creators Hub Academy | Notifications"
+        description="Admin notifications on Creators Hub Academy."
+        path="/admin/notifications"
+        noindex
+      />
       <div className="p-6 bg-black text-white min-h-screen">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold text-yellow-400">

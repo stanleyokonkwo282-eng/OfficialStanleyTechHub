@@ -55,7 +55,12 @@ export default function TeacherSubscription() {
 
   return (
     <>
-      <HeadTag title="My Subscription | Creators Hub Academy" />
+      <HeadTag
+        title="My Subscription | Creators Hub Academy"
+        description="Manage your teacher subscription on Creators Hub Academy."
+        path="/dashboard/subscription"
+        noindex
+      />
       <div className="min-h-screen bg-black py-8 px-4">
         <div className="max-w-3xl mx-auto">
           <h2 className="text-3xl font-bold text-white mb-8">My Subscription</h2>

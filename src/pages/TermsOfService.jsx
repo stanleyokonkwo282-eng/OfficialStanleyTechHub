@@ -4,7 +4,11 @@ export default function TermsOfService() {
   return (
     <div className="min-h-screen bg-black text-white py-16 px-6">
       <div className="max-w-3xl mx-auto">
-        <HeadTag title="Terms of Service | Creators Hub Academy" />
+        <HeadTag
+          title="Terms of Service | Creators Hub Academy"
+          description="Creators Hub Academy Terms of Service — enrollment, payments, intellectual property, and governing law."
+          path="/terms-of-service"
+        />
         <h1 className="text-4xl font-black text-white mb-4">Terms of Service</h1>
         <p className="text-gray-400 mb-8">Last updated: August 2026</p>
 

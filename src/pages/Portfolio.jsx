@@ -56,7 +56,11 @@ const expertise = [
 export default function Portfolio() {
   return (
     <div className="min-h-screen bg-[#0f172a] text-slate-100 antialiased selection:bg-indigo-500 selection:text-white">
-      <HeadTag title="Stanley Okonkwo | Portfolio & Biography | Creators Hub Academy" />
+      <HeadTag
+        title="Stanley Okonkwo | Portfolio & Biography | Creators Hub Academy"
+        description="Portfolio and biography of Stanley Okonkwo, founder of Creators Hub Academy. Software engineering, multimedia, administration, and enterprise branding."
+        path="/portfolio"
+      />
 
       {/* Ambient glow background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">

@@ -2,6 +2,7 @@ import { Link } from "react-router";
 import { FaLinkedin, FaEnvelope, FaPhone, FaIdBadge } from "react-icons/fa6";
 import founderImg from "../assets/images/founder.jpg";
 import { motion } from "framer-motion";
+import HeadTag from "../components/common/HeadTag";
 import { useEffect, useRef } from "react";
 import { toast } from "react-toastify";
 import { trackLinkView, trackLinkClick } from "../utils/linkTracker";
@@ -52,6 +53,11 @@ export default function About() {
 
   return (
     <div className="min-h-screen bg-black text-white">
+      <HeadTag
+        title="About Us | Creators Hub Academy"
+        description="About Creators Hub Academy — empowering the next generation of digital creators through practical education, verified credentials, and real-world opportunity."
+        path="/about"
+      />
       {/* Hero Section */}
       <section className="relative bg-black text-white py-24 md:py-32 px-6 text-center border-b border-zinc-800">
         <div className="absolute inset-0 bg-gradient-to-b from-yellow-400/5 to-transparent pointer-events-none" />

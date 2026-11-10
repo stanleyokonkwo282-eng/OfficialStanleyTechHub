@@ -4,7 +4,11 @@ export default function Contact() {
   return (
     <div className="min-h-screen bg-black text-white py-16 px-6">
       <div className="max-w-3xl mx-auto">
-        <HeadTag title="Contact Us | Creators Hub Academy" />
+        <HeadTag
+          title="Contact Us | Creators Hub Academy"
+          description="Contact Creators Hub Academy — support, partnerships, and general enquiries. Email support@creatorshubacademy.com or WhatsApp +234 813 443 8808."
+          path="/contact"
+        />
         <h1 className="text-4xl font-black text-white mb-4">Contact Us</h1>
         <p className="text-gray-400 mb-8">
           Creators Hub Academy is operated by Stanley Chukwunonso Okonkwo. Reach out for support, partnerships, or general enquiries.

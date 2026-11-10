@@ -49,7 +49,7 @@ export default function UserProfile() {
 
   return (
     <>
-      <HeadTag title="Creators Hub Academy | Profile" />
+      <HeadTag title="Creators Hub Academy | Profile" path="/dashboard/profile" noindex />
       <div className="h-full py-4 px-2 md:p-10 bg-black min-h-screen">
         <div className="flex flex-col items-center gap-4 w-full md:max-w-2xl mx-auto">
           <img

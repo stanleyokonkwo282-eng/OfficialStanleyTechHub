@@ -213,7 +213,12 @@ export default function Login() {
 
   return (
     <>
-      <HeadTag title="Creators Hub Academy | Login" />
+      <HeadTag
+        title="Creators Hub Academy | Login"
+        description="Log in to your Creators Hub Academy account to access your courses and dashboard."
+        path="/login"
+        noindex
+      />
       <div className="relative min-h-screen overflow-hidden bg-[#030b17] px-4 py-10 text-white">
         <div className="absolute inset-0">
           <div className="absolute -left-20 top-0 h-72 w-72 rounded-full bg-amber-400/20 blur-[110px]" aria-hidden />
