@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Disciples Convention 2026 - Demonstration of the Spirit & Power</title>
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --gold: #d97706;
+            --gold-light: #fef3c7;
+            --dark: #0f172a;
+            --light: #f8fafc;
+            --gray: #64748b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+        }
+
+        body {
+            background-color: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+            padding: 20px 10px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            overflow: hidden;
+            border: 1px solid #e2e8f0;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+            color: white;
+            padding: 40px 24px;
+            text-align: center;
+            position: relative;
+        }
+
+        .header-badge {
+            display: inline-block;
+            background: var(--gold);
+            color: white;
+            font-weight: 700;
+            font-size: 0.85rem;
+            padding: 6px 16px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+        }
+
+        .header h1 {
+            font-size: 2.2rem;
+            margin-bottom: 8px;
+            font-weight: 800;
+            color: #ffffff;
+        }
+
+        .header .subtitle {
+            font-size: 1.25rem;
+            color: #fbbf24;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .header .scripture {
+            font-style: italic;
+            font-size: 0.95rem;
+            color: #94a3b8;
+        }
+
+        .banner-highlights {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            padding: 16px;
+            background: #f1f5f9;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .tag {
+            background: white;
+            border: 1px solid #cbd5e1;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .content {
+            padding: 32px 24px;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 16px;
+            border-bottom: 2px solid var(--gold-light);
+            padding-bottom: 6px;
+        }
+
+        .schedule-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+            margin-bottom: 32px;
+        }
+
+        @media (min-width: 600px) {
+            .schedule-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        .card {
+            background: #f8fafc;
+            border-left: 4px solid var(--gold);
+            padding: 16px 20px;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .card h3 {
+            font-size: 1.05rem;
+            color: var(--dark);
+            margin-bottom: 6px;
+        }
+
+        .card p {
+            font-size: 0.95rem;
+            color: var(--gray);
+            font-weight: 500;
+        }
+
+        .location-box {
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 32px;
+        }
+
+        .location-box p {
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+
+        .ministers-list {
+            margin-bottom: 32px;
+        }
+
+        .ministers-list p {
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+        }
+
+        .cta-btn {
+            display: block;
+            width: 100%;
+            background: #25d366;
+            color: white;
+            text-align: center;
+            padding: 16px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            text-decoration: none;
+            border-radius: 12px;
+            transition: background 0.2s;
+            box-shadow: 0 4px 14px rgba(37, 211, 102, 0.3);
+        }
+
+        .cta-btn:hover {
+            background: #1ebe5d;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 24px;
+            background: var(--dark);
+            color: #94a3b8;
+            font-size: 0.85rem;
+        }
+
+        .footer a {
+            color: #fbbf24;
+            text-decoration: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header">
+            <div class="header-badge">8th Anniversary Edition</div>
+            <h1>Disciples Convention 2026</h1>
+            <div class="subtitle">Demonstration of the Spirit & Power</div>
+            <div class="scripture">1 Corinthians 2:4</div>
+        </div>
+
+        <div class="banner-highlights">
+            <span class="tag">SALVATION</span>
+            <span class="tag">HEALING</span>
+            <span class="tag">DELIVERANCE</span>
+            <span class="tag">MIRACLES</span>
+        </div>
+
+        <div class="content">
+            <h2 class="section-title">📅 Event Schedule</h2>
+            <div class="schedule-grid">
+                <div class="card">
+                    <h3>Main Convention</h3>
+                    <p>Wed, Nov 11 – Sat, Nov 14, 2026</p>
+                    <p><strong>6:00 PM – 8:30 PM WAT</strong></p>
+                </div>
+                <div class="card">
+                    <h3>Thanksgiving Service</h3>
+                    <p>Sunday, Nov 15, 2026</p>
+                    <p><strong>10:00 AM – 1:30 PM WAT</strong></p>
+                </div>
+            </div>
+
+            <h2 class="section-title">📍 Location & Access</h2>
+            <div class="location-box">
+                <p><strong>In-Person Venue:</strong> 31, Ijoko Road, beside Diamond Pearls Petrol Station, Arifanla, Akute</p>
+                <p><strong>Online Live Stream:</strong> YouTube & Facebook <strong>@ChristKingdomCiti</strong></p>
+            </div>
+
+            <h2 class="section-title">👥 Hosts & Featured Ministers</h2>
+            <div class="ministers-list">
+                <p><strong>Hosts:</strong> Anthony & Amaka Josephat</p>
+                <p><strong>Guest Ministers:</strong> Apostle Richard Udoh, Minstrel Peace, Minister Goodluck, Minister Louis Sax, and Pastor (Dr) Tunji Olubayo</p>
+            </div>
+
+            <a href="https://wa.me/2349114828591" class="cta-btn" target="_blank">Register via WhatsApp (+234 911 482 8591)</a>
+        </div>
+
+        <div class="footer">
+            <p>Christ Kingdom Ministries — Manifesting God's love, glory & power</p>
+            <p style="margin-top: 6px;"><a href="http://www.christkings.org" target="_blank">www.christkings.org</a> | Follow @ChristKingdomCiti</p>
+        </div>
+    </div>
+
+</body>
+</html>
